@@ -1,4 +1,4 @@
-webfit
-======
+webfitplan
+=======
 
-A repository for fitting data on the web
+A web based planning tool for fitting data
