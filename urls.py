@@ -9,9 +9,9 @@ REPO_ROOT=settings.REPO_ROOT
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'webfitplan.views.home', name='home'),
-    # url(r'^webfitplan/', include('webfitplan.foo.urls')),
-    #url(r'^$', 'webfitplan.apps.viewwebfit.views.home'),
+    # url(r'^$', 'webfit.views.home', name='home'),
+    # url(r'^webfit/', include('webfit.foo.urls')),
+    #url(r'^$', 'webfit.apps.viewwebfit.views.home'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

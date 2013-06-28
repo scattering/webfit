@@ -1,4 +1,4 @@
-# Django settings for webfitplan project.
+# Django settings for webfit project.
 
 DEBUG = True
 #TEMPLATE_DEBUG = DEBUG

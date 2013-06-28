@@ -576,8 +576,8 @@ Ext.onReady(function () {
                     }
                 },
                 cursor: {show:true, zoom:false},
-                interactors: [{type: 'Gaussian', 
-                        name: 'gcursor', 
+                interactors: [{type: 'Line', 
+                        name: 'lcursor', 
                         x0: 0.0001,
                         color1: 'green',
                         color2: 'blue'

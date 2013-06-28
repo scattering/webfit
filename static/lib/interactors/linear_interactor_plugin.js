@@ -40,7 +40,8 @@
             
             //this.redraw();              
         },
-        /*getSlope: function() {
+        
+        getSlope: function() {
             this.slope = (this.p2.coords.y - this.p1.coords.y) / (this.p2.coords.x - this.p1.coords.x);
             return this.slope;
         },
@@ -48,7 +49,7 @@
             var slope = this.getSlope();
             this.intercept = (this.p2.coords.y - this.p1.coords.y) - (slope *  (this.p2.coords.x - this.p1.coords.x));
             return this.intercept;
-        }*/
+        }
         
 /*
         this.grobs.push(this.linear, this.p1, this.p2);

@@ -37,6 +37,10 @@
         
         this.pk.move = function(dp){
             var dpos = {x: 0, y: dp.y || 0 };
+            //how to prevent negative gaussian??
+/*            if(dpos.y - pw.y < 0){
+                dpos.y = 0;
+            }*/
             this.translateBy(dpos);
         }
             

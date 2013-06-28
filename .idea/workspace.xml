@@ -3,12 +3,22 @@
   <component name="ChangeListManager">
     <list default="true" id="59e3cc44-4b79-4209-bf11-9efa04b5304e" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/static/lib/interactors/linear_interactor_plugin.js" afterPath="$PROJECT_DIR$/static/lib/interactors/linear_interactor_plugin.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cgi/radioactive.svg" afterPath="$PROJECT_DIR$/cgi/radioactive.svg" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings.py" afterPath="$PROJECT_DIR$/settings.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/urls.py" afterPath="$PROJECT_DIR$/urls.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/site-templates/webfit.html" afterPath="$PROJECT_DIR$/site-templates/webfit.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/static/lib/webfit.js" afterPath="$PROJECT_DIR$/static/lib/webfit.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webfit.wpu" afterPath="$PROJECT_DIR$/webfit.wpu" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/wsgi.py" afterPath="$PROJECT_DIR$/wsgi.py" />
     </list>
     <ignored path="webfit.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/Dummy.txt" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372425411325" ignored="false" />
-    <file path="/a.dummy" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372428740120" ignored="false" />
+    <file path="/a.dummy" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372442297512" ignored="false" />
     <file path="$PROJECT_DIR$/static/lib/plotting/jqplot/plugins/jqplot.BezierCurveRenderer.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372428801919" ignored="false" />
+    <file path="$USER_HOME$/psdplan/static/lib/interactors/gaussian_interactor_plugin.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372431920420" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,19 +38,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="webfit.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="webfit.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/lib/webfit.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="187" column="17" selection-start="4398" selection-end="4398" vertical-scroll-proportion="0.0">
+            <state line="162" column="6" selection-start="3691" selection-end="3691" vertical-scroll-proportion="0.33333334">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="webfit.html" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="webfit.html" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/site-templates/webfit.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="29" column="30" selection-start="2376" selection-end="2376" vertical-scroll-proportion="0.19753087">
+            <state line="43" column="18" selection-start="3662" selection-end="3662" vertical-scroll-proportion="-12.75">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -65,6 +84,7 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/static/lib/webfit.js" />
+        <option value="$PROJECT_DIR$/site-templates/webfit.html" />
         <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
@@ -269,9 +289,16 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/apps/viewwebfit/views.py">
+    <entry file="file://$PROJECT_DIR$/webfit.wpu">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="27" selection-start="1344" selection-end="1344" vertical-scroll-proportion="0.33333334">
+        <state line="316" column="25" selection-start="12826" selection-end="12826" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/site-templates/webfit.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="18" selection-start="3662" selection-end="3662" vertical-scroll-proportion="-12.75">
           <folding />
         </state>
       </provider>
@@ -285,21 +312,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/lib/webfit.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="187" column="17" selection-start="4398" selection-end="4398" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webfit.wpu">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="316" column="25" selection-start="12826" selection-end="12826" vertical-scroll-proportion="0.33333334">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/site-templates/webfit.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="29" column="30" selection-start="2376" selection-end="2376" vertical-scroll-proportion="0.19753087">
+        <state line="162" column="6" selection-start="3691" selection-end="3691" vertical-scroll-proportion="0.33333334">
           <folding />
         </state>
       </provider>
