@@ -585,15 +585,19 @@ Ext.onReady(function () {
 
             });
             //webfit.plot.series[0].data = [];
+            
+            mylistener=function() {};
+    mylistener.update=function update(pos){
+       console.log(pos.x,pos.y);      
+    }
+
+    webfit.plot.plugins.interactors.lcursor.p2.listeners.push(mylistener);
             this.callParent(arguments);
         }
     });
 
-    
         
-
-
-
+    
 
     var myTabs = new Ext.TabPanel({
         resizeTabs: true, // turn on tab resizing

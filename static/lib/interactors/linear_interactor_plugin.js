@@ -35,13 +35,22 @@
             this.p2 = new $.jqplot.PluginPoint(); this.p2.initialize(this, this.xmax, this.ymax);
             
             this.linear = new $.jqplot.Linear(); this.linear.initialize(this, this.p1, this.p2, 4); // creates a line using both plugin points
-            
+           // this.linear.bind();
             this.grobs.push(this.linear, this.p1, this.p2); // adds line interactor (PluginPoints, line) to list of interactors on graph
+//maybe later try to make the entire line move instead of just locking the point there?            
+            this.p1.move = function(dp){
+                //locks point in place    
+            }
+            
+            /*this.p2.move = function(dp){
+                var dpos = {x: dp.x || 0, y: dp.y || 0 };
+                this.translateBy(dpos);
+            }*/
             
             //this.redraw();              
         },
         
-        getSlope: function() {
+  /*      getSlope: function() {
             this.slope = (this.p2.coords.y - this.p1.coords.y) / (this.p2.coords.x - this.p1.coords.x);
             return this.slope;
         },
@@ -49,7 +58,7 @@
             var slope = this.getSlope();
             this.intercept = (this.p2.coords.y - this.p1.coords.y) - (slope *  (this.p2.coords.x - this.p1.coords.x));
             return this.intercept;
-        }
+        }*/
         
 /*
         this.grobs.push(this.linear, this.p1, this.p2);
@@ -59,7 +68,7 @@
 */
     });
     
-    $.jqplot.LinearInteractorPlugin.prototype.init
+   // $.jqplot.LinearInteractorPlugin.prototype.init
 
     
 })(jQuery);

@@ -1208,6 +1208,7 @@ debug = false;
             }
             return d;
         }
+	
     });
     
     $.jqplot.Quadratic = function() {};

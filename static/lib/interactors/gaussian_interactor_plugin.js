@@ -25,6 +25,8 @@
         this.ymax = 2;
         this.xc = 2.35;
         this.xhw = 5.2;
+        this.slope = 1;
+        this.angle = -30;
         
         $.extend(this, options);
         this.pk = new $.jqplot.PluginPoint(); 
