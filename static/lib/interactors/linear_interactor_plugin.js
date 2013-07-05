@@ -26,7 +26,7 @@
             this.ymin = 0.0;
             this.xmax = 1.0;
             this.ymax = 1.0;
-            this.slope = 1.0;
+            
             $.extend(this, options);
             this.slope = (this.ymax - this.ymin) / (this.xmax - this.xmin); // calculates initial slope of line 
             this.intercept = (this.ymax - this.ymin) - (this.slope * (this.xmax - this.xmin)); // calculates initial y-intercept of line

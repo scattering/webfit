@@ -1211,6 +1211,32 @@ debug = false;
 	
     });
     
+/*    $.jqplot.LinearGaussian = function() {};
+    $.jqplot.LinearGaussian.prototype = new $.jqplot.FunctionConnector();
+    $.jqplot.LinearGaussian.prototype.constructor = $.jqplot.LinearGaussian;    
+    $.extend($.jqplot.LinearGaussian.prototype, {        
+        initialize: function(parent, p1, p2, p3, p4, width) {
+            $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
+	    this.name = 'linear gaussian';
+            this.f = this.LinearGaussian;
+            this.points = { p1: p1, p2: p2, p3: p3, p4: p4 };
+            this.p1 = p1;
+            this.p2 = p2;
+            this.p3 = p3;
+	    this.p4 = p4;
+            this.c = p1;
+	},
+	
+	render: function(ctx){
+            $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+            this.drawEq(ctx, bind(this, this.f), 0, this.pivot.pos.y, 0, this.parent.canvas.width);
+        },
+        
+        LinearGaussian: function(x){
+             return this.linear.f + this.Gaussian.f;       
+        }
+    });*/
+    
     $.jqplot.Quadratic = function() {};
     $.jqplot.Quadratic.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.Quadratic.prototype.constructor = $.jqplot.Quadratic;    

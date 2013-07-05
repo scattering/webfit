@@ -581,18 +581,36 @@ Ext.onReady(function () {
                         x0: 0.0001,
                         color1: 'green',
                         color2: 'blue'
-                }]
+                        },
+                        {type: 'Gaussian',
+                        name: 'gcursor',
+                        x0: 0.0001,
+                        color1: 'green',
+                        color2: 'blue'
+                        },
+                        {type: 'FunctionCollection',
+                        name:'fcursor',
+                        x0: 0.0001,
+                        color1: 'green',
+                        color2: 'blue'
+                        },
+                ]
 
             });
             //webfit.plot.series[0].data = [];
             
-            mylistener=function() {};
-    mylistener.update=function update(pos){
-       console.log(pos.x,pos.y);      
-    }
-
-    webfit.plot.plugins.interactors.lcursor.p2.listeners.push(mylistener);
-            this.callParent(arguments);
+            //WORKING LISTENER        
+/*            mylistener=function() {};
+            mylistener.update=function update(pos){
+               console.log(pos.x,pos.y);      
+            }
+        //the pluginpoint name differs per interactor
+            webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
+            this.callParent(arguments);*/
+            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
+            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+            //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
+            //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
         }
     });
 
