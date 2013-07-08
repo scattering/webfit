@@ -35,6 +35,10 @@
         this.Gaussian.initialize(this, this.pk, this.pw, 3);
         this.grobs.push(this.pk, this.pw, this.Gaussian);
         
+        /*if(this.pk.hasOwnProperty('name') && this.Gaussian.name !== "point"){
+            console.log("hello");
+        }*/
+        
         this.pk.move = function(dp){
             var dpos = {x: 0, y: dp.y || 0 };
             //how to prevent negative gaussian??

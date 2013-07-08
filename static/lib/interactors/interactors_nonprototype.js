@@ -1268,6 +1268,23 @@ debug = false;
         }
     });
     
+    $.jqplot.FunctionCollection = function() {};
+    $.jqplot.FunctionCollection.prototype = new $.jqplot.FunctionConnector();
+    $.jqplot.FunctionCollection.prototype.constructor = $.jqplot.FunctionCollection;
+    $.extend($.jqplot.FunctionCollection.prototype, {
+	initialize: function(parent, pk, pw, width) {
+	    $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
+	    
+	    this.name = 'functionConnector';
+	    this.f = this.FunctionCollection;
+	},
+	render: function(ctx) {
+	    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+            this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);
+	},
+    });
+    
+    
     $.jqplot.Gaussian = function() {};
     $.jqplot.Gaussian.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.Gaussian.prototype.constructor = $.jqplot.Gaussian;    

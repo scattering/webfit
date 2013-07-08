@@ -21,30 +21,28 @@
     interactors:[]
     })
     $.extend($.jqplot.FunctionCollectionInteractorPlugin.prototype, {
-        //var interactors = {};
         init: function(options) {
             $.jqplot.InteractorPlugin.prototype.init.call(this, options);
             this.interactors = [];
+            this.sum = 0;
+            this.FunctionCollection = new $.jqplot.FunctionCollection;
+            this.FunctionCollection.initialize(this, this.pk, this.pw, 3);
         },
         
         register: function(toAdd){
-        //hates for each loops
-/*            for each (grob in toAdd.grobs){
-                grob.listeners.push(this);
-            }*/
-            
             for(i = 0; i < toAdd.grobs.length; i++){
                 toAdd.grobs[i].listeners.push(this);            
             }
-           // this.callParent(arguments);
             this.interactors.push(toAdd);   
-            //this.interactors.length;
         },
         
         //returns the removed interactor w/o this as a listener
         unregister: function(toRemove){
             var index = this.interactors.indexOf(toRemove);
-            if(index > -1){
+            if(index === interactors.length-1){
+                interactors.pop();
+            }
+            else if(index > -1){
                 for(var i = index; i < this.interactors.length; i++){
                     this.interactors[i] = this.interactors[i+1];
                 }
@@ -69,27 +67,38 @@
             return interactor;
         },
         
-        //adds together functions and redraws
         update: function(pos){
-            //console.log(pos.x,pos.y);
-            var sum = 0;
-            for(var i = 0; i < interactors.length; i++){
-                //what if its a plugin point?
-                /*for(var j = 0; j < interactors[i].grobs.length; j++){
-                    if(typeof interactors[i].grobs[j] === $.jqplot.Gaussian() || typeof interactors[i].grobs[j] === $.jqplot.Linear()){
-                        sum += interactors[i].grobs[j].f;
+            this.sum = 0;
+            for(var i = 0; i < this.interactors.length; i++){
+                for(var j = 0; j < this.interactors[i].grobs.length; j++){
+                    if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
+                        this.interactors[i].grobs[j].translateBy(pos);
+                        this.sum += this.interactors[i].grobs[j].f;
                     }
-                }*/
-            }
+                }
+            }        
             this.redraw();
         },
         
-        /*updateListeners: function() {
+        FunctionCollection: function(x){
+            this.sum = 0;
+            for(var i = 0; i < this.interactors.length; i++){
+                //what if its a plugin point?
+                for(var j = 0; j < this.interactors[i].grobs.length; j++){
+                    if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
+                        this.sum += this.interactors[i].grobs[j].f;
+                    }
+                }
+            }
+            return this.sum;
+        },
+        
+        updateListeners: function() {
             for (var i in this.listeners) {
                 var pos = this.getCoords? this.getCoords() : this.pos;
                 this.listeners[i].update(pos);
             }
-        },*/
+        },
     });
     
 })(jQuery);
