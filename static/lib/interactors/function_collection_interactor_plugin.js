@@ -24,9 +24,12 @@
         init: function(options) {
             $.jqplot.InteractorPlugin.prototype.init.call(this, options);
             this.interactors = [];
-            this.sum = 0;
+            //this.sum = 0;
             this.FunctionCollection = new $.jqplot.FunctionCollection;
-            this.FunctionCollection.initialize(this, this.pk, this.pw, 3);
+            this.FunctionCollection.initialize(this, 3);
+            this.FunctionCollection.f=this.sum;
+            $.extend(this,options);
+            this.grobs.push(this.FunctionCollection)
         },
         
         register: function(toAdd){
@@ -69,36 +72,44 @@
         
         update: function(pos){
             this.sum = 0;
-            for(var i = 0; i < this.interactors.length; i++){
-                for(var j = 0; j < this.interactors[i].grobs.length; j++){
-                    if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
-                        this.interactors[i].grobs[j].translateBy(pos);
-                        this.sum += this.interactors[i].grobs[j].f;
-                    }
-                }
-            }        
+            //for(var i = 0; i < this.interactors.length; i++){
+            //    for(var j = 0; j < this.interactors[i].grobs.length; j++){
+            //        if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
+                        //this.interactors[i].grobs[j].translateBy(pos);
+            //            this.sum += this.interactors[i].grobs[j].f(x);
+            //        }
+            //    }
+            //} 
+            //console.log(this.sum)
+            //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.redraw();
         },
         
-        FunctionCollection: function(x){
-            this.sum = 0;
-            for(var i = 0; i < this.interactors.length; i++){
+        render: function(ctx){
+            $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+            this.drawEq(ctx, bind(this, this.f), 0, this.Canvas.getHeight, 0, this.Canvas.getWidth);
+        },
+        
+        sum: function(x){
+            var res = 0;
+            var interactors=this.parent.interactors
+            for(var i = 0; i < interactors.length; i++){
                 //what if its a plugin point?
-                for(var j = 0; j < this.interactors[i].grobs.length; j++){
-                    if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
-                        this.sum += this.interactors[i].grobs[j].f;
+                for(var j = 0; j < interactors[i].grobs.length; j++){
+                    if(interactors[i].grobs[j].hasOwnProperty('name') && interactors[i].grobs[j].name !== "point"){
+                        res += interactors[i].grobs[j].f(x);
                     }
                 }
             }
-            return this.sum;
+            return res;
         },
         
-        updateListeners: function() {
-            for (var i in this.listeners) {
-                var pos = this.getCoords? this.getCoords() : this.pos;
-                this.listeners[i].update(pos);
-            }
-        },
+        //updateListeners: function() {
+        //    for (var i in this.listeners) {
+        //        var pos = this.getCoords? this.getCoords() : this.pos;
+        //        this.listeners[i].update(pos);
+        //    }
+        //},
     });
     
 })(jQuery);

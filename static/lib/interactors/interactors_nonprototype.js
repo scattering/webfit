@@ -1272,11 +1272,11 @@ debug = false;
     $.jqplot.FunctionCollection.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.FunctionCollection.prototype.constructor = $.jqplot.FunctionCollection;
     $.extend($.jqplot.FunctionCollection.prototype, {
-	initialize: function(parent, pk, pw, width) {
+	initialize: function(parent, width) {
 	    $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
 	    
-	    this.name = 'functionConnector';
-	    this.f = this.FunctionCollection;
+	    this.name = 'functionCollection';
+	    //this.f = this.FunctionCollection;
 	},
 	render: function(ctx) {
 	    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
