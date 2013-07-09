@@ -33,8 +33,11 @@
         },
         
         register: function(toAdd){
-            for(i = 0; i < toAdd.grobs.length; i++){
-                toAdd.grobs[i].listeners.push(this);            
+            for(var i = 0; i < toAdd.grobs.length; i++){
+                toAdd.grobs[i].listeners.push(this);
+                if (toAdd.grobs[i].hasOwnProperty('c')){
+                    this.FunctionCollection.c=toAdd.grobs[i].c                
+                }
             }
             this.interactors.push(toAdd);   
         },
