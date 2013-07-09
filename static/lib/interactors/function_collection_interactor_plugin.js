@@ -36,9 +36,22 @@
             for(var i = 0; i < toAdd.grobs.length; i++){
                 toAdd.grobs[i].listeners.push(this);
                 if (toAdd.grobs[i].hasOwnProperty('c')){
-                    this.FunctionCollection.c=toAdd.grobs[i].c                
+                    if(!this.FunctionCollection.c){
+                        console.log("c does not exist", toAdd.grobs[i].name);
+                        this.FunctionCollection.c=toAdd.grobs[i].c;
+                    }
+                    else{
+                        //this.FunctionCollection.c.pos.x += toAdd.grobs[i].c.pos.x;
+                        //this.FunctionCollection.c.pos.y += toAdd.grobs[i].c.pos.y;
+                        if(toAdd.grobs[i].hasOwnProperty('p1')){
+                            //toAdd.grobs[i].p1 = this.FunctionCollection.c;
+                            //toAdd.grobs[i].c = toAdd.grobs[i].p1;
+                            toAdd.grobs[i].c = this.FunctionCollection.c;
+                        }
+                    }
                 }
             }
+            
             this.interactors.push(toAdd);   
         },
         

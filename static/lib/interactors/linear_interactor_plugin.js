@@ -22,8 +22,8 @@
         init: function(options) {
     //$.jqplot.LinearInteractorPlugin.prototype.init = function(options) {
             $.jqplot.InteractorPlugin.prototype.init.call(this, options);
-            this.xmin = 0.0;  // keeps track of slope, intercept, and the coordinates of the two defining points of the line
-            this.ymin = 0.0;
+            this.xmin = 5.2;  // keeps track of slope, intercept, and the coordinates of the two defining points of the line
+            this.ymin = -1.9;
             this.xmax = 1.0;
             this.ymax = 1.0;
             
@@ -42,10 +42,11 @@
                 //locks point in place    
             }
             
-            /*this.p2.move = function(dp){
+            
+            this.p2.move = function(dp){
                 var dpos = {x: dp.x || 0, y: dp.y || 0 };
                 this.translateBy(dpos);
-            }*/
+            }
             
             //this.redraw();              
         },

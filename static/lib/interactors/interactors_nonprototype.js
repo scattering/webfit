@@ -1166,7 +1166,7 @@ debug = false;
             this.points = { p1: p1, p2: p2 };
             this.p1 = p1;
             this.p2 = p2;
-            this.c = p1;
+            //this.c = p1;
         },
         render: function(ctx) {
             $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
@@ -1180,12 +1180,12 @@ debug = false;
                 ctx.stroke();
             }
             else
-                this.drawEq(ctx, bind(this, this.f), 0, this.c.pos.y, 0, this.parent.canvas.width);
+                this.drawEq(ctx, bind(this, this.f), 0, this.p1.pos.y, 0, this.parent.canvas.width);
         },
         
         linear: function(x) {
             var X1 = this.p1.pos.x, X2 = this.p2.pos.x,
-                Y1 = this.c.pos.y - this.p1.pos.y, Y2 = this.c.pos.y - this.p2.pos.y;
+                Y1 = this.p1.pos.y - this.p1.pos.y, Y2 = this.p1.pos.y - this.p2.pos.y;
             var a = (Y2-Y1) / (X2-X1),
                 b = Y1 - a*X1;
                 
@@ -1194,7 +1194,7 @@ debug = false;
         // Overriding super because the computation here is much simpler
         distanceTo: function(pos) {
             var X1 = this.p1.pos.x, X2 = this.p2.pos.x,
-                Y1 = this.c.pos.y - this.p1.pos.y, Y2 = this.c.pos.y - this.p2.pos.y;
+                Y1 = this.p1.pos.y - this.p1.pos.y, Y2 = this.p1.pos.y - this.p2.pos.y;
             
             var d = 0;
             // Vertical lines
@@ -1204,7 +1204,7 @@ debug = false;
                 var a = (Y2-Y1) / (X2-X1),
                     b = Y1 - a*X1;
                 
-                d = Math.abs(-a * pos.x + this.c.pos.y - pos.y - b) / Math.sqrt(a * a);
+                d = Math.abs(-a * pos.x + this.p1.pos.y - pos.y - b) / Math.sqrt(a * a);
             }
             return d;
         }
@@ -1264,7 +1264,7 @@ debug = false;
                 b = ((Y2-Y1) - a*(X2*X2-X1*X1)) / (X2-X1),
                 c = Y1 - a*X1*X1 - b*X1;
                 
-            return a*x*x+b*x+c;
+            return a*x*x+b*+c;
         }
     });
     
@@ -1276,6 +1276,7 @@ debug = false;
 	    $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
 	    
 	    this.name = 'functionCollection';
+	    //this.c = new $.jqplot.Center(); this.c.initialize(this, 5.2, -1.9);
 	    //this.f = this.FunctionCollection;
 	},
 	render: function(ctx) {

@@ -54,7 +54,7 @@ Ext.onReady(function () {
 
 
 
-    Ext.define('a3range', {
+    /*Ext.define('a3range', {
         extend: 'Ext.data.Model',
         fields: [
             { name: 'a3start', type: 'float' },
@@ -77,7 +77,7 @@ Ext.onReady(function () {
         a3start : 0.0,
         a3step  : 5.0,
         a3end: 0.1
-    });
+    });*/
 
 
 
@@ -594,6 +594,12 @@ Ext.onReady(function () {
                         color1: 'green',
                         color2: 'blue'
                         },
+                        {type: 'Gaussian',
+                        name: 'g2cursor',
+                        x0: 0.0001,
+                        color1: 'green',
+                        color2: 'blue'
+                        },
                 ]
 
             });
@@ -607,8 +613,10 @@ Ext.onReady(function () {
         //the pluginpoint name differs per interactor
             webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
             this.callParent(arguments);*/
+            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
             webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
             webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
             //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
             //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
         }
@@ -655,4 +663,5 @@ Ext.onReady(function () {
 
 // ************************** END - Setting up the tabs  **************************
     myTabs.render('tabs');
+    
 });
