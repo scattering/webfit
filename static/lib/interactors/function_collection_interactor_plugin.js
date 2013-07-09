@@ -71,7 +71,7 @@
         },
         
         update: function(pos){
-            this.sum = 0;
+            //this.sum = 0;
             //for(var i = 0; i < this.interactors.length; i++){
             //    for(var j = 0; j < this.interactors[i].grobs.length; j++){
             //        if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
@@ -85,10 +85,10 @@
             this.redraw();
         },
         
-        render: function(ctx){
-            $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
-            this.drawEq(ctx, bind(this, this.f), 0, this.Canvas.getHeight, 0, this.Canvas.getWidth);
-        },
+        //render: function(ctx){
+        //    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+        //    this.drawEq(ctx, bind(this, this.f), 0, this.Canvas.getHeight, 0, this.Canvas.getWidth);
+        //},
         
         sum: function(x){
             var res = 0;
@@ -98,6 +98,8 @@
                 for(var j = 0; j < interactors[i].grobs.length; j++){
                     if(interactors[i].grobs[j].hasOwnProperty('name') && interactors[i].grobs[j].name !== "point"){
                         res += interactors[i].grobs[j].f(x);
+                        //console.log(interactors[i].grobs[j])
+                        //console.log(x,interactors[i].grobs[j].f(x),res)
                     }
                 }
             }

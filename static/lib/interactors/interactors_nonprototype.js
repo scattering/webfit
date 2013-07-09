@@ -1282,6 +1282,9 @@ debug = false;
 	    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
             this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);
 	},
+	isInside: function(pos) {
+            return false; //this.distanceTo(pos) <= this.width + 1;
+        },
     });
     
     
