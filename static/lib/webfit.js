@@ -41,14 +41,14 @@ Ext.onReady(function () {
 
     Ext.namespace("webfit");
     Ext.namespace("functionSelector");
-    Ext.namespace("rangeLimiter");
+    //Ext.namespace("rangeLimiter");
     Ext.namespace("plotPanel");
     Ext.namespace("residualPanel");   
     
     //THE START OF REDISPLAYING
     var toolbar = Ext.create('Ext.toolbar.Toolbar', {
         renderTo: Ext.getBody(),
-        id: 1,
+        //id: 1,
         width: 1200,
         items: [
             {
@@ -145,27 +145,69 @@ Ext.onReady(function () {
         fieldLabel: 'Choose Function',
         store: new Ext.data.Store({
             fields: ['name'],
-            id: 2,
+            //id: 2,
             data : [
                 {"name":"Gaussian"},
-                {"name":"Linear"},
+                {"name":"Line"},
             ]
         }),
-        renderTo: Ext.getBody(),
-        id: 3,
+        //renderTo: Ext.getBody(),
+        //id: 3,
         autoScroll: true,
         queryMode: 'local',
         displayField: 'name',
         editable: false,
+	allowBlank: false,
         x: 22,
         y: 35,
     });
     
+    addInteractor = function(functionType){
+    
+	var tcursor={
+	    type: functionType, 
+	    name: 'cursor'+webfit.plot.plugins.interactors.fcursor.interactors.length, 
+	    x0: 0.0001,
+	    color1: 'green',
+	    color2: 'blue',
+	};
+	webfit.plot.options.interactors.push(tcursor);	//remove
+	
+    
+	var name = tcursor.name;
+	var newi = new $.jqplot.InteractorPluginSubtypes[tcursor.type]();
+	webfit.plot.plugins.interactors[name] = newi;
+	newi.init(tcursor);
+	newi.plot = webfit.plot;
+                //for (var j in newi.grobs) {
+                //    this.plugins._interactor.grobs.push(newi.grobs[j]);
+                //}
+	webfit.plot.plugins._interactor.interactors.push(newi);	//remove
+	webfit.plot.plugins.interactors.fcursor.register(newi);	//unregister first
+	webfit.plot.redraw();
+	
+	return tcursor.name;
+    }
+    
     functionSelector.add = Ext.create('Ext.Button', {
         text: 'Add',
-        id: 4,
-        renderTo: Ext.getBody(),
+        //id: 4,
+        //renderTo: Ext.getBody(),
         handler: function() {
+	    if(functionSelector.chooser.getValue() === null){
+		alert('You must choose a function before adding.');
+	    }
+	    else{
+		var selection = functionSelector.chooser.getValue();
+		var theName = addInteractor(selection);
+		functionSelector.addStore.add({
+		    name: theName,
+		    type: selection,
+		    color1: 'green',
+		    color2: 'blue',
+		    show: true,
+		});
+	    }
         },
         x: 292,
         y: 8,
@@ -174,7 +216,7 @@ Ext.onReady(function () {
     functionSelector.selection = Ext.create('Ext.panel.Panel', {
         width: 496,
         height: 100,
-        id: 5,
+        //id: 5,
         //height: 200,
         autoScroll: true,
         //bodyPadding: 50,
@@ -185,21 +227,24 @@ Ext.onReady(function () {
         fields: [
             {name: 'name', type: 'string'},
             {name: 'type', type: 'string'},
-            {name: 'color', type: 'blue'},
+            {name: 'color1', type: 'string'},
+	    {name: 'color2', type: 'string'},
             {name: 'show', type: 'boolean'},
         ],
-        id: 2,
-        data : [
-            {'name':'Gaussian0','type': 'Gaussian','color': 'Blue', 'show': true},
-        ]
+        //id: 14,
+        /*data : [
+            {'name':'Gaussian0','type': 'Gaussian','color': 'green', 'show': true},
+            {'name':'Gaussian1','type': 'Gaussian','color': 'green', 'show': true},
+            {'name':'Line0','type': 'Line','color': 'green', 'show': true},
+        ]*/
     });    
     
     functionSelector.addedFunctions = Ext.create('Ext.grid.Panel', {
         xtype: 'cell-editing',
         title: 'Added Functions',
-        id: 6,
+        //id: 6,
         plugins: [new Ext.grid.plugin.CellEditing({
-            clicksToEdit: 2
+            clicksToEdit: 1
         })],
         autoScroll: true,
         store: functionSelector.addStore,
@@ -213,41 +258,114 @@ Ext.onReady(function () {
             }, {
                 header: 'Function Type',
                 dataIndex: 'type',
-                width: 90,
-                editable: false,
+                width: 80,
             }, {
-                header: 'Color',
-                dataIndex: 'color',
-                width: 40,
-                editable: false,
+                header: 'Color 1',
+                dataIndex: 'color1',
+                width: 50,
                 editor: new Ext.form.field.ComboBox({
                     typeAhead: true,
                     triggerAction: 'all',
-                    store: [
-                        ['Blue','blue'],
-                        ['Red','red'],
-                        ['Green','green'],
-                        ['Orchid','orchid'],
-                        ['Black','black']
-                    ]
+                    store: new Ext.data.Store({
+                        fields: ['color'],
+                        //id: 2,
+                        queryMode: 'local',
+                        data : [
+                            {'color':"blue"},
+                            {'color':"green"},
+                            {'color':"red"},
+                        ]
+                    }),
+                    displayField: 'color',
+		    autoScroll: true,
+		    editable: false,
+		    queryMode: 'local',
+		    allowBlank: false,
+                }),
+            }, {
+                header: 'Color 2',
+                dataIndex: 'color2',
+                width: 50,
+                editor: new Ext.form.field.ComboBox({
+                    typeAhead: true,
+                    triggerAction: 'all',
+                    store: new Ext.data.Store({
+                        fields: ['color'],
+                        //id: 2,
+                        queryMode: 'local',
+                        data : [
+                            {'color':"blue"},
+                            {'color':"green"},
+                            {'color':"red"},
+                        ]
+                    }),
+                    displayField: 'color',
+		    autoScroll: true,
+		    editable: false,
+		    queryMode: 'local',
+		    allowBlank: false,
                 }),
             }, {
                 xtype: 'checkcolumn',
                 header: 'Show',
                 dataIndex: 'show',
                 width: 40,
-                stopSelection: false
+                stopSelection: false,
             }, {
                 xtype: 'actioncolumn',
-                width: 20,
+                width: 35,
+                dataIndex: 'delete',
                 sortable: false,
+                align: 'center',
                 menuDisabled: true,
                 items: [{
                     icon: 'static/lib/ext/welcome/img/delete.png',
                     tooltip: 'Delete Plant',
                     scope: this,
                     handler: function(grid, rowIndex){
-                        //this.getStore().removeAt(rowIndex);
+			var removed = functionSelector.addedFunctions.getStore().data.removeAt(rowIndex);
+			var removedInteractor = webfit.plot.plugins.interactors.fcursor.unregister(removed.data.name);
+			
+			var indexPlugins = webfit.plot.plugins._interactor.interactors.indexOf(removedInteractor)
+			if(indexPlugins === webfit.plot.plugins._interactor.interactors.length-1){
+			    webfit.plot.plugins._interactor.interactors.pop();
+			}
+			else if(indexPlugins !== -1){
+			    for(var i = indexPlugins; i < webfit.plot.plugins._interactor.interactors.length; i++){
+				webfit.plot.plugins._interactor.interactors[i] = webfit.plot.plugins._interactor.interactors[i+1];
+			    }
+			}
+			
+			/*var tcursor={
+			    type: removed.data.type, 
+			    name: removed.data.name, 
+			    x0: 0.0001,
+			    color1: removed.data.color1,
+			    color2: removed.data.color2,
+			    __proto__: Object
+			};*/
+			
+			//DOES NOT WORK
+			//var indexOptions = webfit.plot.options.interactors.indexOf(tcursor);
+			var indexOptions = -1;
+			for(var i = 0; i < webfit.plot.options.interactors.length; i++){
+			    console.log(webfit.plot.options.interactors[i].name);
+			    if(webfit.plot.options.interactors[i].name === removed.data.name){
+				indexOptions = i;
+			    }
+			}
+			if(indexOptions === webfit.plot.options.interactors.length-1){
+			    console.log('last complete');
+			    webfit.plot.options.interactors.pop();
+			}
+			else if(indexOptions !== -1){
+			    for(var i = indexOptions; i < webfit.plot.options.interactors.length; i++){
+				webfit.plot.options.interactors[i] = webfit.plot.options.interactors[i+1];
+			    }
+			}
+			functionSelector.addedFunctions.getStore().removeAt(rowIndex);
+			console.log('Deleted');
+			webfit.plot.redraw();
                     },
                 }]
         }],
@@ -264,38 +382,296 @@ Ext.onReady(function () {
         bodyPadding: 50,
     });*/
     
-    functionSelector.rangeLimit = Ext.create('Ext.tab.Panel', {
-        width: 450,
-        height: 198,
-        id: 8,
-        //renderTo: Ext.getBody(),
-        items: [{
-            title: 'Range'
-        }, {
-            title: 'Limits',
-        }]
+    functionSelector.plot = Ext.create('Ext.panel.Panel', {
+	html: 'Plot',
+	width: 70,
+	border:false,
+	bodyBorder:false,
+	hideBorders:true
+    });    
+    
+    functionSelector.plotRange = Ext.create('Ext.panel.Panel', {
+	//width:2,
+	height: 45,
+	layout: {type: 'hbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
+	border:false,
+	bodyBorder:false,
+	hideBorders:true,
+	items: [functionSelector.plot, {
+		xtype: 'textfield',
+		name: 'plotXMin',
+		//enforceMaxLength: true,
+		width: 105,
+		//padding: '0 0 0 0', //top, right, down, left (right doesn't work?)
+		labelAlign: 'top',
+		fieldLabel: 'X Min',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'plotXMax',
+		width: 105,
+		padding: '0 0 0 20',
+		labelAlign: 'top',
+		fieldLabel: 'X Max',
+		allowBlank: false,
+	}]
     });
     
-    /*if(!selection){
-        console.log("s");
-    }
-    if(!addedFunctions){
-        console.log("af");
-    }
-    if(!rangeLimit){
-        console.log("rl");
-    }*/
+    functionSelector.residuals = Ext.create('Ext.panel.Panel', {
+	html: 'Residuals',
+	width: 70,
+	border:false,
+	bodyBorder:false,
+	hideBorders:true
+    });    
+    
+    functionSelector.residualsRange = Ext.create('Ext.panel.Panel', {
+	//width:2,
+	height: 60,
+	layout: {type: 'hbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
+	border:false,
+	padding: '15 0 0 0',
+	bodyBorder:false,
+	hideBorders:true,
+	items: [functionSelector.residuals, {
+		xtype: 'textfield',
+		name: 'residualsXMin',
+		//enforceMaxLength: true,
+		width: 105,
+		//padding: '0 0 0 0', //top, right, down, left (right doesn't work?)
+		labelAlign: 'top',
+		fieldLabel: 'X Min',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'residualsXMax',
+		width: 105,
+		padding: '0 0 0 20',
+		labelAlign: 'top',
+		fieldLabel: 'X Max',
+		allowBlank: false,
+	}]
+    });
+    
+    functionSelector.plot1 = Ext.create('Ext.panel.Panel', {
+	html: 'Plot',
+	width: 70,
+	border:false,
+	bodyBorder:false,
+	hideBorders:true
+    });   
+    
+    functionSelector.plotDomain = Ext.create('Ext.panel.Panel', {
+	height: 45,
+	layout: {type: 'hbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
+	border:false,
+	bodyBorder:false,
+	hideBorders:true,
+	items: [functionSelector.plot1, {
+		xtype: 'textfield',
+		name: 'plotYMin',
+		width: 105,
+		labelAlign: 'top',
+		fieldLabel: 'Y Min',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'plotYMax',
+		width: 105,
+		padding: '0 0 0 20',
+		labelAlign: 'top',
+		fieldLabel: 'Y Max',
+		allowBlank: false,
+	}]
+    });
+    
+    functionSelector.residuals1 = Ext.create('Ext.panel.Panel', {
+	html: 'Residuals',
+	width: 70,
+	border:false,
+	bodyBorder:false,
+	hideBorders:true
+    });   
+    
+    functionSelector.residualsDomain = Ext.create('Ext.panel.Panel', {
+	height: 60,
+	layout: {type: 'hbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
+	border:false,
+	padding: '15 0 0 0',
+	bodyBorder:false,
+	hideBorders:true,
+	items: [functionSelector.residuals1, {
+		xtype: 'textfield',
+		name: 'residualsYMin',
+		width: 105,
+		labelAlign: 'top',
+		fieldLabel: 'Y Min',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'residualsYMax',
+		width: 105,
+		padding: '0 0 0 20',
+		labelAlign: 'top',
+		fieldLabel: 'Y Max',
+		allowBlank: false,
+	}]
+    });
+    
+    functionSelector.axisNames = Ext.create('Ext.panel.Panel', {
+	height: 150,
+	layout: {type: 'vbox',
+	    align : 'stretch',
+	    pack  : 'center',
+	},
+	border:false,
+	//padding: '15 0 0 0',
+	bodyBorder:false,
+	hideBorders:true,
+	items: [{
+		xtype: 'textfield',
+		name: 'title',
+		width: 110,
+		labelPad: -30,
+		labelAlign: 'left',
+		fieldLabel: 'Title',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'xAxis',
+		width: 110,
+		labelPad: -30,
+		//padding: '0 0 0 20',
+		labelAlign: 'left',
+		fieldLabel: 'X-Axis',
+		allowBlank: false,
+	}, {
+		xtype: 'textfield',
+		name: 'yAxis',
+		width: 110,
+		labelPad: -30,
+		//padding: '0 0 0 20',
+		labelAlign: 'left',
+		fieldLabel: 'Y-Axis',
+		allowBlank: false,
+	}],
+	handler: function() {
+	    
+	}
+    });
+    
+    functionSelector.rangeDomainAxis = Ext.create('Ext.tab.Panel', {
+        width: 450,
+        height: 198,
+        //id: 8,
+        items: [{
+                title: 'Range',
+                bodyPadding: 20,
+                layout: {type: 'vbox',
+                    align : 'stretch',
+                    pack  : 'center',
+                },
+                items: [functionSelector.plotRange, functionSelector.residualsRange, ],
+		//PLOTRANGE: ["panel-1064", "textfield-1066", "textfield-1067"]
+		//RESIDUALSRANGE: ["panel-1068", "textfield-1070", "textfield-1071"]
+		buttons: [{
+		    text: 'Update',
+		    handler: function() {
+			if(functionSelector.plotRange.items.getByKey('textfield-1066').getValue() === "" || 
+			functionSelector.plotRange.items.getByKey('textfield-1067').getValue() === "" || 
+			functionSelector.residualsRange.items.getByKey('textfield-1070').getValue() === "" || 
+			functionSelector.residualsRange.items.getByKey('textfield-1071').getValue() === ""){
+			    alert('You must fill in all the fields first!');
+			}
+			//TODO 
+			else{
+			    console.log('in else');
+			    
+			    plotxmin = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1066').getValue());
+			    plotxmax = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1067').getValue());
+			    residxmin = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1070').getValue());
+			    residxmax = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1071').getValue());
+			    
+			    var data = webfit.plot.data.pop();
+			    for(var i=0; i < data.length; i++){
+				var point = data.pop();
+				if(point[0] >= plotxmin && point[0] <= plotxmax){
+				    data.push(point);
+				}
+			    }
+			    webfit.plot.data.push(data);
+			    webfit.plot.redraw();
+			    
+			    var dataR = webfit.ResidualPlot.data.pop();
+			    for(var i=0; i < dataR.length; i++){
+				var pointR = dataR.pop();
+				if((pointR[0] >= residxmin && pointR[0] <= residxmax) || (pointR[0] >= plotxmin && pointR[0] <= plotxmax)){
+				    dataR.push(pointR);
+				}
+			    }
+			    webfit.ResidualPlot.data.push(dataR);
+			    webfit.ResidualPlot.redraw();
+			}
+		    }
+		}]
+            }, {
+                title: 'Domain',
+                bodyPadding: 20,
+                layout: {type: 'vbox',
+                    align : 'stretch',
+                    pack  : 'center',
+                },
+                items: [functionSelector.plotDomain, functionSelector.residualsDomain, ],
+		buttons: [{
+		    text: 'Update',
+		    handler: function() {
+			//alert('You clicked the button!')
+		    }
+		}]
+            }, {
+                title: 'Axis Names',
+		//bodyPadding: 20,
+		padding: '0 50 0 50',
+                layout: {type: 'vbox',
+                    align : 'stretch',
+                    pack  : 'center',
+                },
+		items: [functionSelector.axisNames],
+		//KEYS:["textfield-1081", "textfield-1082", "textfield-1083"]
+		buttons: [{
+		    text: 'Update',
+		    handler: function() {
+			webfit.plot.axes.xaxis.label = functionSelector.axisNames.items.getByKey("textfield-1082").getValue();
+			webfit.plot.title.text = functionSelector.axisNames.items.getByKey("textfield-1081").getValue();
+			webfit.plot.redraw();
+			//can't refresh?
+		    }
+		}]
+        }]
+    });
     
     var functionSelectionRanges = Ext.create('Ext.panel.Panel', {
         width: 350,
         height: 700,
-        id: 7,
+        //id: 7,
         layout: {type: 'vbox',
                 align : 'stretch',
                 pack  : 'start',
         },
         //renderTo: Ext.getBody(),
-        items: [functionSelector.selection, functionSelector.addedFunctions, functionSelector.rangeLimit, ],
+        items: [functionSelector.selection, functionSelector.addedFunctions, functionSelector.rangeDomainAxis, ],
     });
     
     /*var plot = Ext.create('Ext.tab.Panel', {
@@ -316,7 +692,8 @@ Ext.onReady(function () {
     plotPanel.fitResults = Ext.create('Ext.panel.Panel', {
         title: 'Fit Results',
         width: 150,
-        id: 9,
+	html: '<BR>',
+        //id: 9,
         height: 300,
         autoScroll: true,
         
@@ -357,6 +734,7 @@ Ext.onReady(function () {
                 sinPoints.push([i, 2*Math.sin(i-.8)]);
             }
             webfit.plot = $.jqplot (this.body.id, [sinPoints], {
+		//setTitle: function(newTitle){title: newTitle},
                 title: 'Scan space',
                 series: [ {shadow: false,
                            color: 'red',
@@ -386,7 +764,7 @@ Ext.onReady(function () {
                     }
                 },
                 cursor: {show:true, zoom:false},
-                interactors: [{type: 'Line', 
+                interactors: [/*{type: 'Line', 
                         name: 'lcursor', 
                         x0: 0.0001,
                         color1: 'green',
@@ -397,18 +775,18 @@ Ext.onReady(function () {
                         x0: 0.0001,
                         color1: 'green',
                         color2: 'blue'
-                        },
+                        },*/
                         {type: 'FunctionCollection',
                         name:'fcursor',
                         x0: 0.0001,
                         color1: 'grey',
                         },
-                        {type: 'Gaussian',
+                        /*{type: 'Gaussian',
                         name: 'g2cursor',
                         x0: 0.0001,
                         color1: 'green',
                         color2: 'blue'
-                        },
+                        },*/
                 ]
 
             });
@@ -422,9 +800,9 @@ Ext.onReady(function () {
             webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
             this.callParent(arguments);*/
             //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
-            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-            webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
+            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
+            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
             //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
             //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
         }
@@ -433,7 +811,7 @@ Ext.onReady(function () {
     var innerPlot = Ext.create('Ext.panel.Panel', {
         width: 450,
         height: 498,
-        id: 10,
+        //id: 10,
         //renderTo: Ext.getBody(),
         layout: {type: 'hbox',
                 align : 'stretch',
@@ -444,14 +822,60 @@ Ext.onReady(function () {
     
     var residuals = Ext.create('Ext.panel.Panel', {
         title: 'Residuals',
-        //width: 450,
-        id: 11,
+        width: 100,
+        //id: 11,
         height: 198,    
+	frame: true,
+	layout:  { type: 'fit',
+            //align: 'center'
+        },
+	afterComponentLayout: function(width, height){
+	
+            var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];
+            $('#'+this.body.id).empty();
+	    var sinPoints = [];
+            for (var i=0; i<2*Math.PI; i+=0.4){
+                sinPoints.push([i, 2*Math.sin(i-.8)]);
+            }
+            webfit.ResidualPlot = $.jqplot (this.body.id, [sinPoints], {
+                //title: 'Scan space',
+                /*series: [ {shadow: false,
+                           color: 'red',
+                           markerOptions: {shadow: false, size: 4},
+                           showLine:false
+                           }],*/
+                grid: {shadow: false},
+                sortData: false,
+                axes:{
+                    xaxis:{
+                        label: 'X',
+                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                        tickOptions: {
+                            formatString: "%.2g"
+                        }
+                    },
+		    
+                    yaxis:{
+                        label: 'Y',
+                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                        tickOptions: {
+                            formatString: "%.2g",
+                            // fix for ticks drifting to the left in accordionview!
+                            _styles: {right: 0}
+                        }
+                    }
+                },
+                cursor: {show:true, zoom:false},
+
+            });
+        }
     });
     
     var plot = Ext.create('Ext.panel.Panel', {
-        //width: 748,
-        id: 12,
+        width: 848,
+        //id: 12,
         height: 500,
         //renderTo: Ext.getBody(),
         layout: {type: 'vbox',
@@ -463,7 +887,7 @@ Ext.onReady(function () {
     
     var workspace = Ext.create('Ext.panel.Panel', {
         width: 1200,
-        id: 13,
+        //id: 13,
         height: 700,
         renderTo: Ext.getBody(),
         layout: {type: 'hbox',

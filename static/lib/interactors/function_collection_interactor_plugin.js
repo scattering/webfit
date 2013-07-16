@@ -56,10 +56,18 @@
         },
         
         //returns the removed interactor w/o this as a listener
-        unregister: function(toRemove){
-            var index = this.interactors.indexOf(toRemove);
-            if(index === interactors.length-1){
-                interactors.pop();
+        unregister: function(name){
+            var toRemove = null;
+            var index = 0;
+            for(var i = 0; i < this.interactors.length; i++){
+                if(this.interactors[i].name === name){
+                    index = i;
+                    toRemove = this.interactors[i];
+                }
+            }
+            //var index = this.interactors.indexOf(toRemove);
+            if(index === this.interactors.length-1){
+                this.interactors.pop();
             }
             else if(index > -1){
                 for(var i = index; i < this.interactors.length; i++){
