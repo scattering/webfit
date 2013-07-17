@@ -1,4 +1,4 @@
-// ## requires interactors_nonprototype.js
+// ## requires interactors.js
 // ## and interactor_plugin_base.js
 
 (function($){

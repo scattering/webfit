@@ -23,7 +23,6 @@ Ext.require([
     "Ext.decode",
     "Ext.Ajax",
     'Ext.ux.CheckColumn',
-    //'Ext.ux.ActionColumn',
 ], function(){
         // Add csrf token to every ajax request
         var token = Ext.util.Cookies.get('csrftoken');
@@ -128,7 +127,7 @@ Ext.onReady(function () {
                     ]
                 })
             },
-            { xtype: 'tbspacer', width: 45},
+            { xtype: 'tbspacer', width: 45}, 'Untitled',
         ]
     });
     
@@ -578,7 +577,7 @@ Ext.onReady(function () {
         //id: 8,
         items: [{
                 title: 'Range',
-                bodyPadding: 20,
+                bodyPadding: 15,
                 layout: {type: 'vbox',
                     align : 'stretch',
                     pack  : 'center',
@@ -589,20 +588,17 @@ Ext.onReady(function () {
 		buttons: [{
 		    text: 'Update',
 		    handler: function() {
-			if(functionSelector.plotRange.items.getByKey('textfield-1066').getValue() === "" || 
-			functionSelector.plotRange.items.getByKey('textfield-1067').getValue() === "" || 
-			functionSelector.residualsRange.items.getByKey('textfield-1070').getValue() === "" || 
-			functionSelector.residualsRange.items.getByKey('textfield-1071').getValue() === ""){
+			plotxmin = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1061').getValue());
+			plotxmax = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1062').getValue());
+			residxmin = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1065').getValue());
+			residxmax = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1066').getValue());
+			
+			if(plotxmin === 0 || plotxmax === 0 || residxmin === 0 || residxmax === 0){
 			    alert('You must fill in all the fields first!');
 			}
 			//TODO 
 			else{
 			    console.log('in else');
-			    
-			    plotxmin = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1066').getValue());
-			    plotxmax = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1067').getValue());
-			    residxmin = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1070').getValue());
-			    residxmax = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1071').getValue());
 			    
 			    var data = webfit.plot.data.pop();
 			    for(var i=0; i < data.length; i++){
@@ -628,7 +624,7 @@ Ext.onReady(function () {
 		}]
             }, {
                 title: 'Domain',
-                bodyPadding: 20,
+                bodyPadding: 15,
                 layout: {type: 'vbox',
                     align : 'stretch',
                     pack  : 'center',
@@ -831,13 +827,20 @@ Ext.onReady(function () {
         },
 	afterComponentLayout: function(width, height){
 	
-            var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];
+            /*var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];*/
             $('#'+this.body.id).empty();
-	    var sinPoints = [];
+	    /*var sinPoints = [];
             for (var i=0; i<2*Math.PI; i+=0.4){
                 sinPoints.push([i, 2*Math.sin(i-.8)]);
-            }
-            webfit.ResidualPlot = $.jqplot (this.body.id, [sinPoints], {
+            }*/
+	    var dataPoints = [];
+	    var data = webfit.plot.data[0];
+	    for (var i = 0; i < data.length; i++){
+		var point = data[i];
+		var calcpoint=webfit.plot.plugins.interactors.fcursor.sum(point[0]);
+		dataPoints.push(point[0], point[1] - calcpoint);
+	    }
+            webfit.ResidualPlot = $.jqplot (this.body.id, [dataPoints], {
                 //title: 'Scan space',
                 /*series: [ {shadow: false,
                            color: 'red',

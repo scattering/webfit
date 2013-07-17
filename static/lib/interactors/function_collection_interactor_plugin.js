@@ -35,7 +35,7 @@
         register: function(toAdd){
             for(var i = 0; i < toAdd.grobs.length; i++){
                 toAdd.grobs[i].listeners.push(this);
-                if (toAdd.grobs[i].hasOwnProperty('c')){
+                /*if (toAdd.grobs[i].hasOwnProperty('c')){
                     if(!this.FunctionCollection.c){
                         console.log("c does not exist", toAdd.grobs[i].name);
                         this.FunctionCollection.c=toAdd.grobs[i].c;
@@ -49,7 +49,7 @@
                             toAdd.grobs[i].c = this.FunctionCollection.c;
                         }
                     }
-                }
+                }*/
             }
             
             this.interactors.push(toAdd);   

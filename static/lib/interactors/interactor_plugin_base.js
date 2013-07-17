@@ -4,7 +4,7 @@
 // # 10/14/2011                                #
 // #############################################
 
-// ## requires interactors_nonprototype.js 
+// ## requires interactors.js 
 
 (function($) {
     function toArray(obj) {
@@ -16,34 +16,6 @@
         return function () {
             return fn.apply(scope, toArray(arguments));
         };
-    };
-    
-    var touchToMouse = function(event) {
-        //if (event.touches.length > 1) return; //allow default multi-touch gestures to work
-        var touch = event.changedTouches[0];
-        touch.data = event.data;
-        var type = "";
-        
-        switch (event.type) {
-        case "touchstart": 
-            type = "mousedown"; break;
-        case "touchmove":  
-            type="mousemove";   break;
-        case "touchend":   
-            type="mouseup";     break;
-        default: 
-            return;
-        }
-        
-        // https://developer.mozilla.org/en/DOM/event.initMouseEvent for API
-        var simulatedEvent = document.createEvent("MouseEvent");
-        simulatedEvent.initMouseEvent(type, true, true, window, 1, 
-                touch.screenX, touch.screenY, 
-                touch.clientX, touch.clientY, false, 
-                false, false, false, 0, null);
-        
-        touch.target.dispatchEvent(simulatedEvent);
-        event.preventDefault();
     };
     
     $.jqplot.InteractorPlugin = function() {
@@ -61,7 +33,6 @@
             this.state = null;
             this.plot = null;
             this.translatable = true;
-            this.notMaster = true;
 
             this.grobs = [];
             this.mousedown = false;
@@ -89,18 +60,6 @@
             for (var i=0; i<this.grobs.length; i++) {
                 var g = this.grobs[i];
                 if (g.reset) g.reset();
-            }
-        },
-        
-        redraw: function() {
-            // unlike the non-plugin interactors, each plugin interactor has
-            // its own context and canvas, so clear them at each redraw:
-            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            if (this.show) {
-                for (var i = 0; i < this.grobs.length; i ++) {
-                    var grob = this.grobs[i];
-                    grob.render(this.context);
-                }
             }
         },
         
@@ -155,6 +114,7 @@
             this.state = null;
             this.plot = null;
             this.translatable = true;
+            
 
             this.grobs = [];
             this.mousedown = false;
@@ -165,10 +125,7 @@
             this.color = this.color1;
             
             this.rc = 1;//Math.random();
-            this.scrollZoom = true;
-            this.dragPan = true;
             $.extend(true, this, options);
-            this.notMaster = false;
             this.interactors = []; // number of interactors
             this.generate_ticks = generate_ticks;
         },
@@ -274,26 +231,23 @@
             
             var pos = this.getMouse(e);
             var sel_grob = null;
-	    var sel_grob_num = null;
-	    //console.log(pos);
             for (var i = 0; i < this.grobs.length; i ++) {
                 var g = this.grobs[i];
                 var inside = g.isInside(pos);
                 
                 if (inside) {
                     //this.prevpos = pos;
-                    sel_grob_num = i;
-		    sel_grob = g;
+                    sel_grob = i;
                 }
             }
-            //console.log("double-clicked:", sel_grob.parent);
-            if (sel_grob_num == null) {
+            //console.log("double-clicked:", sel_grob);
+            if (sel_grob == null) {
                 // then we're double-clicking outside all the interactors
                 this.zoomMax();
             } else {
-	    	sel_grob.parent.onDoubleClick(sel_grob, pos);
-                //this.redraw();
-                //this.redraw();
+                g.parent.reset();
+                this.redraw();
+                this.redraw();
             }
                 
             return false;
@@ -307,7 +261,6 @@
         },
         
         redraw: function() {
-            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.grobs = [];
             for (var i in this.interactors) {
                 var I = this.interactors[i];
@@ -319,16 +272,14 @@
         },
         
         onMouseWheel: function(e) {
-            if (this.scrollZoom) {
-                if (e.preventDefault) e.preventDefault();
-                if (e.stopPropagation) e.stopPropagation();
-                var pos = this.getMouse(e);
-                var dzoom;
-                if (e.wheelDelta) { dzoom = e.wheelDelta; }
-                else if (e.detail) { dzoom = e.detail * -40; }
-                else { dzoom = 0 } 
-                this.zoomPlot(dzoom, pos);
-            }
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
+            var pos = this.getMouse(e);
+            var dzoom;
+            if (e.wheelDelta) { dzoom = e.wheelDelta; }
+            else if (e.detail) { dzoom = e.detail * -40; }
+            else { dzoom = 0 } 
+            this.zoomPlot(dzoom, pos);
         },
         
         onMouseMove: function(e) {
@@ -367,24 +318,20 @@
         },
         
         onEmptyDrag: function(pos) {
-            if (this.dragPan == true) this.panPlot(pos);
+            this.panPlot(pos);
         },
         
         zoomMax: function() {
-	    var xdb = this.plot.series[0]._xaxis._dataBounds;
-	    var ydb = this.plot.series[0]._yaxis._dataBounds;
-	    if ((xdb.min != null) && (xdb.max != null) && (ydb.min != null) && (ydb.max != null)) {
-                // zoom to the limits of the data, with good tick locations
-                var xmin = xdb.min;
-                var xmax = xdb.max;
-                var ymin = ydb.min;
-                var ymax = ydb.max;
-                var xtransf = this.plot.series[0]._xaxis.transform || 'lin';
-                var ytransf = this.plot.series[0]._yaxis.transform || 'lin';
-                this.plot.series[0]._xaxis.ticks = generate_ticks({min:xmin, max:xmax}, xtransf);
-                this.plot.series[0]._yaxis.ticks = generate_ticks({min:ymin, max:ymax}, ytransf);
-                this.plot.replot();
-            }
+            // zoom to the limits of the data, with good tick locations
+            var xmin = this.plot.series[0]._xaxis._dataBounds.min;
+            var xmax = this.plot.series[0]._xaxis._dataBounds.max;
+            var ymin = this.plot.series[0]._yaxis._dataBounds.min;
+            var ymax = this.plot.series[0]._yaxis._dataBounds.max;
+            var xtransf = this.plot.series[0]._xaxis.transform || 'lin';
+            var ytransf = this.plot.series[0]._yaxis.transform || 'lin';
+            this.plot.series[0]._xaxis.ticks = generate_ticks({min:xmin, max:xmax}, xtransf);
+            this.plot.series[0]._yaxis.ticks = generate_ticks({min:ymin, max:ymax}, ytransf);
+            this.plot.replot();
         },
         
         zoomPlot: function(dzoom, centerpos) {
@@ -451,12 +398,6 @@
             ec.ondblclick = bind(master, master.onDoubleClick);
             ec.onselectstart = function() { return false; };
             
-            ec.ontouchstart = touchToMouse;
-            ec.ontouchmove = touchToMouse;
-            ec.ontouchend = touchToMouse;
-            
-            /*
-            
             if (!ec._touchstartregistered && ec.addEventListener) {
                 ec.addEventListener('touchstart', function(event) {
                     ec.onmousedown(event.touches[0]);
@@ -477,8 +418,6 @@
                 }, false);
                 ec._touchendregistered = true;
             }
-            
-            */
             
             if (!ec._scrollregistered && ec.addEventListener) {
                 ec.addEventListener('DOMMouseScroll', function(event) {
@@ -525,16 +464,7 @@
         if (options.interactors) {
             if (!this.plugins.interactors) this.plugins.interactors = {};
             this.plugins._interactor = new $.jqplot.MasterInteractorPlugin();
-            var master_opts = {}
-            for (var i in options.interactors) {
-                var iopts = options.interactors[i];
-                var itype = iopts.type;
-                if (itype == 'master') {
-                    master_opts = iopts;
-                    break
-                }
-            }
-            this.plugins._interactor.init(master_opts);
+            this.plugins._interactor.init();
             this.plugins._interactor.plot = this;
             this.plugins._interactor.name = "master";
             //var master = this.plugins._interactor;
@@ -587,23 +517,20 @@
             return this.coords;
         },
         
-        update: function(coords, updated_already) {
-            if (updated_already && updated_already.indexOf && updated_already.indexOf(this) == -1) {
-                var coords = coords || this.coords;
-                var newpos = this.putCoords(coords);
-                if ('x' in newpos) this.pos.x = newpos.x;
-                if ('y' in newpos) this.pos.y = newpos.y;
-                this.coords = coords;
-                updated_already.push(this);
-                this.updateListeners(updated_already);
+        update: function(coords, fix_x, fix_y) {
+            var coords = coords || this.coords;
+            var newpos = this.putCoords(coords);
+            if ('x' in newpos) this.pos.x = newpos.x;
+            if ('y' in newpos) this.pos.y = newpos.y;
+            this.coords = coords;
+            this.updateListeners();
 //            var mypos = this.pos;
 //            var dpos = {x: newpos.x-mypos.x, y: newpos.y-mypos.y};
 
 //            if (fix_x) { dpos.x = 0; };
 //            if (fix_y) { dpos.y = 0; };
 //            this.translateBy(dpos);
-                this.parent.redraw();
-            }
+            this.parent.redraw();
         },
         
         translateBy: function(dpos) {
@@ -615,14 +542,13 @@
             this.updateListeners();
         },
         
-        updateListeners: function(updated_already) {
-            var updated_already = updated_already || [this];
+        updateListeners: function() {
             for (var i in this.listeners) {
-                this.listeners[i].update(this.coords, updated_already);
+                this.listeners[i].update(this.coords);
             }
         },
         
-        putCoords: function(coords, setPos) {
+        putCoords: function(coords) {
             var coords = coords || this.coords;
             var pos = {};
             if ('x' in coords) {
@@ -633,7 +559,6 @@
                 pos.y = this.parent.plot.axes.yaxis.u2p(coords.y);
                 pos.y -= this.parent.canvas.offsetTop;
             }
-	    if (setPos) { this.pos = pos; } 
             return pos     
         },
         
