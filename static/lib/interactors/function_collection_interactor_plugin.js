@@ -28,6 +28,7 @@
             this.FunctionCollection = new $.jqplot.FunctionCollection;
             this.FunctionCollection.initialize(this, 3);
             this.FunctionCollection.f=this.sum;
+            bind(this, this.sum);
             $.extend(this,options);
             this.grobs.push(this.FunctionCollection)
         },
@@ -116,6 +117,7 @@
         
         sum: function(x){
             var res = 0;
+            console.log('this',this);
             var interactors=this.parent.interactors
             for(var i = 0; i < interactors.length; i++){
                 //what if its a plugin point?
@@ -127,6 +129,18 @@
                     }
                 }
             }
+            
+            /*for(var i = 0; i < this.interactors.length; i++){
+                //what if its a plugin point?
+                for(var j = 0; j < this.interactors[i].grobs.length; j++){
+                    if(this.interactors[i].grobs[j].hasOwnProperty('name') && this.interactors[i].grobs[j].name !== "point"){
+                        res += this.interactors[i].grobs[j].f(x);
+                        //console.log(interactors[i].grobs[j])
+                        //console.log(x,interactors[i].grobs[j].f(x),res)
+                    }
+                }
+            }*/
+            
             return res;
         },
         

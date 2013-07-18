@@ -837,9 +837,12 @@ Ext.onReady(function () {
 	    var data = webfit.plot.data[0];
 	    for (var i = 0; i < data.length; i++){
 		var point = data[i];
-		var calcpoint=webfit.plot.plugins.interactors.fcursor.sum(point[0]);
-		dataPoints.push(point[0], point[1] - calcpoint);
+		var fColPlugin = webfit.plot.plugins.interactors.fcursor;
+		var calcy=fColPlugin.sum.call(fColPlugin.FunctionCollection, point[0]);
+		//var calcy=webfit.plot.plugins.interactors.fcursor.sum.call($.jqplot.FunctionCollection,point[0]);
+		dataPoints.push(point[0], point[1] - calcy);
 	    }
+	    
             webfit.ResidualPlot = $.jqplot (this.body.id, [dataPoints], {
                 //title: 'Scan space',
                 /*series: [ {shadow: false,
