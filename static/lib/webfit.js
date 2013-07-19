@@ -42,7 +42,88 @@ Ext.onReady(function () {
     Ext.namespace("functionSelector");
     //Ext.namespace("rangeLimiter");
     Ext.namespace("plotPanel");
-    Ext.namespace("residualPanel");   
+    Ext.namespace("residualPanel");  
+    Ext.namespace("toolbarFunctions");
+    
+    /*toolbarFunctions.dataUpload = Ext.create('Ext.form.Panel', {
+	title: 'Upload a Photo',
+	width: 400,
+	bodyPadding: 10,
+	frame: true,
+	items: [{
+	    xtype: 'filefield',
+	    name: 'fileUpload',
+	    fieldLabel: 'File',
+	    labelWidth: 50,
+	    msgTarget: 'side',
+	    allowBlank: false,
+	    anchor: '100%',
+	    buttonText: 'Select File...'
+	}],
+    });*/
+    
+    Ext.define('Ext.ux.upload.BrowseButton', {
+	extend : 'Ext.form.field.File',
+    
+	buttonOnly : true,
+    
+	iconCls : 'ux-mu-icon-action-browse',
+	buttonText : 'Import Data',
+    
+	initComponent : function() {
+    
+	    this.addEvents({
+		'fileselected' : true
+	    });
+    
+	    Ext.apply(this, {
+		buttonConfig : {
+		    iconCls : this.iconCls,
+		    text : this.buttonText
+		}
+	    });
+    
+	    this.on('afterrender', function() {
+		/*
+		 * Fixing the issue when adding an icon to the button - the text does not render properly. OBSOLETE - from
+		 * ExtJS v4.1 the internal implementation has changed, there is no button object anymore.
+		 */
+		if (this.iconCls) {
+		    // this.button.removeCls('x-btn-icon');
+		    // var width = this.button.getWidth();
+		    // this.setWidth(width);
+		}
+    
+		// Allow picking multiple files at once.
+		this.fileInputEl.dom.setAttribute('multiple', '1');
+    
+	    }, this);
+    
+	    this.on('change', function(field, value, options) {
+		var files = this.fileInputEl.dom.files;
+		if (files) {
+		    this.fireEvent('fileselected', this, files);
+		}
+	    }, this);
+    
+	    this.callParent(arguments);
+	},
+    
+	// OBSOLETE - the method is not used by the superclass anymore
+	createFileInput : function() {
+	    this.callParent(arguments);
+	    this.fileInputEl.dom.setAttribute('multiple', '1');
+	},
+	
+	getSelectedFiles: function(){
+	    return this.fileInputEl.dom.files;
+	},
+    
+    });
+    
+    toolbarFunctions.importData = Ext.create('Ext.ux.upload.BrowseButton', {
+	
+    });
     
     //THE START OF REDISPLAYING
     var toolbar = Ext.create('Ext.toolbar.Toolbar', {
@@ -54,8 +135,7 @@ Ext.onReady(function () {
                 xtype: 'splitbutton',
                 text : 'File',
                 menu: new Ext.menu.Menu({
-                    items: [
-                        {text: 'Import Data', handler: function(){  }},
+                    items: [toolbarFunctions.importData,
                         {text: 'New Project', handler: function(){  }},
                         {text: 'Export Graph', handler: function(){  }},
                         {text: 'Save', handler: function(){  }},
@@ -729,6 +809,7 @@ Ext.onReady(function () {
             for (var i=0; i<2*Math.PI; i+=0.4){
                 sinPoints.push([i, 2*Math.sin(i-.8)]);
             }
+	    
             webfit.plot = $.jqplot (this.body.id, [sinPoints], {
 		//setTitle: function(newTitle){title: newTitle},
                 title: 'Scan space',

@@ -117,7 +117,7 @@
         
         sum: function(x){
             var res = 0;
-            console.log('this',this);
+            //console.log('this',this);
             var interactors=this.parent.interactors
             for(var i = 0; i < interactors.length; i++){
                 //what if its a plugin point?
