@@ -44,23 +44,53 @@ Ext.onReady(function () {
     Ext.namespace("plotPanel");
     Ext.namespace("residualPanel");  
     Ext.namespace("toolbarFunctions");
+    Ext.namespace('dataP');
     
-    /*toolbarFunctions.dataUpload = Ext.create('Ext.form.Panel', {
-	title: 'Upload a Photo',
-	width: 400,
-	bodyPadding: 10,
-	frame: true,
-	items: [{
-	    xtype: 'filefield',
-	    name: 'fileUpload',
-	    fieldLabel: 'File',
-	    labelWidth: 50,
-	    msgTarget: 'side',
-	    allowBlank: false,
-	    anchor: '100%',
-	    buttonText: 'Select File...'
-	}],
-    });*/
+    webfit.updatePlotData = function(files){
+	var reader = new FileReader();
+	for(var i = 0; i < files.length; i++){
+	    var file = files[i];
+	    if(!file.type.match('csv.*')){
+		alert('Can only load csv files');
+		continue;
+	    }
+	    reader.readAsText(file);
+	    reader.onload = function(event){
+		var csv = event.target.result;
+		var webfitData = webfit.plot.series[0].data;
+		
+		//CLEAR PREVIOUS DATA
+		while(webfitData.length !== 0){
+		    webfitData.pop();
+		    console.log(webfitData.length);
+		}
+		
+		//webfit.plot.redraw();
+		var data = $.csv.toArrays(csv);
+		//var html = '';
+		for(var row in data) {
+		    webfitData.push(data[row]);
+		    dataP.store.add({
+			x: data[row][0],
+			y: data[row][1],
+		    });
+		  //  var item={x: data[row][0],
+		//	y: data[row][1],};
+		    //dataP.store.add(Ext.create('dataModel', item);
+		  //html += '<tr>\r\n';
+		  //for(var item in data[row]) {
+		    //html += '<td>' + data[row][item] + '</td>\r\n';
+		  //}
+		  //html += '</tr>\r\n';
+		}
+		dataPanel.getView().refresh();
+		//$('#contents').html(html);
+		webfit.plot.redraw();
+	    };
+	    reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+	}
+	console.log('imported');
+    }
     
     Ext.define('Ext.ux.upload.BrowseButton', {
 	extend : 'Ext.form.field.File',
@@ -103,6 +133,7 @@ Ext.onReady(function () {
 		var files = this.fileInputEl.dom.files;
 		if (files) {
 		    this.fireEvent('fileselected', this, files);
+		    webfit.updatePlotData(files);
 		}
 	    }, this);
     
@@ -113,10 +144,6 @@ Ext.onReady(function () {
 	createFileInput : function() {
 	    this.callParent(arguments);
 	    this.fileInputEl.dom.setAttribute('multiple', '1');
-	},
-	
-	getSelectedFiles: function(){
-	    return this.fileInputEl.dom.files;
 	},
     
     });
@@ -897,6 +924,19 @@ Ext.onReady(function () {
         items: [webfit.plotPanel, plotPanel.fitResults],
     });
     
+    var residualUpdate = function(){
+	var dataPoints = [];
+	var data = webfit.plot.data[0];
+	for (var i = 0; i < data.length; i++){
+	    var point = data[i];
+	    var fColPlugin = webfit.plot.plugins.interactors.fcursor;
+	    var calcy=fColPlugin.sum.call(fColPlugin.FunctionCollection, point[0]);
+	    //var calcy=webfit.plot.plugins.interactors.fcursor.sum.call($.jqplot.FunctionCollection,point[0]);
+	    dataPoints.push(point[0], point[1] - calcy);
+	}
+	return dataPoints;
+    };
+    
     var residuals = Ext.create('Ext.panel.Panel', {
         title: 'Residuals',
         width: 100,
@@ -914,15 +954,7 @@ Ext.onReady(function () {
             for (var i=0; i<2*Math.PI; i+=0.4){
                 sinPoints.push([i, 2*Math.sin(i-.8)]);
             }*/
-	    var dataPoints = [];
-	    var data = webfit.plot.data[0];
-	    for (var i = 0; i < data.length; i++){
-		var point = data[i];
-		var fColPlugin = webfit.plot.plugins.interactors.fcursor;
-		var calcy=fColPlugin.sum.call(fColPlugin.FunctionCollection, point[0]);
-		//var calcy=webfit.plot.plugins.interactors.fcursor.sum.call($.jqplot.FunctionCollection,point[0]);
-		dataPoints.push(point[0], point[1] - calcy);
-	    }
+	    var dataPoints = residualUpdate();
 	    
             webfit.ResidualPlot = $.jqplot (this.body.id, [dataPoints], {
                 //title: 'Scan space',
@@ -972,16 +1004,87 @@ Ext.onReady(function () {
         items: [innerPlot, residuals],
     });
     
-    var workspace = Ext.create('Ext.panel.Panel', {
+    
+ //Ext.regModel('dataModel', {
+        //fields:[
+            //{name:'', type:'number'},
+            //{name:'y', type:'number'},
+            //{name:'k', type:'number'},
+            //{name:'l', type:'number'},
+            //{name:'|F|', type:'number'}
+        //]
+    //});
+    
+   dataP.store = Ext.create('Ext.data.Store', {
+        fields: [
+            {name: 'x', type: 'number'},
+            {name: 'y', type: 'number'},
+        ],
+    });  
+    
+    var dataPanel = Ext.create('Ext.grid.Panel', {
+        //xtype: 'cell-editing',
+        //title: 'Added Functions',
+        //id: 6,
+        plugins: [new Ext.grid.plugin.CellEditing({
+            clicksToEdit: 1
+        })],
+        autoScroll: true,
+        store: dataP.store,
+        columns: [{
+                header: 'X',
+                dataIndex: 'x',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            }, {
+                header: 'Y',
+                dataIndex: 'y',
+                flex: 1,
+		editor: {
+                    allowBlank: false
+                }
+            }, {
+                xtype: 'actioncolumn',
+                width: 35,
+                dataIndex: 'delete',
+                sortable: false,
+                align: 'center',
+                menuDisabled: true,
+                items: [{
+                    icon: 'static/lib/ext/welcome/img/delete.png',
+                    tooltip: 'Delete Plant',
+                    scope: this,
+                    handler: function(grid, rowIndex){
+			var removed = dataPanel.getStore().data.removeAt(rowIndex);
+			
+			dataPanel.getStore().removeAt(rowIndex);
+			console.log('Deleted');
+                    },
+                }]
+        }],
+    });
+    
+    var workspace = Ext.create('Ext.tab.Panel', {//Ext.create('Ext.panel.Panel', {
         width: 1200,
         //id: 13,
         height: 700,
         renderTo: Ext.getBody(),
-        layout: {type: 'hbox',
-                align : 'stretch',
-                pack  : 'start',
-        },
-        items: [functionSelectionRanges, plot],
+	items: [{
+		title: 'Workspace',
+		layout: {type: 'hbox',
+		    align : 'stretch',
+		    pack  : 'start',
+		},
+		items: [functionSelectionRanges, plot],
+	    },{
+		title: 'Data',
+		items: [dataPanel],
+	    },{
+		title: 'Help Manual',
+	    }],
+
     });
     
     /*console.log('workspace: ', workspace.id);
