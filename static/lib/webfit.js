@@ -820,96 +820,87 @@ Ext.onReady(function () {
         defaults: {
             bodyPadding: 4
         },
-        afterComponentLayout: function(width, height)
-        {
-            var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];
-            $('#'+this.body.id).empty();
-//            $.jqplot(this.body.id, data,
-//                { title:'Server Load',
-//                    axes:{xaxis:{renderer:$.jqplot.DateAxisRenderer}},
-//                    series:[
-//                        {label:'Awesome Level'}
-//                    ]
-//                });
-
-            var sinPoints = [];
-            for (var i=0; i<2*Math.PI; i+=0.4){
-                sinPoints.push([i, 2*Math.sin(i-.8)]);
-            }
-	    
-            webfit.plot = $.jqplot (this.body.id, [sinPoints], {
-		//setTitle: function(newTitle){title: newTitle},
-                title: 'Scan space',
-                series: [ {shadow: false,
-                           color: 'red',
-                           markerOptions: {shadow: false, size: 4},
-                           showLine:false
-                           }],
-                grid: {shadow: false},
-                sortData: false,
-                axes:{
-                    xaxis:{
-                        label: 'Qx (inverse Å)',
-                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                        tickOptions: {
-                            formatString: "%.2g"
-                        }
-                    },
-                    yaxis:{
-                        label: 'Qy (inverse Å)',
-                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                        tickOptions: {
-                            formatString: "%.2g",
-                            // fix for ticks drifting to the left in accordionview!
-                            _styles: {right: 0}
-                        }
-                    }
-                },
-                cursor: {show:true, zoom:false},
-                interactors: [/*{type: 'Line', 
-                        name: 'lcursor', 
-                        x0: 0.0001,
-                        color1: 'green',
-                        color2: 'blue'
-                        },
-                        {type: 'Gaussian',
-                        name: 'gcursor',
-                        x0: 0.0001,
-                        color1: 'green',
-                        color2: 'blue'
-                        },*/
-                        {type: 'FunctionCollection',
-                        name:'fcursor',
-                        x0: 0.0001,
-                        color1: 'grey',
-                        },
-                        /*{type: 'Gaussian',
-                        name: 'g2cursor',
-                        x0: 0.0001,
-                        color1: 'green',
-                        color2: 'blue'
-                        },*/
-                ]
-
-            });
-            
-            //WORKING LISTENER        
-/*            mylistener=function() {};
-            mylistener.update=function update(pos){
-               console.log(pos.x,pos.y);      
-            }
-        //the pluginpoint name differs per interactor
-            webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
-            this.callParent(arguments);*/
-            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
-            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-            //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
-            //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
-            //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
-        }
+        afterComponentLayout: function(width, height){
+	    if(webfit.plot === undefined){
+		var sinPoints = [];
+		for (var i=0; i<2*Math.PI; i+=0.4){
+		    sinPoints.push([i, 2*Math.sin(i-.8)]);
+		}
+		
+		webfit.plot = $.jqplot (this.body.id, [sinPoints], {
+		    //setTitle: function(newTitle){title: newTitle},
+		    title: 'Scan space',
+		    series: [ {shadow: false,
+			       color: 'red',
+			       markerOptions: {shadow: false, size: 4},
+			       showLine:false
+			       }],
+		    grid: {shadow: false},
+		    sortData: false,
+		    axes:{
+			xaxis:{
+			    label: 'Qx (inverse Å)',
+			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+			    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+			    tickOptions: {
+				formatString: "%.2g"
+			    }
+			},
+			yaxis:{
+			    label: 'Qy (inverse Å)',
+			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+			    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+			    tickOptions: {
+				formatString: "%.2g",
+				// fix for ticks drifting to the left in accordionview!
+				_styles: {right: 0}
+			    }
+			}
+		    },
+		    cursor: {show:true, zoom:false},
+		    interactors: [/*{type: 'Line', 
+			    name: 'lcursor', 
+			    x0: 0.0001,
+			    color1: 'green',
+			    color2: 'blue'
+			    },
+			    {type: 'Gaussian',
+			    name: 'gcursor',
+			    x0: 0.0001,
+			    color1: 'green',
+			    color2: 'blue'
+			    },*/
+			    {type: 'FunctionCollection',
+			    name:'fcursor',
+			    x0: 0.0001,
+			    color1: 'grey',
+			    },
+			    /*{type: 'Gaussian',
+			    name: 'g2cursor',
+			    x0: 0.0001,
+			    color1: 'green',
+			    color2: 'blue'
+			    },*/
+		    ]
+    
+		});
+		
+		//WORKING LISTENER        
+    /*            mylistener=function() {};
+		mylistener.update=function update(pos){
+		   console.log(pos.x,pos.y);      
+		}
+	    //the pluginpoint name differs per interactor
+		webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
+		this.callParent(arguments);*/
+		//webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+		//webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
+		//webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+		//webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
+		//webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
+		//webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
+	    }
+	}
     });
     
     var innerPlot = Ext.create('Ext.panel.Panel', {
@@ -1036,8 +1027,12 @@ Ext.onReady(function () {
                 dataIndex: 'x',
                 flex: 1,
                 editor: {
-                    allowBlank: false
-                }
+                    allowBlank: false,
+                },
+		handler: function(grid, rowIndex){
+		    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+		    webfit.plot.redraw();
+		}
             }, {
                 header: 'Y',
                 dataIndex: 'y',
@@ -1066,7 +1061,7 @@ Ext.onReady(function () {
         }],
     });
     
-    var workspace = Ext.create('Ext.tab.Panel', {//Ext.create('Ext.panel.Panel', {
+    var workspace = Ext.create('Ext.tab.Panel', {
         width: 1200,
         //id: 13,
         height: 700,
@@ -1086,19 +1081,5 @@ Ext.onReady(function () {
 	    }],
 
     });
-    
-    /*console.log('workspace: ', workspace.id);
-    console.log('functionSelectionRanges: ', functionSelectionRanges.id);
-    console.log('plot: ', plot.id);
-    console.log('residuals: ', residuals.id);
-    console.log('innerPlot: ', innerPlot.id);
-    console.log('plotPanel.fitResults: ', plotPanel.fitResults.id);
-    console.log('rangeLimit: ', rangeLimit.id);
-    console.log('addedFunctions: ', addedFunctions.id);
-    console.log('selection: ', selection.id);
-    console.log('functionSelector.add: ', functionSelector.add.id);
-    console.log('functionSelector.chooser: ', functionSelector.chooser.id);
-    console.log('toolbar: ', toolbar.id);*/  
-    
     
 });
