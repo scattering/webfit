@@ -54,7 +54,7 @@ Ext.onReady(function () {
 		alert('Can only load csv files');
 		continue;
 	    }
-	    reader.readAsText(file);
+	    reader.readAsText(file); 
 	    reader.onload = function(event){
 		var csv = event.target.result;
 		var webfitData = webfit.plot.series[0].data;
@@ -63,6 +63,9 @@ Ext.onReady(function () {
 		while(webfitData.length !== 0){
 		    webfitData.pop();
 		    console.log(webfitData.length);
+		}
+		if(dataP.store.data.items.length !== 0){
+		    dataP.store.removeAll();
 		}
 		
 		//webfit.plot.redraw();
@@ -1026,6 +1029,7 @@ Ext.onReady(function () {
                 header: 'X',
                 dataIndex: 'x',
                 flex: 1,
+		enableKeyEvents: true,
                 editor: {
                     allowBlank: false,
                 },
@@ -1060,6 +1064,32 @@ Ext.onReady(function () {
                 }]
         }],
     });
+    
+    dataP.updatePlot = function(store, record, operation, modifiedFieldNames, eOpts ) {
+		console.log("updating");
+                switch(operation) {
+                    case Ext.data.Model.EDIT:
+                        console.log('INFO', 'Updating record...');
+			var data = dataP.store.data.items;
+			for(var row = 0; row < data.length; row++){
+			    if(data[row].data.x === record.data.x && data[row].data.y === record.data.y){
+				break;
+			    }
+			}
+			webfit.plot.series[0].data[row][0] = (String)(record.data.x);
+			webfit.plot.series[0].data[row][1] = (String)(record.data.y);
+			webfit.plot.redraw();
+                        break;
+                    case Ext.data.Model.COMMIT:
+                        console.log('INFO', 'Record successfully sent to server!');
+                        break;
+                    case Ext.data.Model.REJECT:
+                        console.log('ERR', 'Something went horribly wrong :( Data was rejected by the server!');
+                        break;
+                }
+            };
+    
+    dataP.store.on("update", dataP.updatePlot, dataPanel);
     
     var workspace = Ext.create('Ext.tab.Panel', {
         width: 1200,
