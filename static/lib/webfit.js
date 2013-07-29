@@ -166,10 +166,9 @@ Ext.onReady(function () {
                 text : 'File',
                 menu: new Ext.menu.Menu({
                     items: [toolbarFunctions.importData,
-                        {text: 'New Project', handler: function(){  }},
                         {text: 'Export Graph', handler: function(){  }},
-                        {text: 'Save', handler: function(){  }},
-                        {text: 'Save As', handler: function(){  }},
+                        //{text: 'Save', handler: function(){  }},
+                        //{text: 'Save As', handler: function(){  }},
                     ]
                 })
             },
@@ -181,8 +180,6 @@ Ext.onReady(function () {
                     items: [
                         {text: 'Undo', handler: function(){  }},
                         {text: 'Redo', handler: function(){  }},
-                        {text: 'Rename Project', handler: function(){  }},
-                        {text: 'Rename Function', handler: function(){  }},
                     ]
                 })
             },
@@ -192,37 +189,24 @@ Ext.onReady(function () {
                 text : 'View',
                 menu: new Ext.menu.Menu({
                     items: [
-                        {text: 'Projects', handler: function(){  }},
-                        {text: 'Data', handler: function(){  }},
                         {text: 'Show', 
                         handler: function(){  },
                         menu: new Ext.menu.Menu({
                             items: [{
                                 xtype: 'menucheckitem',
-                                text: 'Fit Results'
+                                text: 'Fit Results',
+				checked: true,
                             },{
                                 xtype: 'menucheckitem',
-                                text: 'Residuals'
+                                text: 'Residuals',
+				checked: true,
                             },{
                                 xtype: 'menucheckitem',
-                                text: 'Limits'
+                                text: 'Limits',
+				checked: true,
                             },
                             ]
                         })}, //show list
-                    ]
-                })
-            },
-            { xtype: 'tbspacer', width: 45},
-            {
-                xtype: 'splitbutton',
-                text : 'Help',
-                menu: new Ext.menu.Menu({
-                    items: [
-                        {text: 'Manual', handler: function(){  }},
-                        {xtype    : 'textfield',
-                        name     : 'searchField',
-                        emptyText: 'Search', 
-                        handler: function(){  }},
                     ]
                 })
             },
@@ -237,7 +221,7 @@ Ext.onReady(function () {
                     ]
                 })
             },
-            { xtype: 'tbspacer', width: 45}, 'Untitled',
+            { xtype: 'tbspacer', width: 45},
         ]
     });
     
@@ -348,6 +332,16 @@ Ext.onReady(function () {
         ]*/
     });    
     
+    functionSelector.specs = Ext.create('Ext.window.Window', {
+	title: 'Specifications',
+	width: 500,
+	height: 300,
+	closeAction: 'hide',
+	buttons: [{ 
+	    text: 'Apply' 
+	}],
+    });
+    
     functionSelector.addedFunctions = Ext.create('Ext.grid.Panel', {
         xtype: 'cell-editing',
         title: 'Added Functions',
@@ -390,6 +384,12 @@ Ext.onReady(function () {
 		    editable: false,
 		    queryMode: 'local',
 		    allowBlank: false,
+		    listeners: {
+			click: {
+			    element: 'el', //bind to the underlying el property on the panel
+			    fn: function(){ console.log('click el'); }
+			},
+		    },
                 }),
             }, {
                 header: 'Color 2',
@@ -478,18 +478,29 @@ Ext.onReady(function () {
                     },
                 }]
         }],
+	tbar: [{
+	    text: 'Specifications',
+	    scope: this,
+	    handler: function(){
+		functionSelector.specs.setVisible(true);
+	    },
+	}, {
+	    text: 'Fit',
+	    width: 70,
+	    scope: this,
+	    /*handler: function(){
+		
+	    },*/
+	}],
         height: 398,
         width: 496,
     });
     
-    /*functionSelector.addedFunctions = Ext.create('Ext.panel.Panel', {
-        title: 'Added Functions',
-        width: 496,
-        height: 398,
-        id: 6,
-        autoScroll: true,
-        bodyPadding: 50,
-    });*/
+    /*functionSelector.color1Select = function( combo, records, eOpts ) {
+		
+    };
+    
+    functionSelector.addedFunctions.columns[2].getEditor().on("select", functionSelector.color1Select, functionSelector.addedFunctions);*/
     
     functionSelector.plot = Ext.create('Ext.panel.Panel', {
 	html: 'Plot',
@@ -529,45 +540,6 @@ Ext.onReady(function () {
 	}]
     });
     
-    functionSelector.residuals = Ext.create('Ext.panel.Panel', {
-	html: 'Residuals',
-	width: 70,
-	border:false,
-	bodyBorder:false,
-	hideBorders:true
-    });    
-    
-    functionSelector.residualsRange = Ext.create('Ext.panel.Panel', {
-	//width:2,
-	height: 60,
-	layout: {type: 'hbox',
-	    align : 'stretch',
-	    pack  : 'start',
-	},
-	border:false,
-	padding: '15 0 0 0',
-	bodyBorder:false,
-	hideBorders:true,
-	items: [functionSelector.residuals, {
-		xtype: 'textfield',
-		name: 'residualsXMin',
-		//enforceMaxLength: true,
-		width: 105,
-		//padding: '0 0 0 0', //top, right, down, left (right doesn't work?)
-		labelAlign: 'top',
-		fieldLabel: 'X Min',
-		allowBlank: false  // requires a non-empty value
-	    }, {
-		xtype: 'textfield',
-		name: 'residualsXMax',
-		width: 105,
-		padding: '0 0 0 20',
-		labelAlign: 'top',
-		fieldLabel: 'X Max',
-		allowBlank: false,
-	}]
-    });
-    
     functionSelector.plot1 = Ext.create('Ext.panel.Panel', {
 	html: 'Plot',
 	width: 70,
@@ -575,69 +547,6 @@ Ext.onReady(function () {
 	bodyBorder:false,
 	hideBorders:true
     });   
-    
-    functionSelector.plotDomain = Ext.create('Ext.panel.Panel', {
-	height: 45,
-	layout: {type: 'hbox',
-	    align : 'stretch',
-	    pack  : 'start',
-	},
-	border:false,
-	bodyBorder:false,
-	hideBorders:true,
-	items: [functionSelector.plot1, {
-		xtype: 'textfield',
-		name: 'plotYMin',
-		width: 105,
-		labelAlign: 'top',
-		fieldLabel: 'Y Min',
-		allowBlank: false  // requires a non-empty value
-	    }, {
-		xtype: 'textfield',
-		name: 'plotYMax',
-		width: 105,
-		padding: '0 0 0 20',
-		labelAlign: 'top',
-		fieldLabel: 'Y Max',
-		allowBlank: false,
-	}]
-    });
-    
-    functionSelector.residuals1 = Ext.create('Ext.panel.Panel', {
-	html: 'Residuals',
-	width: 70,
-	border:false,
-	bodyBorder:false,
-	hideBorders:true
-    });   
-    
-    functionSelector.residualsDomain = Ext.create('Ext.panel.Panel', {
-	height: 60,
-	layout: {type: 'hbox',
-	    align : 'stretch',
-	    pack  : 'start',
-	},
-	border:false,
-	padding: '15 0 0 0',
-	bodyBorder:false,
-	hideBorders:true,
-	items: [functionSelector.residuals1, {
-		xtype: 'textfield',
-		name: 'residualsYMin',
-		width: 105,
-		labelAlign: 'top',
-		fieldLabel: 'Y Min',
-		allowBlank: false  // requires a non-empty value
-	    }, {
-		xtype: 'textfield',
-		name: 'residualsYMax',
-		width: 105,
-		padding: '0 0 0 20',
-		labelAlign: 'top',
-		fieldLabel: 'Y Max',
-		allowBlank: false,
-	}]
-    });
     
     functionSelector.axisNames = Ext.create('Ext.panel.Panel', {
 	height: 150,
@@ -677,8 +586,35 @@ Ext.onReady(function () {
 		allowBlank: false,
 	}],
 	handler: function() {
-	    
+
 	}
+    });
+    
+    functionSelector.plotDomain = Ext.create('Ext.panel.Panel', {
+	height: 45,
+	layout: {type: 'hbox',
+	    align : 'stretch',
+	    pack  : 'start',
+	},
+	border:false,
+	bodyBorder:false,
+	hideBorders:true,
+	items: [functionSelector.plot1, {
+		xtype: 'textfield',
+		name: 'plotYMin',
+		width: 105,
+		labelAlign: 'top',
+		fieldLabel: 'Y Min',
+		allowBlank: false  // requires a non-empty value
+	    }, {
+		xtype: 'textfield',
+		name: 'plotYMax',
+		width: 105,
+		padding: '0 0 0 20',
+		labelAlign: 'top',
+		fieldLabel: 'Y Max',
+		allowBlank: false,
+	}]
     });
     
     functionSelector.rangeDomainAxis = Ext.create('Ext.tab.Panel', {
@@ -692,7 +628,7 @@ Ext.onReady(function () {
                     align : 'stretch',
                     pack  : 'center',
                 },
-                items: [functionSelector.plotRange, functionSelector.residualsRange, ],
+                items: [functionSelector.plotRange, ],
 		//PLOTRANGE: ["panel-1064", "textfield-1066", "textfield-1067"]
 		//RESIDUALSRANGE: ["panel-1068", "textfield-1070", "textfield-1071"]
 		buttons: [{
@@ -739,7 +675,7 @@ Ext.onReady(function () {
                     align : 'stretch',
                     pack  : 'center',
                 },
-                items: [functionSelector.plotDomain, functionSelector.residualsDomain, ],
+                items: [functionSelector.plotDomain, ],
 		buttons: [{
 		    text: 'Update',
 		    handler: function() {
@@ -780,20 +716,89 @@ Ext.onReady(function () {
         items: [functionSelector.selection, functionSelector.addedFunctions, functionSelector.rangeDomainAxis, ],
     });
     
-    /*var plot = Ext.create('Ext.tab.Panel', {
-        width: 450,
-        height: 198,
-        renderTo: document.body,
-        items: [{
-            title: 'Graph'
-        }, {
-            title: 'Grid',
-            id: 'webfitTab',
-            iconCls: '/static/img/silk/calculator.png',
-            layout: 'hbox',
-            items: [webfit.plotPanel],
-        }]
-    });*/
+    
+    dataP.store = Ext.create('Ext.data.Store', {
+        fields: [
+            {name: 'x', type: 'number'},
+            {name: 'y', type: 'number'},
+        ],
+    });  
+    
+    var dataPanel = Ext.create('Ext.grid.Panel', {
+        //xtype: 'cell-editing',
+        //title: 'Added Functions',
+        //id: 6,
+        plugins: [new Ext.grid.plugin.CellEditing({
+            clicksToEdit: 1
+        })],
+        autoScroll: true,
+        store: dataP.store,
+        columns: [{
+                header: 'X',
+                dataIndex: 'x',
+                flex: 1,
+		enableKeyEvents: true,
+                editor: {
+                    allowBlank: false,
+                },
+		handler: function(grid, rowIndex){
+		    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+		    webfit.plot.redraw();
+		}
+            }, {
+                header: 'Y',
+                dataIndex: 'y',
+                flex: 1,
+		editor: {
+                    allowBlank: false
+                }
+            }, {
+                xtype: 'actioncolumn',
+                width: 35,
+                dataIndex: 'delete',
+                sortable: false,
+                align: 'center',
+                menuDisabled: true,
+                items: [{
+                    icon: 'static/lib/ext/welcome/img/delete.png',
+                    tooltip: 'Delete Plant',
+                    scope: this,
+                    handler: function(grid, rowIndex){
+			var removed = dataPanel.getStore().data.removeAt(rowIndex);
+			
+			dataPanel.getStore().removeAt(rowIndex);
+			console.log('Deleted');
+                    },
+                }]
+        }],
+    });
+    
+    dataP.updatePlot = function(store, record, operation, modifiedFieldNames, eOpts ) {
+		console.log("updating");
+                switch(operation) {
+                    case Ext.data.Model.EDIT:
+                        console.log('INFO', 'Updating record...');
+			var data = dataP.store.data.items;
+			for(var row = 0; row < data.length; row++){
+			    if(data[row].data.x === record.data.x && data[row].data.y === record.data.y){
+				break;
+			    }
+			}
+			webfit.plot.series[0].data[row][0] = (String)(record.data.x);
+			webfit.plot.series[0].data[row][1] = (String)(record.data.y);
+			webfit.plot.draw();
+			//webfit.plot.redraw();
+                        break;
+                    case Ext.data.Model.COMMIT:
+                        console.log('INFO', 'Record successfully sent to server!');
+                        break;
+                    case Ext.data.Model.REJECT:
+                        console.log('ERR', 'Something went horribly wrong :( Data was rejected by the server!');
+                        break;
+                }
+            };
+    
+    dataP.store.on("update", dataP.updatePlot, dataPanel);
     
     plotPanel.fitResults = Ext.create('Ext.panel.Panel', {
         title: 'Fit Results',
@@ -827,12 +832,17 @@ Ext.onReady(function () {
 	    if(webfit.plot === undefined){
 		var sinPoints = [];
 		for (var i=0; i<2*Math.PI; i+=0.4){
-		    sinPoints.push([i, 2*Math.sin(i-.8)]);
+		    var yVal = 2*Math.sin(i-.8);
+		    sinPoints.push([i, yVal]);
+		    dataP.store.add({
+			x: i,
+			y: yVal,
+		    });
 		}
 		
 		webfit.plot = $.jqplot (this.body.id, [sinPoints], {
 		    //setTitle: function(newTitle){title: newTitle},
-		    title: 'Scan space',
+		    title: 'Title',
 		    series: [ {shadow: false,
 			       color: 'red',
 			       markerOptions: {shadow: false, size: 4},
@@ -842,7 +852,7 @@ Ext.onReady(function () {
 		    sortData: false,
 		    axes:{
 			xaxis:{
-			    label: 'Qx (inverse Å)',
+			    label: 'X Axis',
 			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
 			    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
 			    tickOptions: {
@@ -850,7 +860,7 @@ Ext.onReady(function () {
 			    }
 			},
 			yaxis:{
-			    label: 'Qy (inverse Å)',
+			    label: 'Y Axis',
 			    labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
 			    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
 			    tickOptions: {
@@ -1009,92 +1019,10 @@ Ext.onReady(function () {
         //]
     //});
     
-   dataP.store = Ext.create('Ext.data.Store', {
-        fields: [
-            {name: 'x', type: 'number'},
-            {name: 'y', type: 'number'},
-        ],
-    });  
-    
-    var dataPanel = Ext.create('Ext.grid.Panel', {
-        //xtype: 'cell-editing',
-        //title: 'Added Functions',
-        //id: 6,
-        plugins: [new Ext.grid.plugin.CellEditing({
-            clicksToEdit: 1
-        })],
-        autoScroll: true,
-        store: dataP.store,
-        columns: [{
-                header: 'X',
-                dataIndex: 'x',
-                flex: 1,
-		enableKeyEvents: true,
-                editor: {
-                    allowBlank: false,
-                },
-		handler: function(grid, rowIndex){
-		    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
-		    webfit.plot.redraw();
-		}
-            }, {
-                header: 'Y',
-                dataIndex: 'y',
-                flex: 1,
-		editor: {
-                    allowBlank: false
-                }
-            }, {
-                xtype: 'actioncolumn',
-                width: 35,
-                dataIndex: 'delete',
-                sortable: false,
-                align: 'center',
-                menuDisabled: true,
-                items: [{
-                    icon: 'static/lib/ext/welcome/img/delete.png',
-                    tooltip: 'Delete Plant',
-                    scope: this,
-                    handler: function(grid, rowIndex){
-			var removed = dataPanel.getStore().data.removeAt(rowIndex);
-			
-			dataPanel.getStore().removeAt(rowIndex);
-			console.log('Deleted');
-                    },
-                }]
-        }],
-    });
-    
-    dataP.updatePlot = function(store, record, operation, modifiedFieldNames, eOpts ) {
-		console.log("updating");
-                switch(operation) {
-                    case Ext.data.Model.EDIT:
-                        console.log('INFO', 'Updating record...');
-			var data = dataP.store.data.items;
-			for(var row = 0; row < data.length; row++){
-			    if(data[row].data.x === record.data.x && data[row].data.y === record.data.y){
-				break;
-			    }
-			}
-			webfit.plot.series[0].data[row][0] = (String)(record.data.x);
-			webfit.plot.series[0].data[row][1] = (String)(record.data.y);
-			webfit.plot.redraw();
-                        break;
-                    case Ext.data.Model.COMMIT:
-                        console.log('INFO', 'Record successfully sent to server!');
-                        break;
-                    case Ext.data.Model.REJECT:
-                        console.log('ERR', 'Something went horribly wrong :( Data was rejected by the server!');
-                        break;
-                }
-            };
-    
-    dataP.store.on("update", dataP.updatePlot, dataPanel);
-    
     var workspace = Ext.create('Ext.tab.Panel', {
         width: 1200,
         //id: 13,
-        height: 700,
+        height: 727,
         renderTo: Ext.getBody(),
 	items: [{
 		title: 'Workspace',
