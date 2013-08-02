@@ -216,8 +216,10 @@ Ext.onReady(function () {
                 text : 'Fit Controls',
                 menu: new Ext.menu.Menu({
                     items: [
-                        {text: 'New Function', handler: function(){  }},
-                        {text: 'Remove Function Options', handler: function(){  }},
+                        {text: 'Specifications', handler: function(){
+			    functionSelector.specs.setVisible(true);
+			}},
+                        //{text: 'Remove Function Options', handler: function(){  }},
                     ]
                 })
             },
@@ -242,6 +244,7 @@ Ext.onReady(function () {
             data : [
                 {"name":"Gaussian"},
                 {"name":"Line"},
+		{"name":"New Function"},
             ]
         }),
         //renderTo: Ext.getBody(),
@@ -282,6 +285,127 @@ Ext.onReady(function () {
 	return tcursor.name;
     }
     
+    functionSelector.params = function(functionName){
+	var store = Ext.create('Ext.data.Store', {
+	    fields: [
+		{name: 'name', type: 'string'},
+		{name: 'fixed', type: 'boolean'},
+		{name: 'val', type: 'string'},
+		{name: 'bounded', type: 'boolean'},
+		{name: 'up', type: 'string'},
+		{name: 'low', type: 'string'},
+		{name: 'tied', type: 'boolean'},
+		{name: 'relationship', type: 'string'},
+	    ],
+	    data : [
+		{'name':functionName,'fixed': false, 'val': '', 'bounded': false, 'up': '', 'low': '', 'tied': false, 'relationship': ''},
+		{'name':'Center','fixed': false, 'val': '', 'bounded': false, 'up': '', 'low': '', 'tied': false, 'relationship': ''},
+		{'name':'Width','fixed': false, 'val': '', 'bounded': false, 'up': '', 'low': '', 'tied': false, 'relationship': ''},
+	    ]
+	});
+	return store;
+    }
+    
+    functionSelector.specsLayout = function(functionName){
+	var panel = Ext.create('Ext.panel.Panel', {
+	    height:101,
+	    width: 480,
+	    border:false,
+	    //autoScroll: true,
+	    bodyBorder:false,
+	    hideBorders:true,
+	    layout: {type: 'vbox',
+                align : 'stretch',
+                pack  : 'start',
+	    },
+	    items: [/*{
+		xtype: 'label',
+		//forId: 'myFieldId',
+		text: functionName,
+		//margins: '0 0 0 10'
+	    },*/{
+		xtype: 'gridpanel',
+		layout: {type: 'hbox',
+		    align : 'stretch',
+		    pack  : 'start',
+		},
+		plugins: [new Ext.grid.plugin.CellEditing({
+		    clicksToEdit: 1
+		})],
+		//autoScroll: true,
+		store: functionSelector.params(functionName),
+		columns: [{
+			//header: '',
+			dataIndex: 'name',
+			width: 70,
+			editable: false,
+			/*editor: {
+			    allowBlank: false
+			}*/
+		    }, {
+			xtype: 'checkcolumn',
+			header: 'Fixed',
+			dataIndex: 'fixed',
+			width: 40,
+			stopSelection: false,
+		    }, {
+			header: 'Value',
+			dataIndex: 'val',
+			width: 40,
+			editor: {
+			}
+		    }, {
+			xtype: 'checkcolumn',
+			header: 'Bounded',
+			dataIndex: 'bounded',
+			width: 60,
+			stopSelection: false,
+		    }, {
+			header: 'Upper',
+			dataIndex: 'up',
+			width: 40,
+			editor: {
+			}
+		    }, {
+			header: 'Lower',
+			dataIndex: 'low',
+			width: 40,
+			editor: {
+			}
+		    }, {
+			xtype: 'checkcolumn',
+			header: 'Tied To',
+			dataIndex: 'tied',
+			width: 50,
+			stopSelection: false,
+		    }, {
+			dataIndex: 'relationship',
+			flex:1,
+			editor: {
+			}
+		    }, ],
+		height: 398,
+		width: 496,
+	    },]
+	});
+	return panel;
+    }
+    
+    functionSelector.specs = Ext.create('Ext.window.Window', {
+	title: 'Specifications',
+	width: 500,
+	height: 300,
+	closeAction: 'hide',
+	autoScroll: true,
+	layout: {type: 'vbox',
+                align : 'stretch',
+                pack  : 'start',
+        },
+	buttons: [{ 
+	    text: 'Apply' 
+	}],
+    });
+    
     functionSelector.add = Ext.create('Ext.Button', {
         text: 'Add',
         //id: 4,
@@ -292,14 +416,20 @@ Ext.onReady(function () {
 	    }
 	    else{
 		var selection = functionSelector.chooser.getValue();
-		var theName = addInteractor(selection);
-		functionSelector.addStore.add({
-		    name: theName,
-		    type: selection,
-		    color1: 'green',
-		    color2: 'blue',
-		    show: true,
-		});
+		if(selection === "New Function"){
+		    functionSelector.newFunction.setVisible(true);
+		}
+		else{
+		    var theName = addInteractor(selection);
+		    functionSelector.addStore.add({
+			name: theName,
+			type: selection,
+			color1: 'green',
+			color2: 'blue',
+			show: true,
+		    });
+		}
+		functionSelector.specs.items.add(functionSelector.specsLayout(theName));
 	    }
         },
         x: 292,
@@ -324,21 +454,30 @@ Ext.onReady(function () {
 	    {name: 'color2', type: 'string'},
             {name: 'show', type: 'boolean'},
         ],
-        //id: 14,
-        /*data : [
-            {'name':'Gaussian0','type': 'Gaussian','color': 'green', 'show': true},
-            {'name':'Gaussian1','type': 'Gaussian','color': 'green', 'show': true},
-            {'name':'Line0','type': 'Line','color': 'green', 'show': true},
-        ]*/
     });    
     
-    functionSelector.specs = Ext.create('Ext.window.Window', {
-	title: 'Specifications',
+    functionSelector.newFunction = Ext.create('Ext.window.Window', {
+	title: 'Add a New Function',
 	width: 500,
 	height: 300,
 	closeAction: 'hide',
+	items: [{
+	    xtype: 'textfield',
+	    name: 'newfunc',
+	    width: 480,
+	    height: 230,
+	    //padding: '0 0 0 20',
+	    labelAlign: 'top',
+	    fieldLabel: 'Type in javascript:',
+	    autoScroll: true,
+	    
+	    //allowBlank: false,
+	}],
 	buttons: [{ 
-	    text: 'Apply' 
+	    text: 'Add',
+	    handler: function(){
+		
+	    },
 	}],
     });
     
@@ -478,13 +617,13 @@ Ext.onReady(function () {
                     },
                 }]
         }],
-	tbar: [{
+	tbar: [/*{
 	    text: 'Specifications',
 	    scope: this,
 	    handler: function(){
 		functionSelector.specs.setVisible(true);
 	    },
-	}, {
+	},*/ {
 	    text: 'Fit',
 	    width: 70,
 	    scope: this,
@@ -786,7 +925,7 @@ Ext.onReady(function () {
 			}
 			webfit.plot.series[0].data[row][0] = (String)(record.data.x);
 			webfit.plot.series[0].data[row][1] = (String)(record.data.y);
-			webfit.plot.draw();
+			//webfit.plot.draw();
 			//webfit.plot.redraw();
                         break;
                     case Ext.data.Model.COMMIT:
