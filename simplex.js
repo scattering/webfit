@@ -16,7 +16,7 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         var ftol = Math.pow(1, -4);;
     }
     if (typeof maxiter === 'undefined') {
-        var maxiter = null;
+        var maxiter = N * 200;
     }
     if (typeof update_handler === 'undefined') {
         var update_handler = null;
@@ -31,31 +31,63 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
 
 
     var flatten = function(array){
+        var reversed = [];
         var toReturn = [];
-        for(var row = 0; row < array.length; row++){
-            for(var col = 0; col < array[0].length; col++){
-                toReturn.push(array[row][col]);
+        var length = array.length;
+        if(array[0].length !== undefined){
+            var colLength = array[0].length;
+            for(var row = 0; row < length; row++){
+                for(var col = 0; col < colLength; col++){
+                    var popped = array.pop();
+                    reversed.push(popped);
+                }
+            }
+            for(var row = 0; row < length; row++){
+                for(var col = 0; col < colLength; col++){
+                    var popped = reversed.pop();
+                    toReturn.push(popped);
+                }
+            }
+        }
+        else{
+            for(var row = 0; row < length; row++){
+                var popped = array.pop();
+                reversed.push(popped);
+            }
+            for(var row = 0; row < length; row++){
+                var popped = reversed.pop();
+                toReturn.push(popped);
             }
         }
         return toReturn;
     }
+    
     x0 = flatten(x0);
-    var radius = 0.05;
-    var val = x0*(1+radius);
+    var convertBoolToNum = function(x, y){
+        if(x === y){
+            return true;
+        }
+        return false;
+    }
     var N = x0.length;
     var numArray = function(num, lengthArray/*, type*/){
+        console.log('NUM: ',num);
+        var toReturn = [];
         if(lengthArray.length > 1){
-            var row = [];
+            /*var row = [];
             for(var i = 0; i < lengthArray[1]; i++){
-                row.push(/*(type)*/num);
-            }
-            var toReturn = [];
+                row.push(num);
+            }*/
+            //var toReturn = [];
             for(var length = 1; length < lengthArray[0]; length++){
-                toReturn.push(row);
+                toReturn.push([]);
+            }
+            for(var i = 0; i < lengthArray[1]; i++){
+                toReturn[i].push(num);
             }
         }
         else{
-            var toReturn = [];
+            //var toReturn = [];
             for(var i = 0; i < lengthArray[0]; i++){
                 toReturn.push(num);
             }
@@ -63,9 +95,20 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         
         return toReturn;
     }
-    var sim = numArray(0, [N+1,N]/*, dtype=x0.dtype*/);
-    var fsim = numArray(0, [N+1]/*, float*/);
+    
+    var rho = 1; 
+    var chi = 2; 
+    var psi = 0.5; 
+    var sigma = 0.5;
+    
+    var sim = numArray(0, [N+1,N]);
+    if(x0.length === 0){
+        sim = numArray(0, [N+1]);
+    }
+    var fsim = numArray(0, [N+1]);
+    console.log('SIM: ',sim);
     sim[0] = x0;
+    console.log('SIM: ',sim);
     var wrap_function = function(fun, bounds){
         var ncalls = [];
         var function_wrapper = undefined;
@@ -91,15 +134,16 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
     }
     var func = wrap_function(f, bounds);
     fsim[0] = func(x0);
-    var maxiter = N * 200;
-    var xtol = Math.pow(1, -4);
-    var dim2 = x0[0].length;
-    var x0Shape = [x0.length, x0[0].length];
+    var val = x0*(1+radius);
+    val[convertBoolToNum(val, 0)] = radius;
+    /*var x0Shape = [x0.length];
+    if(x0[0] !== undefined){
+        x0Shape.push(x0[0].length);
+    }
     var tol = numArray(1, x0Shape)*xtol;//***
     var bounded = lo === Infinity && hi === Infinity;
     tol[bounded] = (hi[bounded]-lo[bounded])*xtol;
-    var xtol = tol;
-    var ftol = Math.pow(1, -4);
+    var xtol = tol;*/
 
     for(var k = 0; k < N+1; k++){
         var y = x0 + 0;
@@ -119,7 +163,7 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         return toReturn;
     }
 
-    ind = fsim.sort();
+    var ind = fsim.sort();
     fsim = take(fsim, ind, 0);
     sim = take(sim, ind, 0);
 
@@ -135,19 +179,15 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         return toReturn;
     }
 
-    var rho = 1; 
-    var chi = 2; 
-    var psi = 0.5; 
-    var sigma = 0.5;
-
     var iterations = 1;
-    while(iteractions < maxiter){
+    while(iterations < maxiter){
         var toAnalyze = sim.slice(1,sim.length);
         var allTrue = true;
         for(var i = 0; i < toAnalyze.length; i++){
             if(!(Math.abs(toAnalyze[i] - sim[0]) <= xtol)){
                 allTrue = false;
                 i = toAnalyze.length;
+                //console.log('NOT ALL TRUE');
             }
         }
         if(allTrue && Math.max(Math.abs(fsim[0] - fsim.slice(1,sim.length)) <= ftol)){
@@ -164,8 +204,18 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
             var fxe = func(xe);
             
             if(fxe < fxr){
+                sim[sim.length-1] = xe;
+                fsim[fsim.length-1] = fxe;
+            }
+            else{
                 sim[sim.length-1] = xr;
-                fsim[sim.length-1] = fxr;
+                fsim[fsim.length-1] = fxr;
+            }
+        }
+        else{
+            if(fxr < fsim[sim.length-2]){
+                sim[sim.length-1] = xr;
+                fsim[fsim.length-1] = fxr;
             }
             else{
                 if(fxr < fsim[sim.length-1]){
@@ -174,23 +224,33 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
                     
                     if(fxc <= fxr){
                         sim[sim.length-1] = xc;
-                        fsim[sim.length-1] = fxc;
+                        fsim[fsim.length-1] = fxc;
+                    }
+                    else{
+                    doshrink = 1;
                     }
                 }
                 else{
                     var xcc = (1-psi)*xbar + psi*sim[sim.length-1];
                     var fxcc = func(xcc);
                     
-                    if(doshrink){
-                        for(var j = 1; j < N+1; j++){
-                            sim[j] = sim[0] + sigma*(sim[j] - sim[0]);
-                            fsim[j] = func(sim[j]);
-                        }
+                    if(fxcc < fsim[fsim.length-1]){
+                        sim[sim.length-1] = xcc;
+                        fsim[fsim.length-1] = fxcc;
+                    }
+                    else{
+                        doshrink = 1;
+                    }
+                }
+                if(doshrink){
+                    for(var j = 1; j < N+1; j++){
+                        sim[j] = sim[0] + sigma*(sim[j] - sim[0]);
+                        fsim[j] = func(sim[j]);
                     }
                 }
             }
         }
-        var ind = fsim.sort();
+        ind = fsim.sort();
         sim = take(sim,ind,0);
         fsim = take(fsim,ind,0);
         if(update_handler != undefined)
@@ -199,6 +259,11 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         if(abort_test()) 
             break;
     }
+    var status = 1;
+    if(iterations < maxiter){
+        status = 0;
+    }
+    return(sim/*[sim[0], fsim[0]]*/);
 }
 
 var rosen = function(x){
@@ -223,7 +288,8 @@ console.log(x);
 console.log("Time:",new Date().getTime() / 1000 - start);
 
 x0 = [0.8,1.2,0.7];
-var lo = [0,0,0];
+//var lo = [0,0,0];
+var lo = [-1,-1,-1];
 var hi = [1,1,1];
 console.log("Bounded Nelder-Mead Simplex");
 console.log("===========================");
