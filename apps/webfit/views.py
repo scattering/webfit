@@ -46,6 +46,10 @@ def home(request):
 def webfit(request):
     return render(request,'webfit.html')
 
+@ensure_csrf_cookie
+def test_simplex(request):
+    return render(request,'test_simplex.html')
+
 #@csrf_exempt
 def calculate(request):
     a3start=float(request.POST['a3start'])

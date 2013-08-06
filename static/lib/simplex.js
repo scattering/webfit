@@ -1,83 +1,52 @@
-function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abort_test){
-    //check if required variables are defined, if not, initialize them
-    if (typeof x0 === 'undefined') {
-        var x0 = null;
-    }
-    if (typeof bounds === 'undefined') {
-        var bounds = null;
-    }
-    if (typeof radius === 'undefined') {
-        var radius = .05;
-    }
-    if (typeof xtol === 'undefined') {
-        var xtol = Math.pow(1, -4);;
-    }
-    if (typeof ftol === 'undefined') {
-        var ftol = Math.pow(1, -4);;
-    }
-    if (typeof maxiter === 'undefined') {
-        var maxiter = N * 200;
-    }
-    if (typeof update_handler === 'undefined') {
-        var update_handler = null;
-    }
-    var dont_abort = function(){
-        return false;
-    }
-    if (typeof abort_test === 'undefined') {
-        var abort_test = dont_abort;
-    }
+$( document ).ready( function() {
 
-
-
-    var flatten = function(array){
-        var reversed = [];
-        var toReturn = [];
-        var length = array.length;
-        if(array[0].length !== undefined){
-            var colLength = array[0].length;
-            for(var row = 0; row < length; row++){
-                for(var col = 0; col < colLength; col++){
-                    var popped = array.pop();
-                    reversed.push(popped);
-                }
-            }
-            for(var row = 0; row < length; row++){
-                for(var col = 0; col < colLength; col++){
-                    var popped = reversed.pop();
-                    toReturn.push(popped);
-                }
-            }
-        }
-        else{
-            for(var row = 0; row < length; row++){
-                var popped = array.pop();
+    var flatten = function(myarray){
+    var reversed = [];
+    var toReturn = [];
+    var length = myarray.length;
+    if(myarray[0].length !== undefined){
+        var colLength = myarray[0].length;
+        for(var row = 0; row < length; row++){
+            for(var col = 0; col < colLength; col++){
+                var popped = myarray.pop();
                 reversed.push(popped);
             }
-            for(var row = 0; row < length; row++){
+        }
+        for(var row = 0; row < length; row++){
+            for(var col = 0; col < colLength; col++){
                 var popped = reversed.pop();
                 toReturn.push(popped);
             }
         }
-        return toReturn;
     }
-    
-    x0 = flatten(x0);
+    else{
+        for(var row = 0; row < length; row++){
+            var popped = myarray.pop();
+            reversed.push(popped);
+        }
+        for(var row = 0; row < length; row++){
+            var popped = reversed.pop();
+            toReturn.push(popped);
+        }
+    }
+    return toReturn;
+};
+
     var convertBoolToNum = function(x, y){
         if(x === y){
             return true;
         }
         return false;
-    }
-    var N = x0.length;
+    };
+
     var numArray = function(num, lengthArray/*, type*/){
         console.log('NUM: ',num);
         var toReturn = [];
         if(lengthArray.length > 1){
             /*var row = [];
-            for(var i = 0; i < lengthArray[1]; i++){
-                row.push(num);
-            }*/
+             for(var i = 0; i < lengthArray[1]; i++){
+             row.push(num);
+             }*/
             //var toReturn = [];
             for(var length = 1; length < lengthArray[0]; length++){
                 toReturn.push([]);
@@ -92,23 +61,10 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
                 toReturn.push(num);
             }
         }
-        
+
         return toReturn;
-    }
-    
-    var rho = 1; 
-    var chi = 2; 
-    var psi = 0.5; 
-    var sigma = 0.5;
-    
-    var sim = numArray(0, [N+1,N]);
-    if(x0.length === 0){
-        sim = numArray(0, [N+1]);
-    }
-    var fsim = numArray(0, [N+1]);
-    console.log('SIM: ',sim);
-    sim[0] = x0;
-    console.log('SIM: ',sim);
+    };
+
     var wrap_function = function(fun, bounds){
         var ncalls = [];
         var function_wrapper = undefined;
@@ -131,7 +87,94 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
             }
         }
         return /*ncalls,*/ function_wrapper;
+    };
+
+    //assuming axis is a column
+    var take = function(array, ind, axis){
+        var toReturn = [];
+        if(axis === 0){
+            for(var i = 0; i < ind.length; i++){
+                toReturn.push(array[ind[i]]);
+            }
+        }
+        return toReturn;
+    };
+
+    var sum = function(array, axis){
+        var toReturn = 0;
+        if(axis === 0){
+            for(var row = 0; row < array.length; row++){
+                for(var col = 0; col < array[0].length; col++){
+                    toReturn += array[row][col];
+                }
+            }
+        }
+        return toReturn;
+    };
+
+    var dont_abort = function(){
+        return false;
+    };
+
+    var rosen = function(x){
+        return x*x;
     }
+
+
+
+
+
+    var simplex = function(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abort_test){
+    //check if required variables are defined, if not, initialize them
+    if (typeof x0 === 'undefined') {
+        var x0 = null;
+    }
+    if (typeof bounds === 'undefined') {
+        var bounds = null;
+    }
+    if (typeof radius === 'undefined') {
+        var radius = .05;
+    }
+    if (typeof xtol === 'undefined') {
+        var xtol = Math.pow(1, -4);;
+    }
+    if (typeof ftol === 'undefined') {
+        var ftol = Math.pow(1, -4);;
+    }
+    if (typeof maxiter === 'undefined') {
+        var maxiter = N * 200;
+    }
+    if (typeof update_handler === 'undefined') {
+        var update_handler = null;
+    }
+
+    if (typeof abort_test === 'undefined') {
+        var abort_test = dont_abort;
+    }
+
+
+
+
+    
+    x0 = flatten(x0);
+
+    var N = x0.length;
+
+    
+    var rho = 1; 
+    var chi = 2; 
+    var psi = 0.5; 
+    var sigma = 0.5;
+    
+    var sim = numArray(0, [N+1,N]);
+    if(x0.length === 0){
+        sim = numArray(0, [N+1]);
+    }
+    var fsim = numArray(0, [N+1]);
+    console.log('SIM: ',sim);
+    sim[0] = x0;
+    console.log('SIM: ',sim);
+
     var func = wrap_function(f, bounds);
     fsim[0] = func(x0);
     var val = x0*(1+radius);
@@ -152,32 +195,12 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         fsim[k+1] = func(y);
     }
 
-    //assuming axis is a column
-    var take = function(array, ind, axis){
-        var toReturn = [];
-        if(axis === 0){
-            for(var i = 0; i < ind.length; i++){
-                toReturn.push(array[ind[i]]);
-            }
-        }
-        return toReturn;
-    }
 
     var ind = fsim.sort();
     fsim = take(fsim, ind, 0);
     sim = take(sim, ind, 0);
 
-    var sum = function(array, axis){
-        var toReturn = 0;
-        if(axis === 0){
-            for(var row = 0; row < array.length; row++){
-                for(var col = 0; col < array[0].length; col++){
-                    toReturn += array[row][col];
-                }
-            }
-        }
-        return toReturn;
-    }
+
 
     var iterations = 1;
     while(iterations < maxiter){
@@ -264,13 +287,12 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
         status = 0;
     }
     return(sim/*[sim[0], fsim[0]]*/);
-}
+};
 
-var rosen = function(x){
-    return x*x;
-}
+
 
 var x0 = [0.8,1.2,0.7];
+var x0 = [0.5];
 console.log("Nelder-Mead Simplex");
 console.log("===================");
 var start = new Date().getTime() / 1000;
@@ -278,60 +300,63 @@ var x = simplex(rosen,x0);
 console.log(x);
 console.log("Time:",new Date().getTime() / 1000 - start);
 
-x0 = [0,0,0];
-console.log("Nelder-Mead Simplex");
-console.log("===================");
-console.log("starting at zero");
-start = new Date().getTime() / 1000;
-x = simplex(rosen,x0);
-console.log(x);
-console.log("Time:",new Date().getTime() / 1000 - start);
+//x0 = [0,0,0];
+//console.log("Nelder-Mead Simplex");
+//console.log("===================");
+//console.log("starting at zero");
+//start = new Date().getTime() / 1000;
+//x = simplex(rosen,x0);
+//console.log(x);
+//console.log("Time:",new Date().getTime() / 1000 - start);
+//
+//x0 = [0.8,1.2,0.7];
+////var lo = [0,0,0];
+//var lo = [-1,-1,-1];
+//var hi = [1,1,1];
+//console.log("Bounded Nelder-Mead Simplex");
+//console.log("===========================");
+//start = new Date().getTime() / 1000;
+//x = simplex(rosen,x0,[lo,hi]);
+//console.log(x);
+//console.log("Time:",new Date().getTime() / 1000 - start);
+//
+//x0 = [0.8,1.2,0.7];
+//lo = [0.999,0.999,0.999];
+//hi = [1.001,1.001,1.001];
+//console.log("Bounded Nelder-Mead Simplex");
+//console.log("===========================");
+//console.log("tight bounds");
+//console.log("simplex is smaller than 1e-7 in every dimension, but you can't");
+//console.log("see this without uncommenting the print statement simplex function");
+//start = new Date().getTime() / 1000;
+//x = simplex(rosen,x0,[lo,hi],xtol=1e-4);
+//console.log(x);
+//console.log("Time:",new Date().getTime() / 1000 - start);
+//
+//x0 = [0,0,0];
+//lo = [0.999,0.999,0.999];
+//hi = [1.001,1.001,1.001];
+//console.log("Bounded Nelder-Mead Simplex");
+//console.log("===========================");
+//console.log("tight bounds, x0=0 outside bounds from above");
+//start = new Date().getTime() / 1000;
+//var rosenN = function(x){
+//    return rosen(-x);
+//}
+//x = simplex(rosenN,x0,[lo,hi],xtol=1e-4);
+//console.log(x);
+//console.log("Time:",new Date().getTime() / 1000 - start);
+//
+//x0 = [0.8,1.2,0.7];
+//lo = [-Infinity,-Infinity,-Infinity];
+//hi = [Infinity,Infinity,Infinity];
+//console.log("Bounded Nelder-Mead Simplex");
+//console.log("===========================");
+//console.log("infinite bounds");
+//start = new Date().getTime() / 1000;
+//x = simplex(rosen,x0,[lo,hi],xtol=1e-4);
+//console.log(x);
+//console.log("Time:",new Date().getTime() / 1000 - start);
 
-x0 = [0.8,1.2,0.7];
-//var lo = [0,0,0];
-var lo = [-1,-1,-1];
-var hi = [1,1,1];
-console.log("Bounded Nelder-Mead Simplex");
-console.log("===========================");
-start = new Date().getTime() / 1000;
-x = simplex(rosen,x0,[lo,hi]);
-console.log(x);
-console.log("Time:",new Date().getTime() / 1000 - start);
 
-x0 = [0.8,1.2,0.7];
-lo = [0.999,0.999,0.999];
-hi = [1.001,1.001,1.001];
-console.log("Bounded Nelder-Mead Simplex");
-console.log("===========================");
-console.log("tight bounds");
-console.log("simplex is smaller than 1e-7 in every dimension, but you can't");
-console.log("see this without uncommenting the print statement simplex function");
-start = new Date().getTime() / 1000;
-x = simplex(rosen,x0,[lo,hi],xtol=1e-4);
-console.log(x);
-console.log("Time:",new Date().getTime() / 1000 - start);
-
-x0 = [0,0,0];
-lo = [0.999,0.999,0.999];
-hi = [1.001,1.001,1.001];
-console.log("Bounded Nelder-Mead Simplex");
-console.log("===========================");
-console.log("tight bounds, x0=0 outside bounds from above");
-start = new Date().getTime() / 1000;
-var rosenN = function(x){
-    return rosen(-x);
-}
-x = simplex(rosenN,x0,[lo,hi],xtol=1e-4);
-console.log(x);
-console.log("Time:",new Date().getTime() / 1000 - start);
-
-x0 = [0.8,1.2,0.7];
-lo = [-Infinity,-Infinity,-Infinity];
-hi = [Infinity,Infinity,Infinity];
-console.log("Bounded Nelder-Mead Simplex");
-console.log("===========================");
-console.log("infinite bounds");
-start = new Date().getTime() / 1000;
-x = simplex(rosen,x0,[lo,hi],xtol=1e-4);
-console.log(x);
-console.log("Time:",new Date().getTime() / 1000 - start);
+});
