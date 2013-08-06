@@ -100,6 +100,21 @@ $( document ).ready( function() {
         return toReturn;
     };
 
+    var sortWithIndices=function(toSort) {
+        for (var i = 0; i < toSort.length; i++) {
+            toSort[i] = [toSort[i], i];
+        }
+        toSort.sort(function(left, right) {
+            return left[0] < right[0] ? -1 : 1;
+        });
+        var sortIndices = [];
+        for (var j = 0; j < toSort.length; j++) {
+            sortIndices.push(toSort[j][1]);
+            toSort[j] = toSort[j][0];
+        }
+        return sortIndices;
+    };
+
     var sum = function(array, axis){
         var toReturn = 0;
         if(axis === 0){
@@ -206,8 +221,9 @@ $( document ).ready( function() {
     }
 
 
-    var ind = fsim.sort();
-    fsim = take(fsim, ind, 0);
+    //var ind = fsim.sort();
+    //fsim = take(fsim, ind, 0);
+    var ind=sortWithIndices(fsim);
     sim = take(sim, ind, 0);
 
 
@@ -283,9 +299,15 @@ $( document ).ready( function() {
                 }
             }
         }
-        ind = fsim.sort();
+        //ind = fsim.sort();
+        //fsim = take(fsim,ind,0);
+        var ind=sortWithIndices(fsim);
         sim = take(sim,ind,0);
-        fsim = take(fsim,ind,0);
+
+
+
+
+
         if(update_handler != undefined)
             update_handler(iterations, maxiter, sim, fsim);
         iterations += 1;

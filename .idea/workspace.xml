@@ -12,7 +12,7 @@
     <file path="$USER_HOME$/psdplan/static/lib/interactors/gaussian_interactor_plugin.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372431920420" ignored="false" />
     <file path="/webfit.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1373556442186" ignored="false" />
     <file path="/test_simplex.html" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375762209649" ignored="false" />
-    <file path="/simplex.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375777329805" ignored="false" />
+    <file path="/simplex.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375779545861" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,12 +44,12 @@
       <file leaf-file-name="simplex.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/lib/simplex.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="213" column="27" selection-start="5249" selection-end="5249" vertical-scroll-proportion="0.23688664">
+            <state line="303" column="38" selection-start="8215" selection-end="8215" vertical-scroll-proportion="2.927242">
               <folding>
                 <element signature="e#70#961#0" expanded="false" />
+                <element signature="e#1005#1090#0" expanded="false" />
                 <element signature="e#1148#1832#0" expanded="false" />
                 <element signature="e#1880#2486#0" expanded="false" />
-                <element signature="e#2562#2764#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -324,7 +324,39 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>300</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>301</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>304</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>222</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>223</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/static/lib/simplex.js</url>
+          <line>224</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="7" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -401,12 +433,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/lib/simplex.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="213" column="27" selection-start="5249" selection-end="5249" vertical-scroll-proportion="0.23688664">
+        <state line="303" column="38" selection-start="8215" selection-end="8215" vertical-scroll-proportion="2.927242">
           <folding>
             <element signature="e#70#961#0" expanded="false" />
+            <element signature="e#1005#1090#0" expanded="false" />
             <element signature="e#1148#1832#0" expanded="false" />
             <element signature="e#1880#2486#0" expanded="false" />
-            <element signature="e#2562#2764#0" expanded="false" />
           </folding>
         </state>
       </provider>
