@@ -282,6 +282,12 @@ Ext.onReady(function () {
 	webfit.plot.plugins.interactors.fcursor.register(newi);	//unregister first
 	webfit.plot.redraw();
 	
+	//UPDATE RESIDUALS
+	webfit.ResidualPlot.series[0].data = residualUpdate();
+	webfit.ResidualPlot.replot( {resetAxes: true } );
+	//webfit.ResidualPlot.redraw();
+	console.log('UPDATED RESIDUALS');
+	
 	return tcursor.name;
     }
     
@@ -1055,6 +1061,8 @@ Ext.onReady(function () {
 	}
     });
     
+    
+    
     var innerPlot = Ext.create('Ext.panel.Panel', {
         width: 450,
         height: 498,
@@ -1075,7 +1083,7 @@ Ext.onReady(function () {
 	    var fColPlugin = webfit.plot.plugins.interactors.fcursor;
 	    var calcy=fColPlugin.sum.call(fColPlugin.FunctionCollection, point[0]);
 	    //var calcy=webfit.plot.plugins.interactors.fcursor.sum.call($.jqplot.FunctionCollection,point[0]);
-	    dataPoints.push(point[0], point[1] - calcy);
+	    dataPoints.push([point[0], point[1] - calcy]);
 	}
 	return dataPoints;
     };
@@ -1158,6 +1166,7 @@ Ext.onReady(function () {
         //]
     //});
     
+    
     var workspace = Ext.create('Ext.tab.Panel', {
         width: 1200,
         //id: 13,
@@ -1176,6 +1185,16 @@ Ext.onReady(function () {
 	    },{
 		title: 'Help Manual',
 	    }],
+	    
+	    afterComponentLayout: function(width, height){
+	    webfit.plot.plugins.interactors.fcursor.onDrag = new function(pos){
+		webfit.plot.plugins.interactors.fcursor.onDrag(pos);
+		webfit.ResidualPlot.series[0].data = residualUpdate();
+		webfit.ResidualPlot.redraw();
+	    }
+	    
+	    }
+	    
 
     });
     

@@ -71,7 +71,7 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
     }
     var N = x0.length;
     var numArray = function(num, lengthArray/*, type*/){
-        console.log('NUM: ',num);
+        console.log('NUM&LENGTHARRAY: ',num,'\n', lengthArray);
         var toReturn = [];
         if(lengthArray.length > 1){
             /*var row = [];
@@ -79,12 +79,17 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
                 row.push(num);
             }*/
             //var toReturn = [];
-            for(var length = 1; length < lengthArray[0]; length++){
+            for(var length = 0; length < lengthArray[0]; length++){
                 toReturn.push([]);
+                for(var i = 0; i < lengthArray[1]; i++){
+                    toReturn[length].push(num);
+                }
             }
-            for(var i = 0; i < lengthArray[1]; i++){
+            /*for(var i = 0; i < lengthArray[1]; i++){
                 toReturn[i].push(num);
-            }
+                toReturn[i].push(num);
+                toReturn[i].push(num);
+            }*/
         }
         else{
             //var toReturn = [];
@@ -108,7 +113,7 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
     var fsim = numArray(0, [N+1]);
     console.log('SIM: ',sim);
     sim[0] = x0;
-    console.log('SIM: ',sim);
+    //console.log('SIM: ',sim);
     var wrap_function = function(fun, bounds){
         var ncalls = [];
         var function_wrapper = undefined;
@@ -263,7 +268,7 @@ function simplex(f, x0, bounds, radius, xtol, ftol, maxiter, update_handler, abo
     if(iterations < maxiter){
         status = 0;
     }
-    return(sim/*[sim[0], fsim[0]]*/);
+    return(sim[0]/*[sim[0], fsim[0]]*/);
 }
 
 var rosen = function(x){
