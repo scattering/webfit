@@ -25,6 +25,7 @@ urlpatterns = patterns('',
 urlpatterns += patterns(REPO_ROOT + '.apps.webfit.views',
                         ('^webfit$', 'webfit'),
                         ('^calculate/$', 'calculate'), 
+                        ('^test_simplex/$', 'test_simplex'), 
                         ('^$', 'home'),                                                      
                         )
 
