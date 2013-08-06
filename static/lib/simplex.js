@@ -50,10 +50,13 @@ $( document ).ready( function() {
             //var toReturn = [];
             for(var length = 0; length < lengthArray[0]; length++){
                 toReturn.push([]);
+                for(var i = 0; i < lengthArray[1]; i++){
+                    toReturn[length].push(num);
+                }
             }
-            for(var i = 0; i <= lengthArray[1]; i++){
+            /*for(var i = 0; i <= lengthArray[1]; i++){
                 toReturn[i].push(num);
-            }
+            }*/
         }
         else{
             //var toReturn = [];
