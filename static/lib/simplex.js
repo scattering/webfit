@@ -48,10 +48,10 @@ $( document ).ready( function() {
              row.push(num);
              }*/
             //var toReturn = [];
-            for(var length = 1; length < lengthArray[0]; length++){
+            for(var length = 0; length < lengthArray[0]; length++){
                 toReturn.push([]);
             }
-            for(var i = 0; i < lengthArray[1]; i++){
+            for(var i = 0; i <= lengthArray[1]; i++){
                 toReturn[i].push(num);
             }
         }
@@ -177,8 +177,18 @@ $( document ).ready( function() {
 
     var func = wrap_function(f, bounds);
     fsim[0] = func(x0);
-    var val = x0*(1+radius);
-    val[convertBoolToNum(val, 0)] = radius;
+    //for now, assume x0 is an array--we may special case the scalar later
+
+    var val =[];
+
+    for (var i=0; i < x0.length; i++){
+      var temp=x0*(1+radius);
+      if (temp===0) {
+          temp=radius;
+      };
+      val.push(temp);
+    };
+    //val[convertBoolToNum(val, 0)] = radius;
     /*var x0Shape = [x0.length];
     if(x0[0] !== undefined){
         x0Shape.push(x0[0].length);
