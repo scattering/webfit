@@ -285,7 +285,6 @@ Ext.onReady(function () {
 	//UPDATE RESIDUALS
 	webfit.ResidualPlot.series[0].data = residualUpdate();
 	webfit.ResidualPlot.replot( {resetAxes: true } );
-	//webfit.ResidualPlot.redraw();
 	console.log('UPDATED RESIDUALS');
 	
 	return tcursor.name;
@@ -775,40 +774,40 @@ Ext.onReady(function () {
                 },
                 items: [functionSelector.plotRange, ],
 		//PLOTRANGE: ["panel-1064", "textfield-1066", "textfield-1067"]
-		//RESIDUALSRANGE: ["panel-1068", "textfield-1070", "textfield-1071"]
 		buttons: [{
 		    text: 'Update',
 		    handler: function() {
-			plotxmin = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1061').getValue());
-			plotxmax = Math.floor(functionSelector.plotRange.items.getByKey('textfield-1062').getValue());
-			residxmin = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1065').getValue());
-			residxmax = Math.floor(functionSelector.residualsRange.items.getByKey('textfield-1066').getValue());
-			
-			if(plotxmin === 0 || plotxmax === 0 || residxmin === 0 || residxmax === 0){
+			plotxmin = Math.floor(functionSelector.plotRange.items.getAt(1).getValue());
+			plotxmax = Math.floor(functionSelector.plotRange.items.getAt(2).getValue());
+			console.log('min',plotxmin);
+			console.log('max',plotxmax);
+			if(plotxmin === 0 || plotxmax === 0){
 			    alert('You must fill in all the fields first!');
 			}
 			//TODO 
 			else{
 			    console.log('in else');
 			    
-			    var data = webfit.plot.data.pop();
+			    var data = webfit.plot.data[0];
 			    for(var i=0; i < data.length; i++){
-				var point = data.pop();
-				if(point[0] >= plotxmin && point[0] <= plotxmax){
-				    data.push(point);
+				var point = data.splice(i,1);
+				if(point[0][0] >= plotxmin && point[0][0] <= plotxmax){
+				    data.splice(i,0,point);
+				    console.log(point[0]);
 				}
+				/*else{
+				    console.log(point[0]);
+				}*/
 			    }
-			    webfit.plot.data.push(data);
 			    webfit.plot.redraw();
 			    
-			    var dataR = webfit.ResidualPlot.data.pop();
+			    var dataR = webfit.ResidualPlot.data[0];
 			    for(var i=0; i < dataR.length; i++){
 				var pointR = dataR.pop();
-				if((pointR[0] >= residxmin && pointR[0] <= residxmax) || (pointR[0] >= plotxmin && pointR[0] <= plotxmax)){
+				if((pointR[0] >= plotxmin && pointR[0] <= plotxmax) || (pointR[0] >= plotxmin && pointR[0] <= plotxmax)){
 				    dataR.push(pointR);
 				}
 			    }
-			    webfit.ResidualPlot.data.push(dataR);
 			    webfit.ResidualPlot.redraw();
 			}
 		    }
@@ -1042,7 +1041,14 @@ Ext.onReady(function () {
 		    ]
     
 		});
-		
+	    var updateResiduals = function(){
+		webfit.ResidualPlot.series[0].data = residualUpdate();
+		webfit.ResidualPlot.redraw();
+		console.log('UPDATING RESIDUALS');
+	    }
+	    
+	    $(document).on("updated", updateResiduals);
+	    //webfit.plot.plugins.interactors.fcursor.on('updated', updateResiduals ,webfit.plotPanel);
 		//WORKING LISTENER        
     /*            mylistener=function() {};
 		mylistener.update=function update(pos){
@@ -1060,8 +1066,6 @@ Ext.onReady(function () {
 	    }
 	}
     });
-    
-    
     
     var innerPlot = Ext.create('Ext.panel.Panel', {
         width: 450,
@@ -1154,7 +1158,6 @@ Ext.onReady(function () {
         },
         items: [innerPlot, residuals],
     });
-    
     
  //Ext.regModel('dataModel', {
         //fields:[

@@ -1277,15 +1277,12 @@ debug = true;
     $.extend($.jqplot.Gaussian.prototype, {        
         initialize: function(parent, peak, p1, width) {
             $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
-            
             this.name = 'gaussian';
             this.f = this.gaussian;
 	    this.points = {pk: peak, pw:p1};
             this.c = peak;
             this.p1 = p1;
 	    this._setpars();
-	    
-	    
         },
 	
 	_setpars:function(){
@@ -1293,10 +1290,9 @@ debug = true;
                 cy = this.c.pos.y,
                 wx = this.p1.pos.x,
                 wy = cy - this.p1.pos.y;
-            // Determine gaussian parameters from the coordinates
-            var height =  /*2**/wy,
+            var height = wy,
                 bkgd = -2*height,
-                FWHM = /*2**/Math.abs(wx - cx),
+                FWHM = Math.abs(wx - cx),
                 stdDev = FWHM / Math.sqrt(Math.log(256));
             this.pars = { center: cx, stdDev: stdDev, height: height, bkgd: bkgd };	
 	
@@ -1304,26 +1300,12 @@ debug = true;
 	
         render: function(ctx) {
 	    this._setpars();
-            // Correct the coordinates system, with 
             var nx = this.parent.canvas.width,cy = this.c.pos.y ;
-                //cx = this.c.pos.x,
-                //,
-                //wx = this.p1.pos.x,
-                //wy = cy - this.p1.pos.y;
-            //// Determine gaussian parameters from the coordinates
-            //var height =  2*wy,
-                //bkgd = -2*height,
-                //FWHM = 2*Math.abs(wx - cx),
-                //stdDev = FWHM / Math.sqrt(Math.log(256));
-            //this.pars = { center: cx, stdDev: stdDev, height: height, bkgd: bkgd };
-
-            // Render the function
             $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
             this.drawEq(ctx, bind(this, this.f), 0, cy, 0, nx);
         },
-        
+	
         gaussian: function(x) {
-            // Compute the gaussian value from the parameters
             var resid = (x - this.pars.center)/this.pars.stdDev;
             return this.pars.height - this.pars.height * Math.exp(-0.5 * resid * resid);
         }

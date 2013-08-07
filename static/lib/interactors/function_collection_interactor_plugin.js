@@ -31,6 +31,7 @@
             bind(this, this.sum);
             $.extend(this,options);
             this.grobs.push(this.FunctionCollection)
+	    
         },
         
         register: function(toAdd){
@@ -108,10 +109,12 @@
             //console.log(this.sum)
             //this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.redraw();
-            /*$.event.trigger({
-		type: "Update",
-	    });*/
-	    this.fireEvent('updated');
+            $.event.trigger({
+		type: "update",
+		message: 'UPDATED'
+	    });
+	    console.log('UPDATE IS CALLED');
+	    //this.fireEvent('updated');
         },
         
         //render: function(ctx){
