@@ -200,7 +200,7 @@ $( document ).ready( function() {
     var val =[];
 
     for (var i=0; i < x0.length; i++){
-      var temp=x0*(1+radius);
+      var temp=x0[i]*(1+radius);
       if (temp===0) {
           temp=radius;
       };
@@ -215,9 +215,9 @@ $( document ).ready( function() {
     var bounded = lo === Infinity && hi === Infinity;
     tol[bounded] = (hi[bounded]-lo[bounded])*xtol;
     var xtol = tol;*/
-
+    // need to make sure that we copy correctly
     for(var k = 0; k < N+1; k++){
-        var y = x0 + 0;
+        var y = jQuery.extend(true, {}, x0); //x0 + 0;
         y[k] = val[k];
         sim[k+1] = y;
         fsim[k+1] = func(y);
