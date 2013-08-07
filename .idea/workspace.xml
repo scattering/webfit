@@ -4,6 +4,9 @@
     <list default="true" id="59e3cc44-4b79-4209-bf11-9efa04b5304e" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/static/lib/simplex.js" afterPath="$PROJECT_DIR$/static/lib/simplex.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webfit.wpu" afterPath="$PROJECT_DIR$/webfit.wpu" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webfit5.wpr" afterPath="$PROJECT_DIR$/webfit5.wpr" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webfit5.wpu" afterPath="$PROJECT_DIR$/webfit5.wpu" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="webfit.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -13,7 +16,7 @@
     <file path="$USER_HOME$/psdplan/static/lib/interactors/gaussian_interactor_plugin.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1372431920420" ignored="false" />
     <file path="/webfit.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1373556442186" ignored="false" />
     <file path="/test_simplex.html" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375762209649" ignored="false" />
-    <file path="/simplex.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375840098480" ignored="false" />
+    <file path="/simplex.js" changelist="59e3cc44-4b79-4209-bf11-9efa04b5304e" time="1375863482611" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +57,7 @@
       <file leaf-file-name="simplex.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/static/lib/simplex.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="216" column="26" selection-start="5603" selection-end="5603" vertical-scroll-proportion="0.7123519">
+            <state line="195" column="5" selection-start="4987" selection-end="4987" vertical-scroll-proportion="0.32994923">
               <folding />
             </state>
           </provider>
@@ -392,7 +395,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/lib/simplex.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="216" column="26" selection-start="5603" selection-end="5603" vertical-scroll-proportion="0.7123519">
+        <state line="195" column="5" selection-start="4987" selection-end="4987" vertical-scroll-proportion="0.32994923">
           <folding />
         </state>
       </provider>

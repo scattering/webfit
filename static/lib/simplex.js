@@ -190,10 +190,13 @@ $( document ).ready( function() {
     }
     var fsim = numArray(0, [N+1]);
     console.log('SIM: ',sim);
-    sim[0] = x0;
+
+    for (var i=0; i < x0.length; i++){
+    sim[0][i] = x0[i];
+    }
     console.log('SIM: ',sim);
 
-    var func = wrap_function(f, bounds);
+    var func = f;//wrap_function(f, bounds);
     fsim[0] = func(x0);
     //for now, assume x0 is an array--we may special case the scalar later
 
@@ -204,7 +207,7 @@ $( document ).ready( function() {
       if (temp===0) {
           temp=radius;
       };
-      val.push(temp);
+      val.push([temp]);
     };
     //val[convertBoolToNum(val, 0)] = radius;
     /*var x0Shape = [x0.length];
@@ -216,10 +219,12 @@ $( document ).ready( function() {
     tol[bounded] = (hi[bounded]-lo[bounded])*xtol;
     var xtol = tol;*/
     // need to make sure that we copy correctly
-    for(var k = 0; k < N+1; k++){
-        var y = jQuery.extend(true, {}, x0); //x0 + 0;
-        y[k] = val[k];
-        sim[k+1] = y;
+    for(var k = 0; k < N; k++){
+        var y = x0;//jQuery.extend(true, {}, x0); //x0 + 0;
+        y[k]= val[k];
+        for (var i=0; i < x0.length; i++){
+        sim[k+1][i] = y[k][i];
+        };
         fsim[k+1] = func(y);
     }
 
