@@ -127,6 +127,8 @@ $( document ).ready( function() {
                 }
             }
         }
+
+        toReturn=[toReturn];
         return toReturn;
     };
 
@@ -136,7 +138,7 @@ $( document ).ready( function() {
 
     var rosen = function(x){
         return x*x;
-    }
+    } ;
 
 
 
@@ -147,6 +149,10 @@ $( document ).ready( function() {
     if (typeof x0 === 'undefined') {
         var x0 = null;
     }
+
+        x0 = flatten(x0);
+
+        var N = x0.length;
     if (typeof bounds === 'undefined') {
         var bounds = null;
     }
@@ -174,9 +180,7 @@ $( document ).ready( function() {
 
 
     
-    x0 = flatten(x0);
 
-    var N = x0.length;
 
     
     var rho = 1; 
@@ -243,44 +247,66 @@ $( document ).ready( function() {
         for(var i = 0; i < toAnalyze.length; i++){
             if(!(Math.abs(toAnalyze[i] - sim[0]) <= xtol)){
                 allTrue = false;
-                i = toAnalyze.length;
+                i = toAnalyze.length;       // break???
                 //console.log('NOT ALL TRUE');
             }
         }
-        if(allTrue && Math.max(Math.abs(fsim[0] - fsim.slice(1,sim.length)) <= ftol)){
+        var ftrue=true;
+        var fslice=fsim.slice(1,fsim.length);
+        var fdiff=[];
+        for(var i = 0; i < fslice.length; i++){
+            fdiff.push(Math.abs(fsim[0]-fslice[i]));
+        };
+            if (!(allTrue && (Math.max(fdiff) <= ftol))){
             break;
-        }
+        };
         
-        var xbar = sum(sim.slice(0,sim.length-1),0) / N; 
-        var xr = (1+rho)*xbar - rho*sim[sim.length-1];
+        var xbar = sum(sim.slice(0,sim.length-1),0) ;
+            xbar[0]=xbar[0]/ N;
+
+        var xr=x0;
+
+        for(var i = 0; i < x0.length; i++){
+            xr[i] = (1+rho)*xbar[i] - rho*sim[sim.length-1][i];
+        };
         var fxr = func(xr);
         var doshrink = 0;
         
         if(fxr < fsim[0]){
-            var xe = (1+rho*chi)*xbar - rho*chi*sim[sim.length-1];
+            var xe=x0;
+            for(var i = 0; i < x0.length; i++){
+                xe = (1+rho*chi)*xbar[i] - rho*chi*sim[sim.length-1][i];
+            };
             var fxe = func(xe);
             
             if(fxe < fxr){
-                sim[sim.length-1] = xe;
+                for(var i = 0; i < x0.length; i++){
+                sim[sim.length-1][i] = xe[i];
+                };
                 fsim[fsim.length-1] = fxe;
             }
             else{
-                sim[sim.length-1] = xr;
+                for(var i = 0; i < x0.length; i++){
+                sim[sim.length-1][i] = xr[i];         };
                 fsim[fsim.length-1] = fxr;
             }
         }
         else{
             if(fxr < fsim[sim.length-2]){
-                sim[sim.length-1] = xr;
+                for(var i = 0; i < x0.length; i++){
+                sim[sim.length-1][i] = xr[i];            };
                 fsim[fsim.length-1] = fxr;
             }
             else{
-                if(fxr < fsim[sim.length-1]){
-                    xc = (1+psi*rho)*xbar - psi*rho*sim[sim.length-1];
+                if(fxr < fsim[fsim.length-1]){
+                    var xc=x0;
+                    for(var i = 0; i < x0.length; i++){
+                        xc = (1+psi*rho)*xbar - psi*rho*sim[sim.length-1][i]; };
                     fxc = func(xc);
                     
                     if(fxc <= fxr){
-                        sim[sim.length-1] = xc;
+                        for(var i = 0; i < x0.length; i++){
+                        sim[sim.length-1][i] = xc[i]};
                         fsim[fsim.length-1] = fxc;
                     }
                     else{
@@ -288,11 +314,14 @@ $( document ).ready( function() {
                     }
                 }
                 else{
-                    var xcc = (1-psi)*xbar + psi*sim[sim.length-1];
+                    var xcc=x0;
+                    for(var i = 0; i < x0.length; i++){
+                      xcc[i] = (1-psi)*xbar + psi*sim[sim.length-1][i] };
                     var fxcc = func(xcc);
                     
                     if(fxcc < fsim[fsim.length-1]){
-                        sim[sim.length-1] = xcc;
+                        for(var i = 0; i < x0.length; i++){
+                        sim[sim.length-1][i] = xcc[i] };
                         fsim[fsim.length-1] = fxcc;
                     }
                     else{
@@ -301,7 +330,8 @@ $( document ).ready( function() {
                 }
                 if(doshrink){
                     for(var j = 1; j < N+1; j++){
-                        sim[j] = sim[0] + sigma*(sim[j] - sim[0]);
+                        for(var i = 0; i < x0.length; i++){
+                        sim[j][i] = sim[0][i] + sigma*(sim[j][i] - sim[0][i])};
                         fsim[j] = func(sim[j]);
                     }
                 }
@@ -321,7 +351,7 @@ $( document ).ready( function() {
         iterations += 1;
         if(abort_test()) 
             break;
-    }
+    };
     var status = 1;
     if(iterations < maxiter){
         status = 0;
