@@ -1,5 +1,3 @@
-/*STATUS: register now works, unregister has a problem with indexOf()
-*/
 (function($){
 
     function toArray(obj){
