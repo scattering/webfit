@@ -1,4 +1,7 @@
 *.log
 *.pot
 *.pyc
+*.xml
+*.wpr
+*.wpu
 local_settings.py
