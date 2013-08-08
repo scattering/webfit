@@ -119,16 +119,16 @@ $( document ).ready( function() {
     };
 
     var sum = function(array, axis){
-        var toReturn = 0;
+        var toReturn = numArray(0,[array[axis].length]);
         if(axis === 0){
-            for(var row = 0; row < array.length; row++){
-                for(var col = 0; col < array[0].length; col++){
-                    toReturn += array[row][col];
+            for(var col = 0; col < array[axis].length; col++){
+                    for(var row = 0; row < array.length; row++){
+                    toReturn[col] += array[row][col];
                 }
             }
         }
 
-        toReturn=[toReturn];
+        //toReturn=[toReturn];
         return toReturn;
     };
 
@@ -160,7 +160,7 @@ $( document ).ready( function() {
         var x0 = null;
     }
 
-        x0 = flatten(x0);
+       // x0 = flatten(x0);
 
         var N = x0.length;
     if (typeof bounds === 'undefined') {
@@ -170,10 +170,10 @@ $( document ).ready( function() {
         var radius = .05;
     }
     if (typeof xtol === 'undefined') {
-        var xtol = Math.pow(1, -4);;
+        var xtol = 1e-4;
     }
     if (typeof ftol === 'undefined') {
-        var ftol = Math.pow(1, -4);;
+        var ftol = 1e-4;
     }
     if (typeof maxiter === 'undefined') {
         var maxiter = N * 200;
@@ -221,7 +221,7 @@ $( document ).ready( function() {
       if (temp===0) {
           temp=radius;
       };
-      val.push([temp]);
+      val.push(temp);
     };
     //val[convertBoolToNum(val, 0)] = radius;
     /*var x0Shape = [x0.length];
@@ -234,11 +234,14 @@ $( document ).ready( function() {
     var xtol = tol;*/
     // need to make sure that we copy correctly
     for(var k = 0; k < N; k++){
-        var y = x0;//jQuery.extend(true, {}, x0); //x0 + 0;
-        y[k]= val[k];
+        var y = [];
         for (var i=0; i < x0.length; i++){
-        sim[k+1][i] = y[k][i];
-        };
+            y[i]=x0[i];}; //jQuery.extend(true, {}, x0); //x0 + 0;
+
+            y[k]= val[k];
+        for (var i=0; i < x0.length; i++){
+            sim[k+1][i] = y[i]}
+
         fsim[k+1] = func(y);
     }
 
@@ -255,26 +258,34 @@ $( document ).ready( function() {
         var toAnalyze = sim.slice(1,sim.length);
         var allTrue = true;
         for(var i = 0; i < toAnalyze.length; i++){
-            if(!(Math.abs(toAnalyze[i] - sim[0]) <= xtol)){
+            for(var j = 0; j < sim[0].length; j++){
+            if(!(Math.abs(toAnalyze[i][j] - sim[0][j]) <= xtol)){
                 allTrue = false;
-                i = toAnalyze.length;       // break???
+                break;
                 //console.log('NOT ALL TRUE');
-            }
-        }
+            };
+            };
+        };
         var ftrue=true;
         var fslice=fsim.slice(1,fsim.length);
         var fdiff=[];
         for(var i = 0; i < fslice.length; i++){
             fdiff.push(Math.abs(fsim[0]-fslice[i]));
         };
-            if (!(allTrue && (Math.max(fdiff) <= ftol))){
+            if ((allTrue && (Math.max.apply(null, fdiff) <= ftol))){
             break;
         };
         
         var xbar = sum(sim.slice(0,sim.length-1),0) ;
-            xbar[0]=xbar[0]/ N;
+        for(var i = 0; i < x0.length; i++){
+            xbar[i]=xbar[i]/ N;};
 
-        var xr=x0;
+        var xr=[];
+
+        for (var i=0; i < x0.length; i++){
+            xr.push(x0[i]);
+        };
+
 
         for(var i = 0; i < x0.length; i++){
             xr[i] = (1+rho)*xbar[i] - rho*sim[sim.length-1][i];
@@ -283,7 +294,10 @@ $( document ).ready( function() {
         var doshrink = 0;
         
         if(fxr < fsim[0]){
-            var xe=x0;
+            var xe=[];
+            for (var i=0; i < x0.length; i++){
+                xe.push(x0[i]);
+            };
             for(var i = 0; i < x0.length; i++){
                 xe[i] = (1+rho*chi)*xbar[i] - rho*chi*sim[sim.length-1][i];
             };
@@ -309,9 +323,12 @@ $( document ).ready( function() {
             }
             else{
                 if(fxr < fsim[fsim.length-1]){
-                    var xc=x0;
+                    var xc=[];
+                    for (var i=0; i < x0.length; i++){
+                        xc.push(x0[i]);
+                    };
                     for(var i = 0; i < x0.length; i++){
-                        xc[i] = (1+psi*rho)*xbar - psi*rho*sim[sim.length-1][i]; };
+                        xc[i] = (1+psi*rho)*xbar[i] - psi*rho*sim[sim.length-1][i]; };
                     fxc = func(xc);
                     
                     if(fxc <= fxr){
@@ -324,9 +341,12 @@ $( document ).ready( function() {
                     }
                 }
                 else{
-                    var xcc=x0;
+                    var xcc=[];
+                    for (var i=0; i < x0.length; i++){
+                        xcc.push(x0[i]);
+                    };
                     for(var i = 0; i < x0.length; i++){
-                      xcc[i] = (1-psi)*xbar + psi*sim[sim.length-1][i] };
+                      xcc[i] = (1-psi)*xbar[i] + psi*sim[sim.length-1][i] };
                     var fxcc = func(xcc);
                     
                     if(fxcc < fsim[fsim.length-1]){
@@ -373,7 +393,7 @@ $( document ).ready( function() {
 
 var x0 = [0.8,1.2,0.7];
 var x0 = [0.5];
-    var x0= [0.5,0.5];
+    var x0= [0.5,0.4];
 console.log("Nelder-Mead Simplex");
 console.log("===================");
 var start = new Date().getTime() / 1000;
