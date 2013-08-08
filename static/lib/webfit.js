@@ -1041,13 +1041,9 @@ Ext.onReady(function () {
 		    ]
     
 		});
-	    var updateResiduals = function(){
-		webfit.ResidualPlot.series[0].data = residualUpdate();
-		webfit.ResidualPlot.redraw();
-		console.log('UPDATING RESIDUALS');
-	    }
+
 	    
-	    $(document).on("updated", updateResiduals);
+	    //$(document).on("updated", updateResiduals);
 	    //webfit.plot.plugins.interactors.fcursor.on('updated', updateResiduals ,webfit.plotPanel);
 		//WORKING LISTENER        
     /*            mylistener=function() {};
@@ -1066,6 +1062,14 @@ Ext.onReady(function () {
 	    }
 	}
     });
+
+
+    var updateResiduals = function(){
+        webfit.ResidualPlot.series[0].data = residualUpdate();
+        webfit.ResidualPlot.resetAxesScale();
+        webfit.ResidualPlot.replot();
+        console.log('UPDATING RESIDUALS');
+    };
     
     var innerPlot = Ext.create('Ext.panel.Panel', {
         width: 450,
@@ -1190,13 +1194,22 @@ Ext.onReady(function () {
 	    }],
 	    
 	    afterComponentLayout: function(width, height){
-	    webfit.plot.plugins.interactors.fcursor.onDrag = new function(pos){
-		webfit.plot.plugins.interactors.fcursor.onDrag(pos);
-		webfit.ResidualPlot.series[0].data = residualUpdate();
-		webfit.ResidualPlot.redraw();
+//	    webfit.plot.plugins.interactors.fcursor.onDrag = new function(pos){
+//		webfit.plot.plugins.interactors.fcursor.onDrag(pos);
+//		webfit.ResidualPlot.series[0].data = residualUpdate();
+//		webfit.ResidualPlot.redraw();
+
+            if(typeof window.myApp==='undefined'){
+                window.myApp={};
+            };
+//}
+            $(myApp).on('function_collection_update', function(e){
+                console.log('function collection updated');
+                updateResiduals();
+            });
 	    }
 	    
-	    }
+
 	    
 
     });

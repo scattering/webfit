@@ -392,8 +392,8 @@ $( document ).ready( function() {
 
 
 var x0 = [0.8,1.2,0.7];
-var x0 = [0.5];
-    var x0= [0.5,0.4];
+//var x0 = [0.5];
+//    var x0= [0.5,0.4];
 console.log("Nelder-Mead Simplex");
 console.log("===================");
 var start = new Date().getTime() / 1000;
