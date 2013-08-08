@@ -136,9 +136,19 @@ $( document ).ready( function() {
         return false;
     };
 
+//    var rosen = function(x){
+//        return x*x;
+//    } ;
+
     var rosen = function(x){
-        return x*x;
-    } ;
+        var res=0;
+        for (var i=0; i < x0.length; i++){
+            res=res+(x[i]*x[i]);
+        }
+            return res;
+
+
+    };
 
 
 
@@ -275,7 +285,7 @@ $( document ).ready( function() {
         if(fxr < fsim[0]){
             var xe=x0;
             for(var i = 0; i < x0.length; i++){
-                xe = (1+rho*chi)*xbar[i] - rho*chi*sim[sim.length-1][i];
+                xe[i] = (1+rho*chi)*xbar[i] - rho*chi*sim[sim.length-1][i];
             };
             var fxe = func(xe);
             
@@ -301,7 +311,7 @@ $( document ).ready( function() {
                 if(fxr < fsim[fsim.length-1]){
                     var xc=x0;
                     for(var i = 0; i < x0.length; i++){
-                        xc = (1+psi*rho)*xbar - psi*rho*sim[sim.length-1][i]; };
+                        xc[i] = (1+psi*rho)*xbar - psi*rho*sim[sim.length-1][i]; };
                     fxc = func(xc);
                     
                     if(fxc <= fxr){
@@ -363,6 +373,7 @@ $( document ).ready( function() {
 
 var x0 = [0.8,1.2,0.7];
 var x0 = [0.5];
+    var x0= [0.5,0.5];
 console.log("Nelder-Mead Simplex");
 console.log("===================");
 var start = new Date().getTime() / 1000;
