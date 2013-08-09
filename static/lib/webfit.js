@@ -50,10 +50,10 @@ Ext.onReady(function () {
 	var reader = new FileReader();
 	for(var i = 0; i < files.length; i++){
 	    var file = files[i];
-	    if(!file.type.match('csv.*')){
-		alert('Can only load csv files');
-		continue;
-	    }
+	    //if(!file.type.match('csv.*')){
+	//	alert('Can only load csv files');
+	//	continue;
+	  //  }
 	    reader.readAsText(file); 
 	    reader.onload = function(event){
 		var csv = event.target.result;
@@ -486,6 +486,16 @@ Ext.onReady(function () {
 	}],
     });
     
+    functionSelector.currentlyFitting = Ext.create('Ext.window.Window', {
+	//title: 'Specifications',
+	width: 200,
+	height: 100,
+	html: 'fitting...',
+	closeAction: 'hide',
+	autoScroll: true,
+	bodyPadding: 50,
+    });
+    
     functionSelector.addedFunctions = Ext.create('Ext.grid.Panel', {
         xtype: 'cell-editing',
         title: 'Added Functions',
@@ -632,9 +642,9 @@ Ext.onReady(function () {
 	    text: 'Fit',
 	    width: 70,
 	    scope: this,
-	    /*handler: function(){
-		
-	    },*/
+	    handler: function(){
+		functionSelector.currentlyFitting.setVisible(true);
+	    },
 	}],
         height: 398,
         width: 496,
