@@ -1286,28 +1286,74 @@ debug = true;
         },
 	
 	_setpars:function(){
-                var cx = this.c.pos.x,
-                cy = this.c.pos.y,
-                wx = this.p1.pos.x,
-                wy = cy - this.p1.pos.y;
-            var height = wy,
+
+        if (typeof this.parent.canvas === "undefined"){
+            var cx = this.c.pos.x,
+            cy = this.c.pos.y,
+            wx = this.p1.pos.x,
+            wy = cy - this.p1.pos.y;
+        } else {
+        var cx=this.c.getCoords().x;  //graph coordinates
+        var cy=this.c.getCoords().y;
+        var wx=this.p1.getCoords().x;
+        var wy=cy-this.p1.getCoords().y   // height above background
+
+        }
+            var height = Math.abs(wy),
                 bkgd = -2*height,
-                FWHM = Math.abs(wx - cx),
+                FWHM = 2*Math.abs(wx - cx),
                 stdDev = FWHM / Math.sqrt(Math.log(256));
             this.pars = { center: cx, stdDev: stdDev, height: height, bkgd: bkgd };	
 	
 	},
+        drawEq: function (ctx,eq, x0, y0, xmin, xmax, pm) {
+            var tmp = ctx.strokeStyle;
+            var prevcolor = newcolor = null;
+            ctx.beginPath();
+            for (var i = xmin - 1; i <= xmax + 1; i ++) {
+                var graph_x=this.p1.getCoords({x:i,y:0}).x;
+                var graph_y = eq(graph_x);
+                var y=this.p1.putCoords({x:graph_x,y:graph_y}).y;
+//                if (pm) {
+//                    prevcolor = newcolor;
+//                    newcolor = (y >= 0) ? 'red' : 'blue';
+//                    if (prevcolor != null && prevcolor != newcolor) {
+//                        var h = i - 1 + y / (eq(i - 1) - y);
+//                        //ctx.lineTo(h, y0);
+//                        ctx.lineTo(i, y0 - 1);
+//                        ctx.strokeStyle = prevcolor;
+//                        ctx.stroke();
+//                        ctx.beginPath();
+//                        //ctx.moveTo(h, y0);
+//                        ctx.moveTo(i - 1, y0 - eq(i - 1));
+//                        ctx.lineTo(i, y0 - y);
+//                    }
+//                    else
+//                        ctx.lineTo(i, y0 - y);
+//                }
+//                else
+                    //ctx.lineTo(i, y0 - y);
+                ctx.lineTo(i, y);
+            }
+            if (pm)
+                ctx.strokeStyle = prevcolor;
+            ctx.stroke();
+            //ctx.lineWidth = 1; ctx.moveTo(0,y0); ctx.lineTo(ctx.canvas.width,y0); ctx.stroke();
+            ctx.strokeStyle = tmp;
+        },
 	
         render: function(ctx) {
-	    this._setpars();
+	        this._setpars();
+            //var axes=this.parent.plot.axes;
             var nx = this.parent.canvas.width,cy = this.c.pos.y ;
             $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+            cy=0;
             this.drawEq(ctx, bind(this, this.f), 0, cy, 0, nx);
         },
 	
         gaussian: function(x) {
             var resid = (x - this.pars.center)/this.pars.stdDev;
-            return this.pars.height - this.pars.height * Math.exp(-0.5 * resid * resid);
+            return this.pars.height * Math.exp(-0.5 * resid * resid);
         }
     });
     
