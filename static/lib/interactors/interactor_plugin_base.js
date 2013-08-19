@@ -552,11 +552,11 @@
             var coords = coords || this.coords;
             var pos = {};
             if ('x' in coords) {
-                pos.x = this.parent.plot.axes.xaxis.u2p(coords.x);
+                pos.x = this.parent.plot.axes.xaxis.u2p(coords.x);  // transform from graph coordinate units to pixel units
                 pos.x -= this.parent.canvas.offsetLeft;
             }
             if ('y' in coords) {
-                pos.y = this.parent.plot.axes.yaxis.u2p(coords.y);
+                pos.y = this.parent.plot.axes.yaxis.u2p(coords.y);  // transform from graph coordinate units to pixel units
                 pos.y -= this.parent.canvas.offsetTop;
             }
             return pos     

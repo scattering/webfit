@@ -258,12 +258,16 @@ Ext.onReady(function () {
         y: 35,
     });
     
-    addInteractor = function(functionType){
+    var addInteractor = function(functionType){
     
 	var tcursor={
 	    type: functionType, 
 	    name: 'cursor'+webfit.plot.plugins.interactors.fcursor.interactors.length, 
-	    x0: 0.0001,
+	    xmin: 0.0001,
+		xmin: webfit.plot.axes.xaxis.min,
+		xmax: webfit.plot.axes.xaxis.max,
+		ymin: webfit.plot.axes.yaxis.min,
+		ymax: webfit.plot.axes.yaxis.max,
 	    color1: 'green',
 	    color2: 'blue',
 	};
