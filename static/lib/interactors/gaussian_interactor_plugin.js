@@ -27,13 +27,20 @@
         this.xc=(options.xmax+options.xmin)/2;
         this.ymax=options.ymax/2;
         this.xhw=this.xc+(options.xmax-options.xmin)/4;  //let's be a little more narrow than the full range
-
         $.extend(this, options);
         this.pk = new $.jqplot.PluginPoint();   //  The center
         this.pk.initialize(this, this.xc, this.ymax);
         this.pw = new $.jqplot.PluginPoint();   // The HWHM
-        this.pw.initialize(this, this.xhw, this.ymax/2);
+        this.pw.initialize(this, this.xhw, options.ymin);
         // this.pw.initialize(this, this.xhw, this.ymin);
+        //We do this so the Gaussian will actually work.  There must be a better way!!!
+        //the problem is that pos is not set until after the first render call is made
+        //upon initialization, somehow the canvas is not set, so we can't actually perform the necessary command upon initialization...
+        this.pk.pos.x=this.pk.coords.x
+        this.pk.pos.y=this.pk.coords.y
+        this.pw.pos.x=this.pw.coords.x
+        this.pw.pos.y=this.pw.coords.y
+
         this.Gaussian = new $.jqplot.Gaussian(); 
         this.Gaussian.initialize(this, this.pk, this.pw, 3);  // Linewidth=3
         this.grobs.push(this.pk, this.pw, this.Gaussian);

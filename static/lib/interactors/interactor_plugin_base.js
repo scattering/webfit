@@ -262,8 +262,9 @@
         
         redraw: function() {
             this.grobs = [];
-            for (var i in this.interactors) {
+            for (var i=0; i< this.interactors.length; i++) {
                 var I = this.interactors[i];
+                console.log("redrawing ",i, I);
                 if (I.show) {
                     this.grobs = this.grobs.concat(I.grobs);
                     I.redraw();

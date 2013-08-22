@@ -83,6 +83,7 @@ debug = true;
         if (!this.notMaster) { this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); }
         for (var i = 0; i < this.grobs.length; i ++) {
             var grob = this.grobs[i];
+            console.log('redrawing grobs ')
             grob.render(this.context);
         }
     },
@@ -1261,7 +1262,7 @@ debug = true;
 	render: function(ctx) {
 	    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
 			if (this.hasOwnProperty('c')){
-            this.drawEq(ctx, bind(this, this.f), 0, this.c.pos.y, 0, this.parent.canvas.width);}
+            this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);}
 			else{
 			this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);
 			}
@@ -1291,17 +1292,18 @@ debug = true;
             var cx = this.c.pos.x,
             cy = this.c.pos.y,
             wx = this.p1.pos.x,
-            wy = cy - this.p1.pos.y;
+            wy = (cy - this.p1.pos.y);
+            var bkgd=this.p1.pos.y;
         } else {
         var cx=this.c.getCoords().x;  //graph coordinates
         var cy=this.c.getCoords().y;
         var wx=this.p1.getCoords().x;
-        var wy=cy-this.p1.getCoords().y   // height above background
+        var wy=(cy-this.p1.getCoords().y);   // height above background
+        var bkgd = this.p1.getCoords().y;
 
         }
             var height = Math.abs(wy),
-                bkgd = -2*height,
-                FWHM = 2*Math.abs(wx - cx),
+                FWHM = 2*Math.abs(wx - cx)/3,   //we assume that the background is at the 3 FWHM level
                 stdDev = FWHM / Math.sqrt(Math.log(256));
             this.pars = { center: cx, stdDev: stdDev, height: height, bkgd: bkgd };	
 	
@@ -1338,6 +1340,7 @@ debug = true;
             if (pm)
                 ctx.strokeStyle = prevcolor;
             ctx.stroke();
+            ctx.closePath();
             //ctx.lineWidth = 1; ctx.moveTo(0,y0); ctx.lineTo(ctx.canvas.width,y0); ctx.stroke();
             ctx.strokeStyle = tmp;
         },
@@ -1347,13 +1350,13 @@ debug = true;
             //var axes=this.parent.plot.axes;
             var nx = this.parent.canvas.width,cy = this.c.pos.y ;
             $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
-            cy=0;
-            this.drawEq(ctx, bind(this, this.f), 0, cy, 0, nx);
+            //cy=0;
+            this.drawEq(ctx, bind(this, this.f), 0, 0, 0, nx);
         },
 	
         gaussian: function(x) {
             var resid = (x - this.pars.center)/this.pars.stdDev;
-            return this.pars.height * Math.exp(-0.5 * resid * resid);
+            return this.pars.bkgd+this.pars.height * Math.exp(-0.5 * resid * resid);
         }
     });
     
