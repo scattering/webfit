@@ -83,7 +83,7 @@ debug = true;
         if (!this.notMaster) { this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); }
         for (var i = 0; i < this.grobs.length; i ++) {
             var grob = this.grobs[i];
-            console.log('redrawing grobs ')
+            console.log('redrawing grobs ', i, grob);
             grob.render(this.context);
         }
     },
