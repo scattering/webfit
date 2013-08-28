@@ -1288,20 +1288,20 @@ debug = true;
 	
 	_setpars:function(){
 
-        if (typeof this.parent.canvas === "undefined"){
-            var cx = this.c.pos.x,
-            cy = this.c.pos.y,
-            wx = this.p1.pos.x,
-            wy = (cy - this.p1.pos.y);
-            var bkgd=this.p1.pos.y;
-        } else {
+//        if (typeof this.parent.canvas === "undefined"){
+//            var cx = this.c.pos.x,
+//            cy = this.c.pos.y,
+//            wx = this.p1.pos.x,
+//            wy = (cy - this.p1.pos.y);
+//            var bkgd=this.p1.pos.y;
+//        } else {
         var cx=this.c.getCoords().x;  //graph coordinates
         var cy=this.c.getCoords().y;
         var wx=this.p1.getCoords().x;
         var wy=(cy-this.p1.getCoords().y);   // height above background
         var bkgd = this.p1.getCoords().y;
 
-        }
+       // }
             var height = Math.abs(wy),
                 FWHM = 2*Math.abs(wx - cx)/3,   //we assume that the background is at the 3 FWHM level
                 stdDev = FWHM / Math.sqrt(Math.log(256));

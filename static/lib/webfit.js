@@ -270,6 +270,7 @@ Ext.onReady(function () {
 		ymax: webfit.plot.axes.yaxis.max,
 	    color1: 'green',
 	    color2: 'blue',
+        plot: webfit.plot,
 	};
 	webfit.plot.options.interactors.push(tcursor);	//remove
 	
