@@ -42,8 +42,23 @@
         //this.pw.pos.x=this.pw.coords.x
         //this.pw.pos.y=this.pw.coords.y
 
+
+        //pk  -> peak  --> c
+        //pw   -> p1
+
+
+        var cx=this.xc;  //graph coordinates
+        var cy=this.ymax;
+        var wx=this.xw;
+        var wy=(cy-options.ymin);   // height above background
+        var bkgd = options.ymin;
+        var height = Math.abs(wy),
+             FWHM = 2*Math.abs(wx - cx)/3,   //we assume that the background is at the 3 FWHM level
+             stdDev = FWHM / Math.sqrt(Math.log(256));
+        var pars={ center: cx, stdDev: stdDev, height: height, bkgd: bkgd };
+
         this.Gaussian = new $.jqplot.Gaussian(); 
-        this.Gaussian.initialize(this, this.pk, this.pw, 3);  // Linewidth=3
+        this.Gaussian.initialize(this, this.pk, this.pw, 3,pars);  // Linewidth=3
         this.grobs.push(this.pk, this.pw, this.Gaussian);
 
 

@@ -1276,14 +1276,23 @@ debug = true;
     $.jqplot.Gaussian.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.Gaussian.prototype.constructor = $.jqplot.Gaussian;    
     $.extend($.jqplot.Gaussian.prototype, {        
-        initialize: function(parent, peak, p1, width) {
+        initialize: function(parent, peak, p1, width,pars) {
             $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
             this.name = 'gaussian';
             this.f = this.gaussian;
-	    this.points = {pk: peak, pw:p1};
+	        this.points = {pk: peak, pw:p1};
             this.c = peak;
             this.p1 = p1;
-	    this._setpars();
+//            var cx=this.c.getCoords().x;  //graph coordinates
+//            var cy=this.c.getCoords().y;
+//            var wx=this.p1.getCoords().x;
+//            var wy=(cy-this.p1.getCoords().y);   // height above background
+//            var bkgd = this.p1.getCoords().y;
+//            var height = Math.abs(wy),
+//            FWHM = 2*Math.abs(wx - cx)/3,   //we assume that the background is at the 3 FWHM level
+//            stdDev = FWHM / Math.sqrt(Math.log(256));
+//            this.pars = { center: cx, stdDev: stdDev, height: height, bkgd: bkgd };
+            this.pars=pars;
         },
 	
 	_setpars:function(){
