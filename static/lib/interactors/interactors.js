@@ -1322,7 +1322,7 @@ debug = true;
             var prevcolor = newcolor = null;
             ctx.beginPath();
             for (var i = xmin - 1; i <= xmax + 1; i ++) {
-                var graph_x=this.p1.getCoords({x:i,y:0}).x;
+                var graph_x=this.p1.parent.getCoords({x:i,y:0}).x;  //Try to avoid resetting this.coords at each point--ack!!!
                 var graph_y = eq(graph_x);
                 var y=this.p1.putCoords({x:graph_x,y:graph_y}).y;
 //                if (pm) {

@@ -49,7 +49,7 @@
 
         var cx=this.xc;  //graph coordinates
         var cy=this.ymax;
-        var wx=this.xw;
+        var wx=this.xhw;
         var wy=(cy-options.ymin);   // height above background
         var bkgd = options.ymin;
         var height = Math.abs(wy),
