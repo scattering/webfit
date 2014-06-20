@@ -1132,7 +1132,7 @@ debug = true;
             for (var i = xmin - 1; i <= xmax + 1; i ++) {
                 var graph_x=this.parent.getCoords({x:i,y:0}).x;
                 var graph_y= eq(graph_x);
-                console.log("graph_x: "+graph_x+" graph_y: "+graph_y);
+                //console.log("graph_x: "+graph_x+" graph_y: "+graph_y);
                 var y=this.parent.putCoords({x:graph_x,y:graph_y}).y;
 //                var graph_x=this.p1.parent.getCoords({x:i,y:0}).x;  //Try to avoid resetting this.coords at each point--ack!!!
 //                var graph_y = eq(graph_x);
