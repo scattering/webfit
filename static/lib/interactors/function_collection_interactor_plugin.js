@@ -140,6 +140,8 @@
                 for(var j = 0; j < interactors[i].grobs.length; j++){
                     if(interactors[i].grobs[j].hasOwnProperty('name') && interactors[i].grobs[j].name !== "point"){
                         res += interactors[i].grobs[j].f(x);
+                        //console.log("x: "+x+" res:"+res);
+                        //console.log("res: "+res+ "f(x): "+interactors[i].grobs[j].f(x)+ "x: "+x);
                         //console.log(interactors[i].grobs[j])
                         //console.log(x,interactors[i].grobs[j].f(x),res)
                     }

@@ -1130,7 +1130,14 @@ debug = true;
             var prevcolor = newcolor = null;
             ctx.beginPath();
             for (var i = xmin - 1; i <= xmax + 1; i ++) {
-                var y = eq(i);
+                var graph_x=this.parent.getCoords({x:i,y:0}).x;
+                var graph_y= eq(graph_x);
+                console.log("graph_x: "+graph_x+" graph_y: "+graph_y);
+                var y=this.parent.putCoords({x:graph_x,y:graph_y}).y;
+//                var graph_x=this.p1.parent.getCoords({x:i,y:0}).x;  //Try to avoid resetting this.coords at each point--ack!!!
+//                var graph_y = eq(graph_x);
+//                var y=this.p1.putCoords({x:graph_x,y:graph_y}).y;
+                //var y = eq(i);
                 if (pm) {
                     prevcolor = newcolor;
                     newcolor = (y >= 0) ? 'red' : 'blue';
@@ -1143,14 +1150,38 @@ debug = true;
                         ctx.beginPath();
                         //ctx.moveTo(h, y0);
                         ctx.moveTo(i - 1, y0 - eq(i - 1));
-                        ctx.lineTo(i, y0 - y);
+                        ctx.lineTo(i, y);
                     }
                     else
-                        ctx.lineTo(i, y0 - y);
+                        ctx.lineTo(i, y);
                 }
-                else
-                    ctx.lineTo(i, y0 - y);
+                else {
+                    ctx.lineTo(i, y);
+                    //ctx.lineTo(i, y0 - y);
+                }
             }
+//            for (var i = xmin - 1; i <= xmax + 1; i ++) {
+//                var y = eq(i);
+//                if (pm) {
+//                    prevcolor = newcolor;
+//                    newcolor = (y >= 0) ? 'red' : 'blue';
+//                    if (prevcolor != null && prevcolor != newcolor) {
+//                        var h = i - 1 + y / (eq(i - 1) - y);
+//                        //ctx.lineTo(h, y0);
+//                        ctx.lineTo(i, y0 - 1);
+//                        ctx.strokeStyle = prevcolor;
+//                        ctx.stroke();
+//                        ctx.beginPath();
+//                        //ctx.moveTo(h, y0);
+//                        ctx.moveTo(i - 1, y0 - eq(i - 1));
+//                        ctx.lineTo(i, y0 - y);
+//                    }
+//                    else
+//                        ctx.lineTo(i, y0 - y);
+//                }
+//                else
+//                    ctx.lineTo(i, y0 - y);
+//            }
             if (pm)
                 ctx.strokeStyle = prevcolor;
             ctx.stroke();
