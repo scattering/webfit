@@ -1125,6 +1125,7 @@ debug = true;
             //console.log('pos (',pos.x, pos.y,') fpos (',fpos.x.toFixed(2), fpos.y.toFixed(2), ') x =',x ,'d =', d);
             return d;
         },
+
         drawEq: function (ctx, eq, x0, y0, xmin, xmax, pm) {
             var tmp = ctx.strokeStyle;
             var prevcolor = newcolor = null;
@@ -1216,12 +1217,13 @@ debug = true;
                 ctx.stroke();
             }
             else
-                this.drawEq(ctx, bind(this, this.f), 0, this.c.pos.y, 0, this.parent.canvas.width);
+                this.drawEq(ctx, bind(this, this.f), 1, this.c.coords.y, 0, this.parent.canvas.width);
         },
         
         linear: function(x) {
-            var X1 = this.p1.pos.x, X2 = this.p2.pos.x,
-                Y1 = this.c.pos.y - this.p1.pos.y, Y2 = this.c.pos.y - this.p2.pos.y;
+            var X1 = this.p1.coords.x, X2 = this.p2.coords.x,
+                Y1 = this.p1.coords.y, Y2 =  this.p2.coords.y;
+//                Y1 = this.c.pos.y - this.p1.pos.y, Y2 = this.c.pos.y - this.p2.pos.y;
             var a = (Y2-Y1) / (X2-X1),
                 b = Y1 - a*X1;
                 
@@ -1229,8 +1231,8 @@ debug = true;
         },
         // Overriding super because the computation here is much simpler
         distanceTo: function(pos) {
-            var X1 = this.p1.pos.x, X2 = this.p2.pos.x,
-                Y1 = this.c.pos.y - this.p1.pos.y, Y2 = this.c.pos.y - this.p2.pos.y;
+            var X1 = this.p1.coords.x, X2 = this.p2.coords.x,
+                Y1 = this.c.coords.y - this.p1.coords.y, Y2 = this.c.coords.y - this.p2.coords.y;
             
             var d = 0;
             // Vertical lines
@@ -1384,6 +1386,7 @@ debug = true;
             //ctx.lineWidth = 1; ctx.moveTo(0,y0); ctx.lineTo(ctx.canvas.width,y0); ctx.stroke();
             ctx.strokeStyle = tmp;
         },
+
 	
         render: function(ctx) {
 	        this._setpars();
