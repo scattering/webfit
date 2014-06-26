@@ -4,7 +4,7 @@
 // # 10/14/2011                                #
 // #############################################
 
-// ## requires interactors.js
+// ## requires interactors_nonprototype.js
 // ## and interactor_plugin_base.js
 
 (function($) {
@@ -132,6 +132,56 @@
         //this.redraw();
     };
     
+    $.jqplot.QuadrilateralInteractorPlugin = function() { $.jqplot.PolygonInteractorPlugin.call(this); };
+    $.jqplot.QuadrilateralInteractorPlugin.prototype = new $.jqplot.PolygonInteractorPlugin();
+    $.jqplot.QuadrilateralInteractorPlugin.prototype.constructor = $.jqplot.QuadrilateralInteractorPlugin;
+    $.jqplot.InteractorPluginSubtypes.Quadrilateral = $.jqplot.QuadrilateralInteractorPlugin;
+    
+    $.jqplot.QuadrilateralInteractorPlugin.prototype.init = function(options) {
+        $.jqplot.PolygonInteractorPlugin.prototype.init.call(this, options);
+        this.showcenter = true;
+        this.showrect = true;
+        this.xmin = 0;
+        this.xmax = 6.0;
+        this.ymin = -4.0;
+        this.ymax = 4.0;
+        this.showfill = true;
+        this.pointsize = 12;
+        this.linewidth = 8;
+        //this.p1pos = {x: 0, y: 4.0};
+        //this.p2pos = {x: 6, y: 4.0};
+        //this.p3pos = {x: 6, y: -4.0};
+        //this.p4pos = {x: 0, y: -4.0};
+        $.extend(this, options);
+        this.p1 = new $.jqplot.PluginPoint(); this.p1.initialize(this, this.xmin, this.ymax, this.pointsize);
+        this.p2 = new $.jqplot.PluginPoint(); this.p2.initialize(this, this.xmax, this.ymax, this.pointsize);
+        this.p3 = new $.jqplot.PluginPoint(); this.p3.initialize(this, this.xmax, this.ymin, this.pointsize);
+        this.p4 = new $.jqplot.PluginPoint(); this.p4.initialize(this, this.xmin, this.ymin, this.pointsize);
+        //this.c = new Center(this, 150, 150);
+        
+        //this.rect = new $.jqplot.Rectangle(); this.rect.initialize(this, this.p1, this.p3);
+        this.l1 = new $.jqplot.Segment(); this.l1.initialize(this, this.p1, this.p2, this.linewidth);
+        this.l2 = new $.jqplot.Segment(); this.l2.initialize(this, this.p2, this.p3, this.linewidth);
+        this.l3 = new $.jqplot.Segment(); this.l3.initialize(this, this.p3, this.p4, this.linewidth);
+        this.l4 = new $.jqplot.Segment(); this.l4.initialize(this, this.p4, this.p1, this.linewidth);
+        
+        
+        this.grobs.push(this.l1, this.l2, this.l3, this.l4, this.p1, this.p2, this.p3, this.p4);
+        
+        if (this.showfill) {
+            this.fill = new $.jqplot.Polygon(); this.fill.initialize(this, this.points(), 0);
+            this.grobs.push(this.fill);
+        }
+        
+        if (this.showcenter) {
+            var center = {x: (this.xmin + this.xmax) / 2.0, 
+                         y: (this.ymin + this.ymax) / 2.0 }
+            this.c = new $.jqplot.PluginCenter(); this.c.initialize(this, center.x, center.y);
+            this.grobs.push(this.c);
+        }
+        
+    };
+    
     $.jqplot.QFromThetaTwotheta = function() {};
     $.jqplot.QFromThetaTwotheta.prototype = new $.jqplot.GrobConnector();
     $.jqplot.QFromThetaTwotheta.prototype.constructor = $.jqplot.QFromThetaTwotheta;
@@ -145,7 +195,7 @@
             return {x: qxOut, y: qzOut};
         },
         
-        initialize: function (parent, p1, p2, width) {
+        initialize: function (parent, p1, p2, width, wavelength) {
             $.jqplot.GrobConnector.prototype.initialize.call(this, parent, width);
             // convert all the values of theta and twotheta between points 1 and 2
             // (assumed to be corners of a bounding box)
@@ -155,7 +205,7 @@
             this.p1 = p1;
             this.p2 = p2;
             this.updateQPoints();
-            this.wavelength = 5.0;
+            this.wavelength = wavelength;
             this.filled = true;
         }, 
         
@@ -223,9 +273,11 @@
         init: function(options) {
             $.jqplot.InteractorPlugin.prototype.init.call(this, options);
             this.qspace_patch = new $.jqplot.QFromThetaTwotheta();
-            this.p1 = options.p1;
-            this.p2 = options.p2;
-            this.qspace_patch.initialize(this, this.p1, this.p2, 4);
+            //this.p1 = options.p1;
+            //this.p2 = options.p2;
+            this.wavelength = 0.5;
+            $.extend(this, options);
+            this.qspace_patch.initialize(this, this.p1, this.p2, 4, this.wavelength);
             this.filled = true;
             this.grobs.push(this.qspace_patch);
             //this.redraw();
@@ -311,6 +363,7 @@
         init: function(options) {
             $.jqplot.InteractorPlugin.prototype.init.call(this, options);
             this.q_spacing = 0.001;
+            this.wavelength = 0.5;
             $.extend(this, options);
             this.grating = new $.jqplot.QGrating();
             this.grating.initialize(this, 4, true);
@@ -351,6 +404,7 @@
             th = twotheta_array[mask_2th] / 2.0 + arcsin( qx_target / Q[mask_2th] ) * 180.0 / pi
             return twotheta_array[mask_2th], th
         },
+	
         get_wl_twoth: function(qz, mx, qx_feature, theta) {
             var qx = qx_feature * mx;
             var tilt = Math.arctan2(qx, qz);
@@ -452,7 +506,7 @@
             //this.q_spacing = 0.001;
             this.qspace = options.qspace || null;
             this.subsegments = 201;
-            this.wavelength = 5.0;
+            this.wavelength = 0.5;
             $.extend(this, options);
             this.grating = new $.jqplot.Th2ThFromQGrating();
             this.grating.initialize(this, 4, true);
@@ -483,6 +537,101 @@
         },
         update: function(pos) {
             this.redraw();
+        }
+    });
+    
+    $.jqplot.QCursorInteractor = function() {
+        $.jqplot.InteractorPlugin.call(this);
+    };
+    $.jqplot.QCursorInteractor.prototype = new $.jqplot.InteractorPlugin;
+    $.jqplot.QCursorInteractor.prototype.constructor = $.jqplot.QCursorInteractor;
+    $.jqplot.InteractorPluginSubtypes.QCursor = $.jqplot.QCursorInteractor;
+    $.extend($.jqplot.QCursorInteractor.prototype, {
+        getQxQz: function(A3, A4, wavelength) { 
+            var qLength = 2.0 * Math.PI / wavelength;
+            var tilt = A3 - ( A4 / 2.0 );
+            var dq = 2.0 * qLength * Math.sin( ( Math.PI / 180.0 ) * ( A4 / 2.0 ) );
+            var qxOut = dq * Math.sin( Math.PI * tilt / 180.0 );
+            var qzOut = dq * Math.cos( Math.PI * tilt / 180.0 );
+            return {x: qxOut, y: qzOut};
+        },
+	get_wl_twoth: function(qcoords, theta) {
+            var qx = qcoords.x;
+            var qz = qcoords.y;
+            var tilt = Math.atan2(qx, qz);
+            //if (qz < 0) tilt *= -1;
+            var tth = 2.0*(theta*Math.PI/180.0 - tilt);
+            var Q = Math.sqrt(Math.pow(qx,2) + Math.pow(qz,2));
+            
+            var wl_out = 4*Math.PI/Q * Math.sin(tth/2.0);
+            //tth = mod(tth, 2*Math.PI);
+            if (tth > Math.PI) tth -= 2*Math.PI;
+            if (tth < -Math.PI) tth += 2*Math.PI;
+            return {x: wl_out, y:tth * 180.0/Math.PI}
+        },
+	get_wl_twoth_old: function(qcoords, theta) {
+            var qx = qcoords.x;
+            var qz = qcoords.y;
+            var tilt = Math.atan2(qx, qz);
+            var tth = 2.0*(theta - tilt);
+            var Q = Math.sqrt(Math.pow(qx,2) + Math.pow(qz,2));
+            var wl_out = 4*Math.PI/Q * Math.sin(tth/2.0)
+            return {x: wl_out, y:tth}
+        },
+        
+        get_th_twoth: function (qcoords, wl) {
+            //var qx = qx_feature * mx;
+            var qx = qcoords.x;
+            var qz = qcoords.y;
+            var tilt = Math.atan2(qx, Math.abs(qz));
+            var Q = Math.sqrt(Math.pow(qx,2) + Math.pow(qz,2));
+            var tth = Math.asin(wl * Q / (4 * Math.PI)) * 2.0;
+            if (qz < 0) {
+                tth *= -1;
+                tilt *= -1;
+            }
+            var th = tth / 2.0 + tilt;
+            //2.0*(theta*Math.PI/180.0 - tilt);
+            return {x: tth*180.0/Math.PI, y:th * 180.0/Math.PI}
+        },
+        init: function(options) {
+            $.jqplot.InteractorPlugin.prototype.init.call(this, options);
+            this.x = 0.0;
+            this.y = 0.0;
+            this.r = 10.0;
+            this.color = "yellow";
+            this.wavelength = 5.0;
+            $.extend(this, options);
+	    this.A3 = 0.5; // theta
+	    this.rp1 = null; // th-2th pointer
+	    this.tp1 = null; // tof pointer
+            $.extend(this, options);
+            //var x = this.rp1.pos.x;
+            this.p1 = new $.jqplot.PluginPoint(); this.p1.initialize(this, this.x, this.y, this.r);
+            this.p1.color = this.color;
+            //this.updateQ();
+            this.grobs.push(this.p1);
+        },
+        update: function(pos) {
+            this.updateQ();
+            this.redraw();
+        },
+        updateQ: function() {
+            //this.q_points = [];
+	    if (this.rp1 != null) {
+            	rp1coords = this.rp1.getCoords();
+            	var A4 = rp1coords.x;
+            	var A3 = rp1coords.y;
+		var wavelength = this.wavelength;
+	    }
+	    else if (this.tp1 != null) {
+	    	tp1coords = this.tp1.getCoords();
+		var wavelength = tp1coords.x;
+		var A4 = tp1coords.y;
+		var A3 = this.A3;
+	    }
+	    var q = this.getQxQz(A3, A4, wavelength); 
+            this.p1.coords = q;
         }
     });
     

@@ -298,7 +298,7 @@ Ext.onReady(function () {
 
         //UPDATE RESIDUALS
         webfit.ResidualPlot.series[0].data = residualUpdate();
-        webfit.ResidualPlot.replot({resetAxes: true });
+        webfit.ResidualPlot.replot();
         console.log('UPDATED RESIDUALS');
 
         return tcursor.name;
@@ -472,26 +472,38 @@ Ext.onReady(function () {
         //id: 4,
         //renderTo: Ext.getBody(),
         handler: function () {
-//            if (functionSelector.chooser.getValue() === null) {
-//                alert('You must choose a function before adding.');
-//            }
-//            else {
-//                var selection = functionSelector.chooser.getValue();
-//                if (selection === "New Function") {
-//                    functionSelector.newFunction.setVisible(true);
-//                }
-//                else {
-//                    var theName = addInteractor(selection);
-//                    functionSelector.addStore.add({
-//                        name: theName,
-//                        type: selection,
-//                        color1: 'green',
-//                        color2: 'blue',
-//                        show: true,
-//                    });
-//                }
-//                functionSelector.specs.items.add(functionSelector.specsLayout(theName));
-//            }
+            this.x0 = [];
+            for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length-1; j++) {
+                    this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
+                    this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
+                }
+            }
+            //var a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g;
+            var sqResid = function (x) {
+                //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
+                var counter=0;
+                for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length-1; j++) {
+                            webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x=x[counter];
+                        counter++;
+                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y=x[counter];
+                        counter++;
+                        //webfit.plot.replot();
+                    }
+                }
+                var sqRes = 0;
+                for (i = 0; i < webfit.plot.data[0].length; i++) {
+                    sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
+                    //console.log(sqRes);
+                }
+                console.log(sqRes);
+                //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
+                return sqRes;
+            };
+
+            var x = SimplexEq.simplex(sqResid, this.x0);
+            //fit the function
         },
         x: 120,
         y: 38,
@@ -871,10 +883,10 @@ Ext.onReady(function () {
                             console.log('min', plotxmin);
                             console.log('max', plotxmax);
 
-                            webfit.plot.axes.xaxis.min= plotxmin;
-                            webfit.plot.axes.xaxis.max= plotxmax;
-                            webfit.ResidualPlot.axes.xaxis.min= plotxmin;
-                            webfit.ResidualPlot.axes.xaxis.max= plotxmax;
+                            webfit.plot.axes.xaxis.min = plotxmin;
+                            webfit.plot.axes.xaxis.max = plotxmax;
+                            webfit.ResidualPlot.axes.xaxis.min = plotxmin;
+                            webfit.ResidualPlot.axes.xaxis.max = plotxmax;
                             webfit.plot.replot();
                             webfit.ResidualPlot.replot();
                         }
@@ -898,10 +910,10 @@ Ext.onReady(function () {
                             console.log('min', plotymin);
                             console.log('max', plotymax);
 
-                            webfit.plot.axes.yaxis.min= plotymin;
-                            webfit.plot.axes.yaxis.max= plotymax;
-                            webfit.ResidualPlot.axes.yaxis.min= plotymin;
-                            webfit.ResidualPlot.axes.yaxis.max= plotymax;
+                            webfit.plot.axes.yaxis.min = plotymin;
+                            webfit.plot.axes.yaxis.max = plotymax;
+                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
+                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
                             webfit.plot.replot();
                             webfit.ResidualPlot.replot();
                             //alert('You clicked the button!')
@@ -923,15 +935,15 @@ Ext.onReady(function () {
                     {
                         text: 'Update',
                         handler: function () {
-                            var changeTit=functionSelector.axisNames.items.items[0].getValue();
-                            var changeXLab=functionSelector.axisNames.items.items[1].getValue();
-                            var changeYLab=functionSelector.axisNames.items.items[2].getValue();
+                            var changeTit = functionSelector.axisNames.items.items[0].getValue();
+                            var changeXLab = functionSelector.axisNames.items.items[1].getValue();
+                            var changeYLab = functionSelector.axisNames.items.items[2].getValue();
                             //webfit.plot.title=changeTit;
-                            webfit.plot.title.text=changeTit;
-                            webfit.plot.axes.xaxis.labelOptions.label=changeXLab;
-                            webfit.plot.axes.yaxis.labelOptions.label=changeYLab;
-                            webfit.ResidualPlot.axes.xaxis.labelOptions.label=changeXLab;
-                            webfit.ResidualPlot.axes.yaxis.labelOptions.label=changeYLab;
+                            webfit.plot.title.text = changeTit;
+                            webfit.plot.axes.xaxis.labelOptions.label = changeXLab;
+                            webfit.plot.axes.yaxis.labelOptions.label = changeYLab;
+                            webfit.ResidualPlot.axes.xaxis.labelOptions.label = changeXLab;
+                            webfit.ResidualPlot.axes.yaxis.labelOptions.label = changeYLab;
                             webfit.plot.replot();
                             webfit.ResidualPlot.replot();
                             //can't refresh?
@@ -1098,7 +1110,7 @@ Ext.onReady(function () {
                     sortData: false,
                     axes: {
                         xaxis: {
-                            min:-1,
+                            min: -1,
                             max: 7,
                             label: 'X Axis',
                             labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
@@ -1108,8 +1120,8 @@ Ext.onReady(function () {
                             }
                         },
                         yaxis: {
-                            min:-3,
-                            max:3,
+                            min: -3,
+                            max: 3,
                             label: 'Y Axis',
                             labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
                             tickRenderer: $.jqplot.CanvasAxisTickRenderer,
@@ -1120,7 +1132,7 @@ Ext.onReady(function () {
                             }
                         }
                     },
-                    cursor: {show: true, zoom: true},
+                    cursor: {show: true, zoom: false},
                     interactors: [
                         /*{type: 'Line',
                          name: 'lcursor',
@@ -1173,7 +1185,7 @@ Ext.onReady(function () {
 
     var updateResiduals = function () {
         webfit.ResidualPlot.series[0].data = residualUpdate();
-        webfit.ResidualPlot.resetAxesScale();
+        //webfit.ResidualPlot.resetAxesScale();
         webfit.ResidualPlot.replot();
         console.log('UPDATING RESIDUALS');
     };
