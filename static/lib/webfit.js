@@ -489,7 +489,7 @@ Ext.onReady(function () {
                         counter++;
                         webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y=x[counter];
                         counter++;
-                        //webfit.plot.replot();
+                        webfit.plot.replot();
                     }
                 }
                 var sqRes = 0;
