@@ -58,10 +58,12 @@ Ext.onReady(function () {
             reader.onload = function (event) {
                 var csv = event.target.result;
                 var webfitData = webfit.plot.series[0].data;
+                var residualData=webfit.ResidualPlot.series[0].data;
 
                 //CLEAR PREVIOUS DATA
                 while (webfitData.length !== 0) {
                     webfitData.pop();
+                    residualData.pop();
                     console.log(webfitData.length);
                 }
                 if (dataP.store.data.items.length !== 0) {
@@ -73,6 +75,7 @@ Ext.onReady(function () {
                 //var html = '';
                 for (var row in data) {
                     webfitData.push(data[row]);
+                    residualData.push(data[row]);
                     dataP.store.add({
                         x: data[row][0],
                         y: data[row][1],
@@ -89,6 +92,7 @@ Ext.onReady(function () {
                 dataPanel.getView().refresh();
                 //$('#contents').html(html);
                 webfit.plot.redraw();
+                webfit.ResidualPlot.replot();
             };
             reader.onerror = function () {
                 alert('Unable to read ' + file.fileName);
@@ -472,29 +476,40 @@ Ext.onReady(function () {
         //id: 4,
         //renderTo: Ext.getBody(),
         handler: function () {
+            //functionSelector.currentlyFitting.setVisible(true);
             this.x0 = [];
             for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length-1; j++) {
+                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
                     this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
                     this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
                 }
             }
             //var a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g;
+            var fitMin = -9999;
+            var fitMax = 9999;
+            if(functionSelector.plotFitDomain.items.getAt(1).getValue()!=functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+                fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
+                fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+            }
             var sqResid = function (x) {
                 //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
-                var counter=0;
+                var counter = 0;
                 for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length-1; j++) {
-                            webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x=x[counter];
+                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = x[counter];
                         counter++;
-                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y=x[counter];
+                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = x[counter];
                         counter++;
                         webfit.plot.replot();
                     }
                 }
                 var sqRes = 0;
                 for (i = 0; i < webfit.plot.data[0].length; i++) {
-                    sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
+                    if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+
+
+                        sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
+                    }
                     //console.log(sqRes);
                 }
                 console.log(sqRes);
@@ -833,7 +848,7 @@ Ext.onReady(function () {
         }
     });
 
-    functionSelector.plotDomain = Ext.create('Ext.panel.Panel', {
+    functionSelector.plotFitDomain = Ext.create('Ext.panel.Panel', {
         height: 45,
         layout: {type: 'hbox',
             align: 'stretch',
@@ -844,18 +859,18 @@ Ext.onReady(function () {
         hideBorders: true,
         items: [functionSelector.plot1, {
             xtype: 'textfield',
-            name: 'plotYMin',
+            name: 'plotXMin',
             width: 105,
             labelAlign: 'top',
-            fieldLabel: 'Y Min',
+            fieldLabel: 'X Min',
             allowBlank: false  // requires a non-empty value
         }, {
             xtype: 'textfield',
-            name: 'plotYMax',
+            name: 'plotXMax',
             width: 105,
             padding: '0 0 0 20',
             labelAlign: 'top',
-            fieldLabel: 'Y Max',
+            fieldLabel: 'X Max',
             allowBlank: false,
         }]
     });
@@ -865,57 +880,57 @@ Ext.onReady(function () {
         height: 198,
         //id: 8,
         items: [
+//            {
+//                title: 'Range',
+//                bodyPadding: 15,
+//                layout: {type: 'vbox',
+//                    align: 'stretch',
+//                    pack: 'center',
+//                },
+//                items: [functionSelector.plotRange, ],
+//                //PLOTRANGE: ["panel-1064", "textfield-1066", "textfield-1067"]
+//                buttons: [
+//                    {
+//                        text: 'Update',
+//                        handler: function () {
+//                            plotxmin = Math.floor(functionSelector.plotRange.items.getAt(1).getValue());
+//                            plotxmax = Math.floor(functionSelector.plotRange.items.getAt(2).getValue());
+//                            console.log('min', plotxmin);
+//                            console.log('max', plotxmax);
+//
+//                            webfit.plot.axes.xaxis.min = plotxmin;
+//                            webfit.plot.axes.xaxis.max = plotxmax;
+//                            webfit.ResidualPlot.axes.xaxis.min = plotxmin;
+//                            webfit.ResidualPlot.axes.xaxis.max = plotxmax;
+//                            webfit.plot.replot();
+//                            webfit.ResidualPlot.replot();
+//                        }
+//                    }
+//                ]
+//            },
             {
-                title: 'Range',
+                title: 'Fit Domain',
                 bodyPadding: 15,
                 layout: {type: 'vbox',
                     align: 'stretch',
                     pack: 'center',
                 },
-                items: [functionSelector.plotRange, ],
-                //PLOTRANGE: ["panel-1064", "textfield-1066", "textfield-1067"]
+                items: [functionSelector.plotFitDomain, ],
                 buttons: [
                     {
                         text: 'Update',
                         handler: function () {
-                            plotxmin = Math.floor(functionSelector.plotRange.items.getAt(1).getValue());
-                            plotxmax = Math.floor(functionSelector.plotRange.items.getAt(2).getValue());
-                            console.log('min', plotxmin);
-                            console.log('max', plotxmax);
-
-                            webfit.plot.axes.xaxis.min = plotxmin;
-                            webfit.plot.axes.xaxis.max = plotxmax;
-                            webfit.ResidualPlot.axes.xaxis.min = plotxmin;
-                            webfit.ResidualPlot.axes.xaxis.max = plotxmax;
-                            webfit.plot.replot();
-                            webfit.ResidualPlot.replot();
-                        }
-                    }
-                ]
-            },
-            {
-                title: 'Domain',
-                bodyPadding: 15,
-                layout: {type: 'vbox',
-                    align: 'stretch',
-                    pack: 'center',
-                },
-                items: [functionSelector.plotDomain, ],
-                buttons: [
-                    {
-                        text: 'Update',
-                        handler: function () {
-                            plotymin = Math.floor(functionSelector.plotDomain.items.getAt(1).getValue());
-                            plotymax = Math.floor(functionSelector.plotDomain.items.getAt(2).getValue());
-                            console.log('min', plotymin);
-                            console.log('max', plotymax);
-
-                            webfit.plot.axes.yaxis.min = plotymin;
-                            webfit.plot.axes.yaxis.max = plotymax;
-                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
-                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
-                            webfit.plot.replot();
-                            webfit.ResidualPlot.replot();
+//                            plotymin = Math.floor(functionSelector.plotFitDomain.items.getAt(1).getValue());
+//                            plotymax = Math.floor(functionSelector.plotFitDomain.items.getAt(2).getValue());
+//                            console.log('min', plotymin);
+//                            console.log('max', plotymax);
+//
+//                            webfit.plot.axes.yaxis.min = plotymin;
+//                            webfit.plot.axes.yaxis.max = plotymax;
+//                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
+//                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
+//                            webfit.plot.replot();
+//                            webfit.ResidualPlot.replot();
                             //alert('You clicked the button!')
                         }
                     }

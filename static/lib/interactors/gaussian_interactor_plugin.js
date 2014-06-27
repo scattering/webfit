@@ -64,12 +64,12 @@
 
         
         this.pk.move = function(dp){
-            var dpos = {x: 0, y: dp.y || 0 };
+            var dpos = {x: dp.x || 0, y: dp.y || 0 };
             this.translateBy(dpos);
         }
             
         this.pw.move = function(dp){
-            var dpos = {x: dp.x || 0, y: 0 };
+            var dpos = {x: dp.x || 0, y:  dp.y || 0  };
             this.translateBy(dpos);
         }   
         

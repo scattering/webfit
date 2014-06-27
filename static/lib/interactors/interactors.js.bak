@@ -1005,43 +1005,6 @@ debug = false;
         }
     });
     
-    $.jqplot.Polygon = function() {};
-    $.jqplot.Polygon.prototype = new $.jqplot.GrobConnector();
-    $.jqplot.Polygon.prototype.constructor = $.jqplot.Polygon;    
-    $.extend($.jqplot.Polygon.prototype, {        
-        initialize: function(parent, points, width) {
-            $.jqplot.GrobConnector.prototype.initialize.call(this, parent, width);
-            this.name = 'polygon';
-            this.points = points;
-            this.filled = true;
-        },
-        
-        
-        render: function(ctx) {
-            $.jqplot.GrobConnector.prototype.render.call(this, ctx);
-            
-            var numPoints = this.points.length;
-            ctx.beginPath();
-            ctx.moveTo(this.points[0].pos.x, this.points[0].pos.y);
-            for (var i=0; i<numPoints; i++) {
-                ctx.lineTo(this.points[i].pos.x, this.points[i].pos.y);
-            }
-            ctx.lineTo(this.points[0].pos.x, this.points[0].pos.y);
-            ctx.closePath();
-            ctx.stroke();
-            if (this.filled) {
-                ctx.globalAlpha = 0.4;
-                ctx.fill();
-                ctx.globalAlpha = 0.6;
-            }
-            
-        },
-        
-        isInside: function(pos) {
-            return false;
-        }
-    });
-    
     $.jqplot.Center = function() {};
     $.jqplot.Center.prototype = new $.jqplot.Point();
     $.jqplot.Center.prototype.constructor = $.jqplot.Center;    
@@ -1188,6 +1151,7 @@ debug = false;
             //console.log('pos (',pos.x, pos.y,') fpos (',fpos.x.toFixed(2), fpos.y.toFixed(2), ') x =',x ,'d =', d);
             return d;
         },
+
         drawEq: function (ctx, eq, x0, y0, xmin, xmax, pm) {
             var tmp = ctx.strokeStyle;
             var prevcolor = newcolor = null;
@@ -1223,6 +1187,28 @@ debug = false;
                     //ctx.lineTo(i, y0 - y);
                 }
             }
+//            for (var i = xmin - 1; i <= xmax + 1; i ++) {
+//                var y = eq(i);
+//                if (pm) {
+//                    prevcolor = newcolor;
+//                    newcolor = (y >= 0) ? 'red' : 'blue';
+//                    if (prevcolor != null && prevcolor != newcolor) {
+//                        var h = i - 1 + y / (eq(i - 1) - y);
+//                        //ctx.lineTo(h, y0);
+//                        ctx.lineTo(i, y0 - 1);
+//                        ctx.strokeStyle = prevcolor;
+//                        ctx.stroke();
+//                        ctx.beginPath();
+//                        //ctx.moveTo(h, y0);
+//                        ctx.moveTo(i - 1, y0 - eq(i - 1));
+//                        ctx.lineTo(i, y0 - y);
+//                    }
+//                    else
+//                        ctx.lineTo(i, y0 - y);
+//                }
+//                else
+//                    ctx.lineTo(i, y0 - y);
+//            }
             if (pm)
                 ctx.strokeStyle = prevcolor;
             ctx.stroke();
@@ -1230,29 +1216,7 @@ debug = false;
             ctx.strokeStyle = tmp;
         }      
     });
-    $.jqplot.FunctionCollection = function() {};
-    $.jqplot.FunctionCollection.prototype = new $.jqplot.FunctionConnector();
-    $.jqplot.FunctionCollection.prototype.constructor = $.jqplot.FunctionCollection;
-    $.extend($.jqplot.FunctionCollection.prototype, {
-        initialize: function(parent, width) {
-            $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
-
-            this.name = 'functionCollection';
-            //this.c = new $.jqplot.Center(); this.c.initialize(this, 5.2, -1.9);
-            //this.f = this.FunctionCollection;
-        },
-        render: function(ctx) {
-            $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
-            if (this.hasOwnProperty('c')){
-                this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);}
-            else{
-                this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);
-            }
-        },
-        isInside: function(pos) {
-            return false; //this.distanceTo(pos) <= this.width + 1;
-        },
-    });
+    
     $.jqplot.Linear = function() {};
     $.jqplot.Linear.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.Linear.prototype.constructor = $.jqplot.Linear;    
@@ -1279,7 +1243,7 @@ debug = false;
                 ctx.stroke();
             }
             else
-                this.drawEq(ctx, bind(this, this.f), 0, this.c.pos.y, 0, this.parent.canvas.width);
+                this.drawEq(ctx, bind(this, this.f), 1, this.c.coords.y, 0, this.parent.canvas.width);
         },
         
         linear: function(x) {
@@ -1314,27 +1278,57 @@ debug = false;
     $.jqplot.Quadratic.prototype = new $.jqplot.FunctionConnector();
     $.jqplot.Quadratic.prototype.constructor = $.jqplot.Quadratic;    
     $.extend($.jqplot.Quadratic.prototype, {        
-        initialize: function(parent, p1, p2, width) {
+        initialize: function(parent, peak, p1, width) {
             $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
             this.name = 'quadratic';
             this.f = this.quadratic;
-            this.points = { p1: p1, p2: p2 };
+            this.c = peak;
             this.p1 = p1;
-            this.p2 = p2;
-            this.c = p1;
         },
         render: function(ctx) {
             $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
             
-            this.drawEq(ctx, bind(this, this.f), 0, this.c.pos.y, 0, this.parent.canvas.width);
+            // Correct the coordinate system
+            // Unfortunately, the default is to center the y axis on the center
+            // point, but leave the x axis at zero.
+            var nx = this.parent.canvas.width,
+                ny = this.parent.canvas.height,
+                cy = this.c.pos.y,
+                cx = this.c.pos.x,
+                wx = this.p1.pos.x,
+                wy = cy  - this.p1.pos.y;
+            this.pars = { x0: cx, C: 0, A: wx==cx?0:wy/(wx-cx)/(wx-cx) };
+            this.drawEq(ctx, bind(this, this.f), 0, cy, 0, nx);
         },
         
         quadratic: function(x) {
-            var center = this.p1.pos.x, offset = this.p1.pos.y,
-                dx = (this.p2.pos.x-center), dy=(this.p2.pos.y-offset),
-                a = (x-center)/dx;
-            return -dy*a*a;
+            var dx = x - this.pars.x0;
+            return (this.pars.A*dx*dx + this.pars.C);
         }
+    });
+    
+    $.jqplot.FunctionCollection = function() {};
+    $.jqplot.FunctionCollection.prototype = new $.jqplot.FunctionConnector();
+    $.jqplot.FunctionCollection.prototype.constructor = $.jqplot.FunctionCollection;
+    $.extend($.jqplot.FunctionCollection.prototype, {
+	initialize: function(parent, width) {
+	    $.jqplot.FunctionConnector.prototype.initialize.call(this, parent, width);
+	    
+	    this.name = 'functionCollection';
+	    //this.c = new $.jqplot.Center(); this.c.initialize(this, 5.2, -1.9);
+	    //this.f = this.FunctionCollection;
+	},
+	render: function(ctx) {
+	    $.jqplot.FunctionConnector.prototype.render.call(this, ctx);
+			if (this.hasOwnProperty('c')){
+            this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);}
+			else{
+			this.drawEq(ctx, bind(this, this.f), 0, 0, 0, this.parent.canvas.width);
+			}
+	},
+	isInside: function(pos) {
+            return false; //this.distanceTo(pos) <= this.width + 1;
+        },
     });
     
     $.jqplot.Gaussian = function() {};
