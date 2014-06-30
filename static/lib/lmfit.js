@@ -410,6 +410,189 @@
 
 var lmfit = lmfit || {};
 $(document).ready(function () {
+    /*
+     Original FORTRAN documentation
+     **********
+
+     subroutine lmdif
+
+     the purpose of lmdif is to minimize the sum of the squares of
+     m nonlinear functions in n variables by a modification of
+     the levenberg-marquardt algorithm. the user must provide a
+     subroutine which calculates the functions. the jacobian is
+     then calculated by a forward-difference approximation.
+
+     the subroutine statement is
+
+     subroutine lmdif(fcn,m,n,x,fvec,ftol,xtol,gtol,maxfev,epsfcn,
+     diag,mode,factor,nprint,info,nfev,fjac,
+     ldfjac,ipvt,qtf,wa1,wa2,wa3,wa4)
+
+     where
+
+     fcn is the name of the user-supplied subroutine which
+     calculates the functions. fcn must be declared
+     in an external statement in the user calling
+     program, and should be written as follows.
+
+     subroutine fcn(m,n,x,fvec,iflag)
+     integer m,n,iflag
+     double precision x(n),fvec(m)
+     ----------
+     calculate the functions at x and
+     return this vector in fvec.
+     ----------
+     return
+     end
+
+     the value of iflag should not be changed by fcn unless
+     the user wants to terminate execution of lmdif.
+     in this case set iflag to a negative integer.
+
+     m is a positive integer input variable set to the number
+     of functions.
+
+     n is a positive integer input variable set to the number
+     of variables. n must not exceed m.
+
+     x is an array of length n. on input x must contain
+     an initial estimate of the solution vector. on output x
+     contains the final estimate of the solution vector.
+
+     fvec is an output array of length m which contains
+     the functions evaluated at the output x.
+
+     ftol is a nonnegative input variable. termination
+     occurs when both the actual and predicted relative
+     reductions in the sum of squares are at most ftol.
+     therefore, ftol measures the relative error desired
+     in the sum of squares.
+
+     xtol is a nonnegative input variable. termination
+     occurs when the relative error between two consecutive
+     iterates is at most xtol. therefore, xtol measures the
+     relative error desired in the approximate solution.
+
+     gtol is a nonnegative input variable. termination
+     occurs when the cosine of the angle between fvec and
+     any column of the jacobian is at most gtol in absolute
+     value. therefore, gtol measures the orthogonality
+     desired between the function vector and the columns
+     of the jacobian.
+
+     maxfev is a positive integer input variable. termination
+     occurs when the number of calls to fcn is at least
+     maxfev by the end of an iteration.
+
+     epsfcn is an input variable used in determining a suitable
+     step length for the forward-difference approximation. this
+     approximation assumes that the relative errors in the
+     functions are of the order of epsfcn. if epsfcn is less
+     than the machine precision, it is assumed that the relative
+     errors in the functions are of the order of the machine
+     precision.
+
+     diag is an array of length n. if mode = 1 (see
+     below), diag is internally set. if mode = 2, diag
+     must contain positive entries that serve as
+     multiplicative scale factors for the variables.
+
+     mode is an integer input variable. if mode = 1, the
+     variables will be scaled internally. if mode = 2,
+     the scaling is specified by the input diag. other
+     values of mode are equivalent to mode = 1.
+
+     factor is a positive input variable used in determining the
+     initial step bound. this bound is set to the product of
+     factor and the euclidean norm of diag*x if nonzero, or else
+     to factor itself. in most cases factor should lie in the
+     interval (.1,100.). 100. is a generally recommended value.
+
+     nprint is an integer input variable that enables controlled
+     printing of iterates if it is positive. in this case,
+     fcn is called with iflag = 0 at the beginning of the first
+     iteration and every nprint iterations thereafter and
+     immediately prior to return, with x and fvec available
+     for printing. if nprint is not positive, no special calls
+     of fcn with iflag = 0 are made.
+
+     info is an integer output variable. if the user has
+     terminated execution, info is set to the (negative)
+     value of iflag. see description of fcn. otherwise,
+     info is set as follows.
+
+     info = 0  improper input parameters.
+
+     info = 1  both actual and predicted relative reductions
+     in the sum of squares are at most ftol.
+
+     info = 2  relative error between two consecutive iterates
+     is at most xtol.
+
+     info = 3  conditions for info = 1 and info = 2 both hold.
+
+     info = 4  the cosine of the angle between fvec and any
+     column of the jacobian is at most gtol in
+     absolute value.
+
+     info = 5  number of calls to fcn has reached or
+     exceeded maxfev.
+
+     info = 6  ftol is too small. no further reduction in
+     the sum of squares is possible.
+
+     info = 7  xtol is too small. no further improvement in
+     the approximate solution x is possible.
+
+     info = 8  gtol is too small. fvec is orthogonal to the
+     columns of the jacobian to machine precision.
+
+     nfev is an integer output variable set to the number of
+     calls to fcn.
+
+     fjac is an output m by n array. the upper n by n submatrix
+     of fjac contains an upper triangular matrix r with
+     diagonal elements of nonincreasing magnitude such that
+
+     t        t                 t
+     p *(jac *jac)*p = r *r,
+
+     where p is a permutation matrix and jac is the final
+     calculated jacobian. column j of p is column ipvt(j)
+     (see below) of the identity matrix. the lower trapezoidal
+     part of fjac contains information generated during
+     the computation of r.
+
+     ldfjac is a positive integer input variable not less than m
+     which specifies the leading dimension of the array fjac.
+
+     ipvt is an integer output array of length n. ipvt
+     defines a permutation matrix p such that jac*p = q*r,
+     where jac is the final calculated jacobian, q is
+     orthogonal (not stored), and r is upper triangular
+     with diagonal elements of nonincreasing magnitude.
+     column j of p is column ipvt(j) of the identity matrix.
+
+     qtf is an output array of length n which contains
+     the first n elements of the vector (q transpose)*fvec.
+
+     wa1, wa2, and wa3 are work arrays of length n.
+
+     wa4 is a work array of length m.
+
+     subprograms called
+
+     user-supplied ...... fcn
+
+     minpack-supplied ... dpmpar,enorm,fdjac2,,qrfac
+
+     fortran-supplied ... dabs,dmax1,dmin1,dsqrt,mod
+
+     argonne national laboratory. minpack project. march 1980.
+     burton s. garbow, kenneth e. hillstrom, jorge j. more
+
+     **********
+     */
     /*Original FORTRAN documentation
     **********
 
@@ -675,12 +858,27 @@ $(document).ready(function () {
             }
             rdiag[j]=-ajnorm;
         }
-        return [a, ipvt, rdiag, acnorm];
+        return {a:a, ipvt:ipvt, rdiag:rdiag, acnorm:acnorm};
 
 
 
     };
 
+    /* for debug purposes*/
+    lmfit.__str__=function(){
+        return {
+            params: self.params,
+            niter: self.niter,
+            params: self.params,
+            covar: self.covar,
+            perror: self.perror,
+            status: self.status,
+            debug: self.debug,
+            errmsg: self.errmsg,
+            nfev: self.nfev,
+            damp: self.damp
+        }
+    }
 
 
 
@@ -880,7 +1078,7 @@ $(document).ready(function () {
 //        Permute the components of z back to components of x
 
         x[ipvt]=wa;  //questionable; ipvt is a 1d array, x is a 1d array
-        return       //questionable return
+        return {r:r, x:x, sdiag:sdiag};      //questionable return
 
 
     };
@@ -978,7 +1176,7 @@ $(document).ready(function () {
             argonne national laboratory. minpack project. march 1980.
                 burton s. garbow, kenneth e. hillstrom, jorge j. more
         */
-    lmfit.lmpar=function(r, ipvt, diag, qtb, delta, x, sdiag, par){
+    lmfit.lmpar=function(r, ipvt, diag, qtb, delta, x, sdiag, par){  //must check the typeOf r array/matrix
         console.log('entering lmpar...');
         var sz=[r.length, r[0].length];
         var m = sz[0];
@@ -989,12 +1187,133 @@ $(document).ready(function () {
 
         var nsing=n;
         var wa1=qtb.splice();
-
-        if(typeOf(par)=='undefined')
+        //skipping some rounding stuffs
+        if(nsing>=1)
         {
+            for(j=nsing-1; j>-1; j--)
+            {
+                wa1[j]=wa1[j]/ r.elements[j][j];
+                if(j-1>=0)
+                {
+                    for(i=0; i< j; i++)
+                    {
+                        wa1[i]=wa1[i]- r.elements[i][j]*wa1[j];
+                    }
+                }
+            }
+        }
+//      Note: ipvt here is a permutaiton array
+        x[ipvt]=wa1; //questionble "permutation array"
+
+        var iter=0;
+        var wa2=diag*x;//may have to change this because javascript doesn't support array * array operatoins
+        var dxnorm=lmfit.enorm(wa2);
+        var fp=dxnorm-delta;
+        if (fp<=0.1*delta)
+        {
+            return [r, 0, x, sdiag];
+        }
+//         If the jacobian is not rank deficient, the newton step provides a
+//         lower bound, parl, for the zero of the function.  Otherwise set
+//         this bound to zero.
+
+        var parl=0;
+        if(nsing>=n)
+        {
+            wa1=diag[ipvt]*wa2[ipvt]/dxnorm;//again the permutation array questionability
+            wa1[0]=wa1[0]/r[0][0];
+            for (j=1; j<n; j++)
+            {
+                var sum0;
+                for(i=0; i<j; i++)
+                {
+                    sum0+=r[i][j]*wa1[i];
+
+
+                }
+                wa1[j]=(wa1[j]-sum0)/r[j][j];
+            }
+            var temp=lmfit.enorm(wa1);
+            parl=((fp/delta)/temp)/temp;
+
 
         }
+//             Calculate an upper bound, paru, for the zero of the function
+        for(j=0; j<n; j++)
+        {
+            var sum0;
+            for(i=0; i<j+1; i++)
+            {
+                sum0+=r[i][j]*qtb[i];
 
+            }
+            wa1[j]=sum0/diag[ipvt[j]];
+        }
+        var gnorm=lmfit.enorm(wa1);
+        var paru=gnorm/delta;
+        //skip some rounding checks
+//         If the input par lies outside of the interval (parl,paru), set
+//         par to the closer endpoint
+        if(typeOf(par)=='undefined') {
+            par = parl;
+            par = Math.min(par, paru);
+        } else {
+            par = Math.max(par, parl);
+            par = Math.min(par, paru);
+        }
+        if(par==0)
+        {
+            par=gnorm/dxnorm;
+        }
+//        Beginning of an interation
+        while(true)  //unsure whether it will throw an exception
+        {
+            iter++;
+//            Evaluate the function at the current value of par
+            var temp=Math.sqrt(par);
+            wa1=temp*diag; //unsure whether will throw error due to scalar*array
+            var a=lmfit.qrsolv(r, ipvt, wa1, qtb, sdiag);
+            r= a.r;
+            x= a.x;
+            sdiag= a.sdiag;
+            wa2=diag*x;
+            dxnorm=lmfit.enorm(wa2);
+            temp=fp;
+            fp=dxnorm-delta;
+
+            if (Math.abs(fp) <= 0.1*delta) || ((parl == 0) && (fp <= temp) && (temp < 0)) || (iter == 10)
+            {
+                break;
+            }
+//            Compute the newton correction
+            wa1=diag[ipvt]*wa2[ipvt/dxnorm];
+
+            for(j=0; j<n-1; j++)
+            {
+                wa1[j]=wa1[j]/sdiag[j];
+                for(i=j+1; j<n; j++) {
+                    wa1[i] = wa[1] - r[i][j] * wa1[j];
+
+                }
+            }
+            wa1[n-1]=wa1[n-1]/sdiag[n-1];
+            temp=lmfit.enorm(wa1);
+            var parc=((fp/delta)/temp)/temp;
+//            Depending on the sign of the function, update parl or paru
+            if(fp>0)
+            {
+                par=Math.max(parl, par);
+            }
+            if(fp<0)
+            {
+                paru=Math.min(paru, par);
+            }
+//            Compute an improved estimate for par
+            par=Math.max(parl, par+parc);
+//            End of an iteration
+        }
+//        Termination
+        return {r:r, par:par, x:x, sdiag:sdiag};
     };
 
 
@@ -1193,7 +1512,7 @@ $(document).ready(function () {
 
     };
 
-    //numerical constants
+    //numerical constants for rounding and stuff
     this.machep=Math.pow(2, -53);
     this.maxnum=Math.pow(2,53);
     this.minnum=0-Math.pow(2,53);
