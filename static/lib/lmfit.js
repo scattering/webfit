@@ -593,6 +593,554 @@ $(document).ready(function () {
 
      **********
      */
+
+    /*
+     Inputs:
+     fcn:
+     The function to be minimized.  The function should return the weighted
+     deviations between the model and the data, as described above.
+
+     xall:
+     An array of starting values for each of the parameters of the model.
+     The number of parameters should be fewer than the number of measurements.
+
+     This parameter is optional if the parinfo keyword is used (but see
+     parinfo).  The parinfo keyword provides a mechanism to fix or constrain
+     individual parameters.
+
+     Keywords:
+
+     autoderivative:
+     If this is set, derivatives of the function will be computed
+     automatically via a finite differencing procedure.  If not set, then
+     fcn must provide the (analytical) derivatives.
+     Default: set (=1)
+     NOTE: to supply your own analytical derivatives,
+     explicitly pass autoderivative=0
+
+     ftol:
+     A nonnegative input variable. Termination occurs when both the actual
+     and predicted relative reductions in the sum of squares are at most
+     ftol (and status is accordingly set to 1 or 3).  Therefore, ftol
+     measures the relative error desired in the sum of squares.
+     Default: 1E-10
+
+     functkw:
+     A dictionary which contains the parameters to be passed to the
+     user-supplied function specified by fcn via the standard Python
+     keyword dictionary mechanism.  This is the way you can pass additional
+     data to your user-supplied function without using global variables.
+
+     Consider the following example:
+     if functkw = {'xval':[1.,2.,3.], 'yval':[1.,4.,9.],
+     'errval':[1.,1.,1.] }
+     then the user supplied function should be declared like this:
+     def myfunct(p, fjac=None, xval=None, yval=None, errval=None):
+
+     Default: {}   No extra parameters are passed to the user-supplied
+     function.
+
+     gtol:
+     A nonnegative input variable. Termination occurs when the cosine of
+     the angle between fvec and any column of the jacobian is at most gtol
+     in absolute value (and status is accordingly set to 4). Therefore,
+     gtol measures the orthogonality desired between the function vector
+     and the columns of the jacobian.
+     Default: 1e-10
+
+     iterkw:
+     The keyword arguments to be passed to iterfunct via the dictionary
+     keyword mechanism.  This should be a dictionary and is similar in
+     operation to FUNCTKW.
+     Default: {}  No arguments are passed.
+
+     iterfunct:
+     The name of a function to be called upon each NPRINT iteration of the
+     MPFIT routine.  It should be declared in the following way:
+     def iterfunct(myfunct, p, iter, fnorm, functkw=None,
+     parinfo=None, quiet=0, dof=None, [iterkw keywords here])
+     # perform custom iteration update
+
+     iterfunct must accept all three keyword parameters (FUNCTKW, PARINFO
+     and QUIET).
+
+     myfunct:  The user-supplied function to be minimized,
+     p:              The current set of model parameters
+     iter:    The iteration number
+     functkw:  The arguments to be passed to myfunct.
+     fnorm:  The chi-squared value.
+     quiet:  Set when no textual output should be printed.
+     dof:      The number of degrees of freedom, normally the number of points
+     less the number of free parameters.
+     See below for documentation of parinfo.
+
+     In implementation, iterfunct can perform updates to the terminal or
+     graphical user interface, to provide feedback while the fit proceeds.
+     If the fit is to be stopped for any reason, then iterfunct should return a
+     a status value between -15 and -1.  Otherwise it should return None
+     (e.g. no return statement) or 0.
+     In principle, iterfunct should probably not modify the parameter values,
+     because it may interfere with the algorithm's stability.  In practice it
+     is allowed.
+
+     Default: an internal routine is used to print the parameter values.
+
+     Set iterfunct=None if there is no user-defined routine and you don't
+     want the internal default routine be called.
+
+     maxiter:
+     The maximum number of iterations to perform.  If the number is exceeded,
+     then the status value is set to 5 and MPFIT returns.
+     Default: 200 iterations
+
+     nocovar:
+     Set this keyword to prevent the calculation of the covariance matrix
+     before returning (see COVAR)
+     Default: clear (=0)  The covariance matrix is returned
+
+     nprint:
+     The frequency with which iterfunct is called.  A value of 1 indicates
+     that iterfunct is called with every iteration, while 2 indicates every
+     other iteration, etc.  Note that several Levenberg-Marquardt attempts
+     can be made in a single iteration.
+     Default value: 1
+
+     parinfo
+     Provides a mechanism for more sophisticated constraints to be placed on
+     parameter values.  When parinfo is not passed, then it is assumed that
+     all parameters are free and unconstrained.  Values in parinfo are never
+     modified during a call to MPFIT.
+
+     See description above for the structure of PARINFO.
+
+     Default value: None  All parameters are free and unconstrained.
+
+     quiet:
+     Set this keyword when no textual output should be printed by MPFIT
+
+     damp:
+     A scalar number, indicating the cut-off value of residuals where
+     "damping" will occur.  Residuals with magnitudes greater than this
+     number will be replaced by their hyperbolic tangent.  This partially
+     mitigates the so-called large residual problem inherent in
+     least-squares solvers (as for the test problem CURVI,
+     http://www.maxthis.com/curviex.htm).
+     A value of 0 indicates no damping.
+     Default: 0
+
+     Note: DAMP doesn't work with autoderivative=0
+
+     xtol:
+     A nonnegative input variable. Termination occurs when the relative error
+     between two consecutive iterates is at most xtol (and status is
+     accordingly set to 2 or 3).  Therefore, xtol measures the relative error
+     desired in the approximate solution.
+     Default: 1E-10
+
+     Outputs:
+
+     Returns an object of type mpfit.  The results are attributes of this class,
+     e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
+
+     .status
+     An integer status code is returned.  All values greater than zero can
+     represent success (however .status == 5 may indicate failure to
+     converge). It can have one of the following values:
+
+     -16
+     A parameter or function value has become infinite or an undefined
+     number.  This is usually a consequence of numerical overflow in the
+     user's model function, which must be avoided.
+
+     -15 to -1
+     These are error codes that either MYFUNCT or iterfunct may return to
+     terminate the fitting process.  Values from -15 to -1 are reserved
+     for the user functions and will not clash with MPFIT.
+
+     0  Improper input parameters.
+
+     1  Both actual and predicted relative reductions in the sum of squares
+     are at most ftol.
+
+     2  Relative error between two consecutive iterates is at most xtol
+
+     3  Conditions for status = 1 and status = 2 both hold.
+
+     4  The cosine of the angle between fvec and any column of the jacobian
+     is at most gtol in absolute value.
+
+     5  The maximum number of iterations has been reached.
+
+     6  ftol is too small. No further reduction in the sum of squares is
+     possible.
+
+     7  xtol is too small. No further improvement in the approximate solution
+     x is possible.
+
+     8  gtol is too small. fvec is orthogonal to the columns of the jacobian
+     to machine precision.
+
+     .fnorm
+     The value of the summed squared residuals for the returned parameter
+     values.
+
+     .covar
+     The covariance matrix for the set of parameters returned by MPFIT.
+     The matrix is NxN where N is the number of  parameters.  The square root
+     of the diagonal elements gives the formal 1-sigma statistical errors on
+     the parameters if errors were treated "properly" in fcn.
+     Parameter errors are also returned in .perror.
+
+     To compute the correlation matrix, pcor, use this example:
+     cov = mpfit.covar
+     pcor = cov * 0.
+     for i in range(n):
+     for j in range(n):
+     pcor[i,j] = cov[i,j]/sqrt(cov[i,i]*cov[j,j])
+
+     If nocovar is set or MPFIT terminated abnormally, then .covar is set to
+     a scalar with value None.
+
+     .errmsg
+     A string error or warning message is returned.
+
+     .nfev
+     The number of calls to MYFUNCT performed.
+
+     .niter
+     The number of iterations completed.
+
+     .perror
+     The formal 1-sigma errors in each parameter, computed from the
+     covariance matrix.  If a parameter is held fixed, or if it touches a
+     boundary, then the error is reported as zero.
+
+     If the fit is unweighted (i.e. no errors were given, or the weights
+     were uniformly set to unity), then .perror will probably not represent
+     the true parameter uncertainties.
+
+     *If* you can assume that the true reduced chi-squared value is unity --
+     meaning that the fit is implicitly assumed to be of good quality --
+     then the estimated parameter uncertainties can be computed by scaling
+     .perror by the measured chi-squared value.
+
+     dof = len(x) - len(mpfit.params) # deg of freedom
+     # scaled uncertainties
+     pcerror = mpfit.perror * sqrt(mpfit.fnorm / dof)
+
+     */
+
+
+    /*
+     Procedure to parse the parameter values in PARINFO, which is a list of dictionaries
+     */
+    lmfit.parinfo=function(parinfo, key, def, n){
+        console.log('entering parinfo');
+        var values;
+        if(lmfit.typeOf(key)=='undefined')
+        {
+            key='a';
+        }
+        if(lmfit.typeOf(n)=='undefined')
+        {
+            n=0;
+        }
+        if(n==0 && lmfit.typeOf(parinfo)!='undefined')
+        {
+            n=parinfo.length;
+        }
+        if(n==0)
+        {
+            values= def;
+            return {values:values};
+        }
+        values=[];
+        for(i=0; i<n; i++)
+        {
+            if(lmfit.typeOf(parinfo)!='undefined') //unchecked for the key because no dictionary
+            {
+                values.push(parinfo[i][key]);
+            } else {
+                values.push(def);
+            }
+
+        }
+
+//        Convert to numeric arrays if possible
+        return values;
+    }
+
+    /*
+     Call user function or procedure, with _EXTRA or not, with
+     derivatives or not.
+     */
+    lmfit.call=function(fcn, x, functkw, fjac){
+        console.log('entering call...');
+        if(this.qantied)
+        {
+            x=lmfit.tie(x, this.ptied);
+        }
+        this.nfev=this.nfev+1;
+        if(lmfit.typeOf(fjac)=='undefined')
+        {
+            var a=fcn(x, fjac, functkw); //some funk with double astericks
+            var status= a.status;
+            var f= a.f;
+            if(this.damp>0)
+            {
+//                  Apply the damping if requested.  This replaces the residuals
+//                  with their hyperbolic tangent.  Thus residuals larger than
+//                  DAMP are essentially clipped.
+                f=Math.tanh(f/this.damp);
+                return {status:  status, f: f};
+
+            } else {
+                var a = fcn(x, fjac, functkw);
+                return {
+                    status: a.status,
+                    f: a.f
+                };
+            }
+        }
+
+    };
+
+    /*
+	 Call user function or procedure, with _EXTRA or not, with
+     derivatives or not.
+     */
+    lmfit.fdjac2=function(fcn, x, fvec, step, ulimited, ulimit, dside, epsfcn, autoderivative, functkw, xall, ifree, dstep) { //no clue what types any of these are
+        console.log('entering fdjac2...');
+        if(lmfit.typeOf(autoderivative)=='undefined')
+        {
+            autoderivative=1;
+        }
+        var machep=lmfit.machep;
+        if(lmfit.typeOf(epsfcn)=='undefined')
+        {
+            epsfcn=machep;
+        }
+        if(lmfit.typeOf(xall)=='undefined')
+        {
+            xall=x;
+        }
+        if(lmfit.typeOf(ifree)=='undefined')
+        {
+         for(i=0; i<xall.length; i++)
+         {
+             ifree.push(i);
+         }
+        }
+        if(lmfit.typeOf(step)=='undefined')
+        {
+            step=x*0;
+        }
+        var nall=xall.length;
+
+        var eps=Math.sqrt(Math.max(epsfcn, machep));
+        var m=fvec.length;
+        var n= x.length;
+//        Compute analytical derivative if requested
+        if(autoderivative==0)
+        {
+            var mperr=0;
+            var fjac;
+            for(i=0; i<nall; i++)
+            {
+                fjac.push(0);
+            }
+            fjac[ifree]=1;
+            var a = lmfit.call(fcn, xall, functkw, fjac);//questionable call
+            var status= a.status;;
+            var fp= a.fp;
+            if(fjac.length!= m*nall)
+            {
+                console.log('error: derivative matrix was not computed properly');
+                return;
+            }
+//             This definition is consistent with CURVEFIT
+//             Sign error found (thanks Jesus Fernandez <fernande@irm.chu-caen.fr>)
+            var counter;
+            var temp=fjac.splice();
+            while(fjac.length>0)
+            {
+                fjac.pop();
+            }
+            fjac=new Array(m);
+            for(i=0; i<m; i++)
+            {
+                fjac[i]=new Array(nall);
+                for(j=0; j<nall; j++)
+                {
+                    fjac[i][j]=temp[counter];
+                    counter++;
+                }
+            }
+            for(i=0; i<m; i++)
+            {
+                for(j=0; j<nall; j++)
+                {
+                    fjac[i][j]=-f[i][j];
+                }
+            }
+            temp=fjac.splice();
+            if(ifree.length<nall)
+            {
+                while(fjac.length>0)
+                {
+                    fjac.pop();
+                }
+                for(i=0; i<fjac.length; i++)
+                {
+                    fjac.push(temp[i][ifree]);
+                }
+                temp=fjac.splice();
+                counter=0;
+                for(i=0; i<m; i++)
+                {
+                    for(j=0; j<nall; j++)
+                    {
+                        fjac[i][j]=temp[counter];
+                    }
+                }
+                return fjac;
+            }
+        }
+        for(i=0; i<m; i++)
+        {
+            for(j=0; j<nall; j++)
+            {
+                fjac[i][j]=0;
+            }
+        }
+        var h;
+        for(i=0; i< x.length;i++)
+        {
+            h.push(eps*x[i]);
+        }
+//         if STEP is given, use that
+//         STEP includes the fixed parameters
+        if(lmfit.typeOf(step)!='undefined')
+        {
+            var stepi=step[ifree];
+            var wh;
+            for(i=0; i<stepi.length; i++)
+            {
+                if(stepi[i]>0)
+                {
+                    wh.push(i);
+                }
+            }
+            if(wh.length>0)
+            {
+                for(i=0; i<wh.length; i++)
+                {
+                    h[wh[i]]=stepi[wh[i]];
+                }
+            }
+        }
+//         if relative step is given, use that
+//         DSTEP includes the fixed parameters
+        if(dstep.length>0)
+        {
+            dstepi=dstep[ifree];
+            for(i=0; i<stepi.length; i++)
+            {
+                if(dstepi[i]>0)
+                {
+                    wh.push(i);
+                }
+            }
+            if(wh.length>0)
+            {
+                for(i=0; i<wh.length; i++)
+                {
+                    h[wh[i]]=Math.abs(dstepi[wh[i]]*x[wh[i]]);
+                }
+            }
+
+        }
+//        In case any of the step values are zero
+        for(i=0;i< h.length; i++)
+        {
+            if(h[i]==0)
+            {
+                h[i]=eps;
+            }
+        }//questionable whether this is even needed
+//         Reverse the sign of the step if we are up against the parameter
+//         limit, or if the user requested it.
+//         DSIDE includes the fixed parameters (ULIMITED/ULIMIT have only
+//         varying ones)
+        var check = (dside[ifree]==-1);
+        var mask;
+        if(ulimited.length>0 && ulimit.length>0)
+        {
+            for(i=0; i<ulimited.length; i++)
+            {
+                mask.push(check||(ulimited[i]!=0 && x>ulimit[i]-h[i]));
+            }
+            var wh;
+            for(i=0; i< mask.length; i++)
+            {
+                if(mask[i]!=0)
+                {
+                    wh.push(i);
+                }
+            }
+            if(wh.length!=0)
+            {
+                for(i=0; i<wh.length; i++)
+                {
+                    h[wh[i]]=-h[wh[i]];
+                }
+            }
+        }
+//        Loop through parameters, computing the derivative for each
+
+        for(j=0; j<n; j++)
+        {
+            var xp=xall.splice();
+            xp[ifree[j]]=xp[ifree[j]]+h[j];
+            var a =lmfit.call(fcn, xp, functkw);
+            var status= a.status;
+            var fp= a.fp;
+            if(status<0)
+            {
+                return;
+            }
+            if(Math.abs(dside[ifree[j]])<=1)
+            {
+//            # COMPUTE THE ONE-SIDED DERIVATIVE
+//             Note optimization fjac(0:*,j)
+                for(i=0; i<fjac.length; i++)
+                {
+                    fjac[i][j]=(fp-fvec)/h[j];
+                }
+            } else {
+
+//             COMPUTE THE TWO-SIDED DERIVATIVE
+                xp[ifree[j]] = xall[ifree[j]] - h[j]
+                mperr = 0
+                var a = lmfit.call(fcn, xp, functkw);
+                status= a.status;
+                var fm= a.fm;
+                if(status<0)
+                {
+                    return;
+                }
+//                 Note optimization fjac(0:*,j)
+                for(i=0; i<fjac; i++)
+                {
+                    fjac[i][j]=(fp-fm)/(2*h[j]);
+                }
+            }
+        }
+        return {fjac:fjac};
+
+
+    };
+
     /*Original FORTRAN documentation
     **********
 
@@ -725,7 +1273,7 @@ $(document).ready(function () {
     explicitly, and MPFIT does not.*/
     lmfit.qrfac=function(a, pivot){
         console.log("entering qrfac...");
-        if(typeOf(pivot)=='undefined')
+        if(lmfit.typeOf(pivot)=='undefined')
         {
             pivot=0;
         }
@@ -867,20 +1415,17 @@ $(document).ready(function () {
     /* for debug purposes*/
     lmfit.__str__=function(){
         return {
-            params: self.params,
-            niter: self.niter,
-            params: self.params,
-            covar: self.covar,
-            perror: self.perror,
-            status: self.status,
-            debug: self.debug,
-            errmsg: self.errmsg,
-            nfev: self.nfev,
-            damp: self.damp
+            params: this.params,
+            niter: this.niter,
+            covar: this.covar,
+            perror: this.perror,
+            status: this.status,
+            debug: this.debug,
+            errmsg: this.errmsg,
+            nfev: this.nfev,
+            damp: this.damp
         }
     }
-
-
 
     /*
             Original FORTRAN documentation
@@ -1254,7 +1799,7 @@ $(document).ready(function () {
         //skip some rounding checks
 //         If the input par lies outside of the interval (parl,paru), set
 //         par to the closer endpoint
-        if(typeOf(par)=='undefined') {
+        if(lmfit.typeOf(par)=='undefined') {
             par = parl;
             par = Math.min(par, paru);
         } else {
@@ -1281,7 +1826,7 @@ $(document).ready(function () {
             temp=fp;
             fp=dxnorm-delta;
 
-            if (Math.abs(fp) <= 0.1*delta) || ((parl == 0) && (fp <= temp) && (temp < 0)) || (iter == 10)
+            if ((Math.abs(fp) <= 0.1*delta) || ((parl == 0) && (fp <= temp) && (temp < 0)) || (iter == 10))
             {
                 break;
             }
@@ -1316,6 +1861,22 @@ $(document).ready(function () {
         return {r:r, par:par, x:x, sdiag:sdiag};
     };
 
+
+    /*
+     Procedure to tie one parameter to another
+     */
+    lmfit.tie=function(p, ptied){
+        console.log('entering tie...');
+        if(lmfit.typeOf(ptied)=='undefined')
+        {
+            return;
+        }
+        for(i=0; i<ptied.length; i++)
+        {
+            p[i]=ptied[i];
+        }
+        return p;
+    };
 
     /*             Original FORTRAN documentation
                 **********
@@ -1385,7 +1946,7 @@ $(document).ready(function () {
             **********/
     lmfit.calc_covar=function(rr, ipvt, tol){
         console.log("entering calc_covar...");
-        if(typeOf(rr.length)=='undefined'||typeOf(rr[0].length)=='undefined')
+        if(lmfit.typeOf(rr.length)=='undefined'||lmfit.typeOf(rr[0].length)=='undefined')
         {
             console.log("rr not 2d array, calc_covar failed");
             return -1;
@@ -1398,7 +1959,7 @@ $(document).ready(function () {
             console.log("r must be square matrix");
             return -1;
         }
-        if(ipvt==typeOf('undefined')){//unsure whether this actually catches a null imput
+        if(ipvt==lmfit.typeOf('undefined')){//unsure whether this actually catches a null imput
             for(i=0; i<n; i++)
             {
                 ipvt.push(i);
@@ -1409,7 +1970,7 @@ $(document).ready(function () {
 
 //        For the inverse of r in the full upper triangle of r
         var l=-1;
-        if(typeOf(tol)=='undefined')
+        if(lmfit.typeOf(tol)=='undefined')
         {
             tol=1*Math.pow(10, -14);
         }
@@ -1501,7 +2062,7 @@ $(document).ready(function () {
             }
         }
         return r;
-    }
+    };
     lmfit.enorm=function(n, x){
         var sq;
         for (var i = 0; i < x.length; i++) {
@@ -1512,6 +2073,9 @@ $(document).ready(function () {
 
     };
 
+    lmfit.typeOf=function(x){
+        return typeof x;
+    };
     //numerical constants for rounding and stuff
     this.machep=Math.pow(2, -53);
     this.maxnum=Math.pow(2,53);
@@ -1527,7 +2091,7 @@ $(document).ready(function () {
             min=Math.min(min, x[a]);
         }
         return min;
-    }
+    };
     this.amax=function(x) {
         var max=-99999;
         for(a=0; a< x.length; a++)
@@ -1537,4 +2101,4 @@ $(document).ready(function () {
         return max;
     }
 
-});
+})
