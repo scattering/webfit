@@ -829,7 +829,1019 @@ $(document).ready(function () {
      pcerror = mpfit.perror * sqrt(mpfit.fnorm / dof)
 
      */
+    lmfit.lmfit=function( fcn, xall, functkw, parinfo,ftol, xtol, gtol, damp, maxiter, factor, nprint, iterfunct, iterkw, nocovar,rescale, autoderivative, quiet, diag, epsfcn, debug)
+    {
+        if(lmfit.typeOf(functkw)=='undefined')
+        {
+            functkw={};
+        }
+        if(lmfit.typeOf(ftol)=='undefined')
+        {
+            ftol=Math.pow(10, -10);
+        }
+        if(lmfit.typeOf(xtol)=='undefined')
+        {
+            xtol=Mathpow(10,-10);
+        }
+        if(lmfit.typeOf(gtol)=='undefined')
+        {
+            gtol=Math.pow(10,-10);
+        }
+        if(lmfit.typeOf(damp)=='undefined')
+        {
+            damp=0;
+        }
+        if(lmfit.typeOf(maxiter)=='undefined')
+        {
+            maxiter=200;
+        }
+        if(lmfit.typeOf(factor)=='undefined')
+        {
+            factor=100
+        }
+        if(lmfit.typeOf(nprint)=='undefined')
+        {
+            nprint=1
+        }
+        if(lmfit.typeOf(iterfunct)=='undefined')
+        {
+            iterfunct='default';
+        }
+        if(lmfit.typeOf(iterkw)=='undefined')
+        {
+            iterkw={};
+        }
+        if(lmfit.typeOf(nocovar)=='undefined')
+        {
+            nocovar=0;
+        }
+        if(lmfit.typeOf(rescale)=='undefined')
+        {
+            rescale=0
+        }
+        if(lmfit.typeOf(autoderivative)=='undefined')
+        {
+            autoderivative=1
+        }
+        if(lmfit.typeOf(quiet)=='undefined')
+        {
+            quiet=0
+        }
+        if(lmfit.typeOf(debug)=='undefined')
+        {
+            debug=0
+        }
+        this.niter=0;
+        this.params, this.covar, this.perror;
+        this.status=0;
+        this.debug=debug;
+        this.errmsg='';
+        this.nfev=0;
+        this.damp=damp;
+        this.dof=0;
+        if(lmfit.typeOf(fcn)=='undefined')
+        {
+            this.errmsg="Usage: parms=mpfit('myfunct',...)";
+            return;
 
+        }
+        if(iterfunct=='default')
+        {
+            iterfunct=lmfit.defiter;
+        }
+//        Parameter damping doesn't work when user is providing their own
+//         gradients.
+        if(this.damp!=0 && autoderivative==0)
+        {
+            this.errmsg="error: keywords DAMP and autoderivative are mutually exclusive";
+            return;
+        }
+//        Parameters can either be stored in parinfo, or x. x takes precedence if it exists
+        if(lmfit.typeOf(xall)=='undefined' && lmfit.typeOf(parinfo)=='undefined')
+        {
+            this.errmsg="error: must puass parameters in P or PARINFO";
+            return;
+        }
+        //skip checking the type of PARINFO because we assume the user is somewhat smart and because js is nice
+//        If the parameters were not specified at the command line, then
+//         extract them from PARINFO
+        if(lmfit.typeOf(xall)=='undefined')
+        {
+            xall=lmfit.parinfo(parinfo, 'value');
+            if(lmfit.typeOf(xall)=='undefined') {
+                this.errmsg="error: either p or parinfo(*)['value'] must be supplied]";
+                return;
+            }
+        }
+        var npar=xall.length;
+        this.fnorm=-1;
+        var fnorm=-1;
+//        TIED parameters?
+        var ptied=lmfit.parinfo(parinfo, 'tied', '', npar);
+        this.qanytied=0;
+        for(i=0; i<npar; i++)
+        {
+            if(lmfit.typeOf(ptied[i])=='undefined')
+            {
+                this.qanytied=1;
+            }
+        }
+        this.ptied=ptied;
+//        FIXED parameters ?
+
+        var pfixed=lmfit.parinfo(parinfo, 'fixed', 0, npar);
+        pfixed=(pfixed==1);
+        for(i=0; i<npar; i++)
+        {
+            pfixed[i]=pfixed[i];//Tied parameters are also effectively fixed
+
+        }
+//        Finite differencing step, absolute and relative, and sidedness of deriv.
+        var step=lmfit.parinfo(parinfo, 'step', 0, npar);
+        var dstep=lmfit.parinfo(parinfo, 'dstep', 0, npar);
+        var dside=lmfit.parinfo(parinfo, 'dside', 0, npar);
+
+//        Maximum and minimum steps allowed to be taken in one iteration
+        var maxstep=lmfit.parinfo(parinfo, 'mpmaxstep', 0, npar);
+        var minstep=lmfit.parinfo(parinfo, 'mpminstep', 0, npar);
+        var qmin;
+        for(i=0; i<minstep.length; i++) {
+            if (minstep[i] != 0) {
+                qmin.push(true);
+            }
+        }
+        for(i=0; i<qmin.length; i++)
+        {
+            qmin[i]=false;
+        }
+        var qmax;
+        for(i=0; i<maxstep.length; i++) {
+            if (maxstep[i] != 0) {
+                qmax.push(true);
+            } else {
+                qmax.push(false);
+            }
+        }
+        for(i=0; i<minstep.length; i++)
+        {
+            if(minstep[i]==false || maxstep[i]==false||maxstep[i]<minstep[i])
+            this.errmsg="error: mpminstep is greater than mpmaxstep";
+            return;
+        }
+        //think about wh!!!
+        var qminmax;
+        for(i=0; i<wh.length; i++)
+        {
+            if(wh[i]>0)
+            {
+                qminmax++;
+            }
+        }
+//        Finish up the free parameters
+        var ifree;
+        for(i=0; i<pfixed.length; i++)
+        {
+            if(pfixed!=1)
+            {
+                ifree.push(i);
+            }
+        }
+        var nfree=ifree.length;
+        if(nfree==0)
+        {
+            this.errmsg='error: no free parameters';
+            return;
+        }
+
+//        Compose only VARYING parameters
+        this.params=xall.splice(); //this.params is the set of parameters to be returned
+        var x=this.params[ifree];
+
+//        Limited parameters ?
+        var limited=lmfit.parinfo(parinfo, 'limited, [0,0], npar');
+        var limits=lmfit.parinfo(parinfo, 'limits', [0,0], npar);
+        var qulim, ulim, qllim, llim, qanylim;
+        if(lmfit.typeOf(limited)=='undefined'&& lmfit.typeOf(limits)=='undefined')
+        {
+//            Error checking on limits in parinfo
+            for(i=0; i<xall.length; i++)
+            {
+                if(xall[i]<limits[i][0] || xall[i]<limits[i][1])//may need to check that some of the limits are actually defined
+                {
+                    this.errmsg='error: parameters are not within PARINFO limits';
+                    return;
+                }
+            }
+            for(i=0; i<xall.length; i++)
+            {
+                if(limits[i][0]>=limits[i][0]&&pfixed==0)
+                {
+                    this.errmsg='error: PARINFO parameter limits are not consistent';
+                    return;
+                }
+            }
+            qulim=limited[ifree][1];
+            ulim=limits[ifree][1];
+            qllim=limited[ifree][0];
+            llim=limits[ifree][0];
+            for(i=0; i<qulim.length;i++ )
+            {
+                if(qulim[i]==0)
+                {
+                    qanylim++;
+                }
+            }
+            for(i=0; i<qllim.length;i++ )
+            {
+                if(qllim[i]==0)
+                {
+                    qanylim++;
+                }
+            }
+            if(qanylim>1)
+            {
+                qanylim=1;
+            }
+
+        } else {
+//            Fill in local variables with dummy values
+            for(i=0; i<nfree; i++)
+            {
+                qulim.push(0);
+            }
+            ulim=x*0;
+            qllim=qulim;
+            llim=x*0;
+            qanylim=0;
+        }
+        n= x.length;
+//        Check input parameters for errors
+        if ((n < 0) || (ftol <= 0) || (xtol <= 0) || (gtol <= 0) || (maxiter < 0) || (factor <= 0)){
+            this.errmsg = 'error: input keywords are inconsistent';
+            return;
+        }
+        if(rescale!=0)
+        {
+            this.errmsg='error: DIAG parameter scales are inconsistent';
+            if(diag.length<n)
+            {
+                return;
+            }
+            for(i=0; i<diag.length; i++)
+            {
+                if (diag[i]<=0)
+                {
+                    return;
+                }
+            }
+            this.errmsg='';
+        }
+        var a=lmfit.call(fcn, this.params, functkw);
+        this.status= a.status;
+        this.fvec= a.f;
+        if(this.status<0)
+        {
+            this.errmsg='error: first call to function failed';
+            return;
+        }
+        //skip some rounding checks
+        var m=fvec.length;
+        if (m<n)
+        {
+            this.errmsg='error: number of parameters must not exceed data'
+            return;
+        }
+        this.dof=m-nfree;
+        this.fnorm=lmfit.enorm(fvec);
+//        Initialize Levenberg-Marquardt parameter and iteration counter
+        var par=0;
+        this.niter=1;
+        var qtf=x*0;
+        this.status=0;
+
+//        Beginning of the outer loop
+
+        while(true)
+        {
+//            If requested, call fcn to enable printing of iterates
+            this.params[ifree]=x;
+            if(this.qanytied)
+            {
+                this.params=lmfit.tie(this.params, ptied);
+
+            }
+            if(nprint>0 && lmfit.typeOf(iterfunct)=='undefined')
+            {
+                if((this.niter-1)%nprint==0)
+                {
+                    var mperr=0;
+                    var xnew0=this.params.splice();
+                    var dof=Math.max(fvec.length- x.length, 0);
+                    var status=lmfit.iterfunct(fcn, this.params, this.niter, Math.pow(this.fnorm), functkw, parinfo, quiet, dof, iterkw);
+                    if(typeOf(status)!='undefined')
+                    {
+                        this.status=status;
+                    }
+//                     Check for user termination
+                    if(this.status<0)
+                    {
+                        this.errmsg='WARNING: premature terminatoin by iterfunct';
+                        return;
+                    }
+//                    If parameters were changed (grrr..) then re-tie
+                    var a;
+                    for(i=0; i<xnew0.length; i++)
+                    {
+                        a=Math.max(a, xnew[i]-this.params[i]);
+                    }
+                    if(a>0)
+                    {
+                        if(this.qanytied)
+                        {
+                            this.params=lmfit.tie(this.params, ptied);
+
+                        }
+                        x=this.params[ifree];
+                    }
+                }
+            }
+//            Calculate the jacobian matrix
+            this.status=2;
+            var catch_msg='calling MPFIT_FDJAC2';
+            var fjac= lmfit.fdjac2(fcn, x, fvec, step, qulim, ulim, dside, epsfcn, autoderivative, functkw,this.params, ifree, dstep);
+            if(typeOf(fjac)!='undefined')
+            {
+                this.errmsg='WARNING: premature termination by FDJAC2';
+                return;
+            }
+//            Determine if any of the parameters are pegged at the limits
+            if(qanylim)
+            {
+                catch_msg='zeroing derivatives of pegged parameters';
+                var whlpeg;
+                for(i=0; i<qllim.length; i++)
+                {
+                    if(qllim[i]!=0 && x==llim[i])
+                    {
+                        whlpeg.push(i);
+                    }
+                }
+                var nlpeg=whlpeg.length;
+                var whupeg;
+                for(i=0; i<qulim.length; i++)
+                {
+                    if(qulim[i]!=0 && x==ulim[i])
+                    {
+                        whupeg.push(i);
+                    }
+                }
+                var nupeg=whupeg.length;
+//                See if any "pegged" values should keep their derivatives
+                if(nlpeg>0)
+                {
+//                    Total derivative of sum wrt lower pegged parameters
+                    for(i=0; i<nlpeg; i++)
+                    {
+                        var sum0=0;
+                        for(j=0; j<fjac.lengh; j++)
+                        {
+                            sum0+=fvec[j]*fjac[j][whlpeg[i]];
+
+                        }
+                        if(sum0>0)
+                        {
+                            for(j=0; j<fjac.legnth; j++)
+                            {
+                                fjac[j][whlpeg[i]]=0;
+                            }
+                        }
+                    }
+                }
+
+                if(nupeg>0)
+                {
+                    for(i=0; i<nupeg; i++)
+                    {
+                        var sum0=0;
+//                        Total derivative of sum wrt upper pegged parameters
+                        for(j=0; j<fvec.length; j++)
+                        {
+                            sum0+=fvec[j]*fjac[j][whupeg[i]];
+                        }
+                        if(sum0<0)
+                        {
+                            for(j=0; i<fjac.length; j++)
+                            {
+                                fjac[j][whupeg[i]]=0;
+                            }
+                        }
+                    }
+                }
+            }
+//            Compute the QR factorization of the jacobian
+            var a=lmfit.qrfac(fjac,  1);
+            fjac= a.a;
+            var ipvt= a.ipvt;
+            var wa1= a.rdiag;
+            var wa2= a.acnorm;
+            var wa3;
+
+//            On the first iteration if "diag" is unspecificed, scale
+//            according to the norms of the columns of the initial jacobian
+            catch_msg='rescaling diagonal elements';
+            if(this.niter==1)
+            {
+                if(rescale==0 || diag.length<n)
+                {
+                    diag=wa2.splice();
+                    for(i=0; i< diag.length; i++)
+                    {
+                        if(diag[i]==0)
+                        {
+                            diag[i]=1;
+                        }
+                    }
+                }
+//                  On the first iteration, calculate the norm of the scaled x
+//                  and initialize the step bound delta
+                for(i=0;i<diag.length; i++)
+                {
+                    wa3.push(diag[i]*x);
+                    var xnorm=lmfit.enorm(wa3);
+                    var delta= factor*xnorm;
+                    if(delta==0)
+                    {
+                        delta=factor;
+                    }
+                }
+            }
+            //Form (q transpose)*fvec and store the first n components in qtf
+            catch_msg='forming (qtranspose)*fvec';
+            var wa4=fvec.splice();
+            for(j=0; j<n; j++)
+            {
+                var lj=ipvt[j];
+                var temp3=fjac[j][lj];
+                if(temp3!=0)
+                {
+                    var fj, wj,sum;
+                    for(i=j; i<fjac.length; i++)
+                    {
+                        fj.push(fjac[i]);
+                        wj.push(wa4[i]);
+                        sum.push(fj[i]*wj[i]);
+
+                    }
+                    for(i=j; i<wa4.length; i++)
+                    {
+                        wa4[i]=wj[i]-fj[i]*sum/temp3;
+                    }
+
+                }
+                fjac[j][lj] = wa1[j];
+                qtf[j] = wa4[j];
+
+            }
+//             From this point on, only the square matrix, consisting of the
+//             triangle of R, is needed.
+            var tempMatrix=Matrix.Zero(n,n);
+            for(i=0; i<n; i++)
+            {
+                for(j=0; j<n; j++)
+                {
+                    tempMatrix.elements[i][j]=fjac[i][j];
+                }
+            }
+            fjac=tempMatrix;
+            var temp=fjac.splice();
+            for(i=0; i<n; i++)
+            {
+                for(j=0; j<temp; j++)
+                {
+                    temp[j][i]=fjac[j][ipvt[i]];
+                }
+            }
+            fjac=temp.splice();
+
+//            Check for overflow.  This should be a cheap test here since FJAC
+//            has been reduced to a (small) square matrix, and the test is
+//            O(N^2).
+//            wh = where(finite(fjac) EQ 0, ct)
+//            if ct GT 0 then goto, FAIL_OVERFLOW
+
+//            Compute the norm of the scaled gradient
+            catch_msg='computing the scaled gradient';
+            var gnorm=0;
+            if(this.fnorm!=0)
+            {
+                for(j=0; j<n; j++)
+                {
+                    var l=ipvt[j];
+                    if(wa2[l]!=0)
+                    {
+                        sum0=0;
+                        for(i=0; i<j+1; i++)
+                        {
+                            sum0+=fjac[i][j]*qtf[i]/this.fnorm;
+                            gnorm=Math.max(gnorm, Math.abs(sum0/wa2[l]));
+                        }
+                    }
+                }
+            }
+//            Test for convergence of the gradient norm
+            if(gnorm<=gtol)
+            {
+                this.status=4;
+                break;
+
+            }
+            if(maxiter==0)
+            {
+                this.status=5;
+                break;
+
+            }
+//            Rescale if necessary
+
+            if(rescale==0)
+            {
+                //DO THIS. unsure of how to proceed with numpy.choose
+            }
+
+//            Beginning of the inner loop
+            while(true)
+            {
+                var alpha;
+//                Determine the levenberg-marquardt parameter
+                catch_msg='calculating LM parameteR(MPFIT_)';
+                var a=lmfit.lmpar(fjac, ipvt, diag, qtf, delta, wa1, wa2, par);
+                fjac= a.r;
+                par= a.par;
+                wa1= a.x;
+                wa2= a.sdiag;
+//                Store the direction p and x+p. Calculate the norm of p
+
+                wa1=-wa1;
+                if(qanylim==0 && qminmax==0)
+                {
+//                    No parameter limits, so just move to new position WA2
+                    alpha=1;
+                    for(i=0; i<wa2.length;  i++){
+                        wa2[i]=x+wa1[i];
+                    }
+
+                }
+                else{
+//                    Respect the limits.  If a step were to go out of bounds, then
+//                    we should take a step in the same direction but shorter distance.
+//                    The step should take us right to the limit in that case.
+                    alpha=1;
+                    if(qanylim)
+                    {
+//                        Do not allow any steps out of bounds
+                        catch_msg='checking for a step out of bounds';
+                        if(nlpeg>0) //very questionable
+                        {
+                            for(i=0; i<whlpeg.length; i++)
+                            {
+                                if(wa1[whlpeg[i]]<0)
+                                {
+                                    wa1[whlpeg[i]]=0;
+                                } else if(wa1[whlpeg[i]]>Math.max(wa1)){
+                                    wa1[whlpeg[i]]=Math.max(wa1);
+                                }
+                            }
+                        }
+                        if(nupeg>0)
+                        {
+                            for(i=0; i<whupeg.length; i++)
+                            {
+                                if(wa1[whupeg[i]]>0)
+                                {
+                                    wa1[whupeg[i]]=0;
+                                } else if(wa1[whupeg[i]]<Math.min(wa1)){
+                                    wa1[whupeg[i]]=Math.min(wa1);
+                                }
+                            }
+                        }
+                        var dwa1=true;
+                        var whl;
+                        for(i=0; i<wa1.length; i++)
+                        {
+                            if(qllim[i]&&(x[i]+wa1[i])<llim[i])
+                            {
+                                wh1.push(i);
+                            }
+                        }
+                        if(whl.length>0)
+                        {
+                            var t;
+                            for(i=0; i<whl.length; i++)
+                            {
+                                t.push((llim[whl[i]]-x[whl[i]])/wa1[whl[i]]);
+                                alpha=Math.min(alpha, t);
+                            }
+                        }
+                        var whu;
+                        for(i=0; i<wa1.length; i++)
+                        {
+                            if(qulim[i]&&(x[i]+wa1[i])>ulim[i])
+                            {
+                                whu.push(i);
+                            }
+                        }
+                        if(whu.length>0)
+                        {
+                            var t;
+                            for(i=0; i<whl.length; i++)
+                            {
+                                t.push((ulim[whu[i]]-x[whu[i]])/wa1[whu[i]]);
+                                alpha=Math.min(alpha, t);
+                            }
+                        }
+
+                    }
+
+//                    Obey any max step values
+
+                    if(qminmax)
+                    {
+                        var nwa1;
+                       for(i=0; i<wa1.length;i++)
+                       {
+                           nwa1.push(wa1[i]*alpha);
+                       }
+                       var whmax;
+                       for(i=0; i<qmax.length; i++)
+                       {
+                           if(qmax[i]!=0 && maxstep[i]>0)
+                           {
+                               whmax.push(i);
+                           }
+                       }
+                        if(whmax.length>0)
+                        {
+                            var mrat;
+                            for(i=0; i<whmax.length; i++)
+                            {
+                                mrat.push(Math.max(Math.abs(nwa1[whmax[i]]), Math,abs(maxstep[ifree[whmax[i]]])));
+                            }
+                            if(mrat>1)//questionable move from array to scalar
+                            {
+                                alpha=alph/mrat;
+                            }
+                        }
+
+                    }
+
+//                    Scale the resulting vector
+
+                    for(i=0; i<wa1.length; i++)
+                    {
+                        wa1[i]=wa1[i]*alpha;
+
+                    }
+                    for(i=0; i<wa2.length; i++)
+                    {
+                        wa2[i]=x[i]+wa1[i];
+                    }
+
+//                    Adjust the final output values.  If the step put us exactly
+//                    on a boundary, make sure it is exact.
+                    var sgnu;
+                    for(i=0; i<ulim.length; i++)
+                    {
+                        if(ulim[i]>=0)
+                        {
+                            sgnu.push(1);
+                        } else {
+                            sgnu.push(-1);
+                        }
+
+                    }
+                    var sgnl;
+                    for(i=0; i<llim.length; i++)
+                    {
+                        if(llim[i]>=0)
+                        {
+                            sgnl.push(1);
+                        } else {
+                            sgnl.push(-1);
+                        }
+
+                    }
+
+//                      Handles case of
+//                            ... nonzero *LIM ... ...zero * LIM
+
+                    //skip some rounding
+                    var ulim1=ulim.splice();
+                    var llim1=llim.splice();
+                    var wh;
+                    for(i=0; i<qulim; i++)
+                    {
+                        if(qulim[i]!=0 && wa2[i]>=ulim1[i])
+                        {
+                            wh.push(i);
+                        }
+                    }
+                    if(wh.length>0)
+                    {
+                        for(i=0; i<wh.length; i++)
+                        {
+                            wa2[wh[i]]=ulim[wh[i]];
+                        }
+                    }
+                    var wh;
+                    for(i=0; i<qllim; i++)
+                    {
+                        if(qllim[i]!=0 && wa2[i]>=llim1[i])
+                        {
+                            wh.push(i);
+                        }
+                    }
+                    if(wh.length>0)
+                    {
+                        for(i=0; i<wh.length; i++)
+                        {
+                            wa2[wh[i]]=llim[wh[i]];
+                        }
+                    }
+
+                }//endelse
+                var wa3;
+                for(i=0; i<wa1.length;i++)
+                {
+                    wa3=diag[i]*wa1[i];
+                }
+                var pnorm=lmfit.enorm(wa3);
+
+//                On the first iteration, adjust the initial step bound
+                if(this.niter==1)
+                {
+                    delta=Math.min(delta, pnorm);
+                }
+                for(i=0; i<ifree.length; i++)
+                {
+                    this.params[ifree[i]]=wa2[i];
+                }
+
+//                Evaluate the function at x+p and calculate its norm
+                mperr=0;
+                catch_msg='calling fcn';
+                var a=lmfit.call(fcn, this.params, functkw);
+                this.status= a.status;
+                wa4= a.f;
+                if(this.status<0)
+                {
+                    this.errmsg='warning: premature termination by fcn';
+                    return;
+                }
+                var fnorm1=lmfit.enorm(wa4);
+
+//                Compute the scaled actual reduction
+                catch_msg = 'computing convergence criteria';
+                var actred=-1;
+                if(.1*fnorm1<this.fnorm)
+                {
+                    actred=-Math.pow(fnorm1/this.fnorm, 2)+1;
+
+                }
+
+//                Compute the scaled predicted reduction and the scaled directional
+//                derivative
+                for(j=0; j<n; j++)
+                {
+                    wa3[j]=0;
+                    for(i=0; i<j+1;i++)
+                    {
+                        wa3[i]=wa3[i]+fjac[i][j]*wa1[ipvt[j]];
+                    }
+                }
+
+//                Remember, alpha is the fraction of the full LM step actually
+//                taken
+                var temp1=lmfit.enorm(alpha*wa3)/this.fnorm;
+                var temp2=(Math.sqrt(alpha*par)*pnorm)/this.fnorm;
+                var prered = temp1*temp1 + (temp2*temp2)/0.5;
+                var dirder = -(temp1*temp1 + temp2*temp2);
+
+//                Compute the ratio of the actual to the predicted reduction.
+                var ratio=0;
+                if(prered!=0)
+                {
+                    ratio=actred/prered;
+                }
+
+//                Update the step bound
+                if(ratio<=.25)
+                {
+                    if(actred>=0)
+                    {
+                        temp=.5;
+                    }
+                    else {
+                        temp=.5*dirder/(dirder +.5*actred);
+                    }
+                    if ((0.1*fnorm1) >= this.fnorm || (temp < 0.1)){
+                    temp=.1
+                }
+                    delta=temp*Math.min(delta, pnorm /.1);
+                    par=par/temp;
+                }
+                else{
+                    if(par==0 || ratio>=.75)
+                    {
+                        delta=pnorm/.5;
+                        par=.5*par;
+                    }
+                }
+//                Test for successful iteration
+                if(ratio>=.0001)
+                {
+//                    Successful iteration.  Update x, fvec, and their norms
+                    for(i=0; i< wa2.length; i++)
+                    {
+                        x[i]=wa2[i];
+
+                    }
+                    for(i=0; i< x.length; i++)
+                    {
+                        wa2[i]=diag[i]*x[i];
+                    }
+                    fvec=wa4;
+                    xnorm=lmfit.enorm(wa2);
+                    this.fnorm=fnorm1;
+                    this.niter=this.niter++;
+
+
+                }
+
+//                Tests for convergence
+                if (Math.abs(actred) <= ftol && (prered <= ftol) && (0.5 * ratio <= 1))
+                {
+                    this.status = 1;
+                }
+                if (delta <= xtol*xnorm) {
+                    this.status = 2;
+                }
+                if ((Math.abs(actred) <= ftol) && (prered <= ftol)  && (0.5 * ratio <= 1) && (this.status == 2)) {
+                    this.status = 3;
+                }
+                if (this.status != 0) {
+                    break;
+                }
+
+//                Tests for termination and stringent tolerances
+                if(this.niter>=maxiter)
+                {
+                    this.status=5;
+                }
+                if(Math.abs(actred)<=machep && prered<=machep && .5*ratio<=1)
+                {
+                    this.status=6;
+                }
+                if(delta<=machep*xnorm)
+                {
+                    this.status=7;
+                }
+                if(gnorm<=machep)
+                {
+                    this.status=8;
+                }
+                if(this.status!=0)
+                {
+                    break;
+                }
+//                End of inner loop. Repeat if iteration unsuccessful
+                if(ratio>=.0001)
+                {
+                    break;
+                }
+                //DO THIS overflow check skipped
+//                Check for over/underflow
+//                if ~numpy.all(numpy.isfinite(wa1) & numpy.isfinite(wa2) & \
+//                numpy.isfinite(x)) or ~numpy.isfinite(ratio):
+//                errmsg = ('''ERROR: parameter or function value(s) have become
+//                'infinite; check model function for over- 'and underflow''')
+//                self.status = -16
+//                break
+
+//                wh = where(finite(wa1) EQ 0 OR finite(wa2) EQ 0 OR finite(x) EQ 0, ct)
+//                if ct GT 0 OR finite(ratio) EQ 0 then begin
+
+            }
+            if(this.status!=0)
+            {
+                break;
+            }
+
+        }//end of outer loop
+        catch_msg='in the termination phase';
+//        Termination, either normal or user imposed.
+        if(this.params.length()==0)
+        {
+            return;
+        }
+        if(nfree==0){
+            this.params=xall.splice();
+        }
+        else{
+            for(i=0; i<ifree.length; i++)
+            {
+                this.params[ifree[i]]=x[i];
+            }
+        }
+        if(nprint<0 && this.status>0)
+        {
+            catch_msg='calling fcn';
+            var a =lmfit.call(fcn, this.params, functkw);
+            status= a.status;
+            fvec= a.f;
+            catch_msg='in the termination phase';
+            this.fnorm=lmfit.enorm(fvec);
+        }
+        if(lmfit.typeOf(this.fnorm)!='undefined' && lmfit.typeOf(fnorm1)!='undefined')
+        {
+            this.fnorm=Math.max(this.fnorm, fnorm1);
+            this.fnorm=Math.pow(this.fnorm, 2);
+        }
+        this.covar=undefined;
+        this.perror=undefined;
+//        (very carefully) set the covariance matrix COVAR
+        if(this.status>0 && nocovar==0 && lmfit.typeOf(n)!='undefined' && lmfit.typeOf(fjac)!='undefined' && lmfit.typeOf(ipvt)!='undefined')
+        {
+            var sz=[fjac.length, fjac[0].length];
+            if(n>0 && sz[0]>=n && sz[1]>=n && ipvt.length>=n)
+            {
+                catch_msg = 'computing the covariance matrix';
+                var tempfjac, tempipvt;
+                for (i = 0; i < n; i++)
+                {
+                    for(j=0; j<n; j++)
+                    {
+                        tempfjac[i][j]=fjac[i][j];
+                    }
+                    tempipvt[i]=ipvt[i];
+                }
+                var cv= lmfit.calc_covar(tempfjac, tempipvt);
+                var tempcv=cv.splice();
+                cv=[];
+                var counter=0;
+                for(i=0; i<n; i++)
+                {
+                    for(j=0; j<n; j++)
+                    {
+                        cv[i][j]=tempcv[counter];
+                        counter++;
+                    }
+                }
+                var nn=xall.length;
+
+//                Fill in actual covariance matrix, accounting for fixed
+//                parameters.
+                for(i=0; i<nn; i++)
+                {
+                    for(j=0; j<nn; j++)
+                    {
+                        this.covar[i][j]=0;
+                    }
+                }
+                for(i=0; i<n; i++)
+                {
+                    for(j=0; j<ifree.length; j++)
+                    {
+                        this.covar[ifree[j]][ifree[j][i]]=cv[j][i];
+                    }
+                }
+
+//                Compute errors in parameters
+                catch_msg='computing parameter errors';
+                for(i=0; i<nn; i++)
+                {
+                    this.perror[i]=0;
+                }
+                var tempcovar=Matrix.create(this.covar);
+                var d=tempcovar.diagonal().elements;
+                wh=[];
+                for(i=0; i< d.length; i++)
+                {
+                    if(d>=0)
+                    {
+                        wh.push(i);
+                    }
+                }
+                if(wh.length>0)
+                {
+                   for(i=0; i<wh.length; i++)
+                   {
+                       this.perror[wh[i]]=Math.sqrt(d[wh[i]]);
+                   }
+                }
+            }
+        }
+        return;
+    };
 
     /*
      Procedure to parse the parameter values in PARINFO, which is a list of dictionaries
@@ -868,7 +1880,7 @@ $(document).ready(function () {
 
 //        Convert to numeric arrays if possible
         return values;
-    }
+    };
 
     /*
      Call user function or procedure, with _EXTRA or not, with
@@ -952,7 +1964,7 @@ $(document).ready(function () {
             fjac[ifree]=1;
             var a = lmfit.call(fcn, xall, functkw, fjac);//questionable call
             var status= a.status;;
-            var fp= a.fp;
+            var fp= a.f;
             if(fjac.length!= m*nall)
             {
                 console.log('error: derivative matrix was not computed properly');
@@ -1104,7 +2116,7 @@ $(document).ready(function () {
             xp[ifree[j]]=xp[ifree[j]]+h[j];
             var a =lmfit.call(fcn, xp, functkw);
             var status= a.status;
-            var fp= a.fp;
+            var fp= a.f;
             if(status<0)
             {
                 return;
@@ -1124,7 +2136,7 @@ $(document).ready(function () {
                 mperr = 0
                 var a = lmfit.call(fcn, xp, functkw);
                 status= a.status;
-                var fm= a.fm;
+                var fm= a.f;
                 if(status<0)
                 {
                     return;
@@ -1425,7 +2437,53 @@ $(document).ready(function () {
             nfev: this.nfev,
             damp: this.damp
         }
-    }
+    };
+
+    /*
+    Default procedure to be called every iteration.  It simply prints
+    the parameter values.
+    */
+    lmfit.defiter=function(fcn, x, iter, fnorm, functkw, quiet, iterstop, parinfo, format, pformat, dof){
+        console.log('entering defiter...');
+        if(lmfit.typeOf(quiet)=='undefined')
+        {
+            quiet=0;
+        }
+        if(lmfit.typeOf(pformat)=='undefined')
+        {
+            pformat='%.10g';
+        }
+        if(lmfit.typeOf(dof)=='undefined')
+        {
+            dof=1;
+        }
+        if (quiet)
+        {
+            return;
+        }
+        if(lmfit.typeOf(fnorm)=='undefined')
+        {
+            var a =lmfit.call (fcn, x, functkw);
+            var status= a.status;
+            var fvec= a.f;
+            fnorm=Math.pow(lmfit.enorm(fvec),2);
+        }
+//        Determine which parameters to print
+        var nprint= x.length;
+        console.log("Iter:"+iter+" Chi-sq:"+fnorm+" DOF:"+dof);
+        for(var key in parinfo)
+        {
+            var obj=parinfo[key];
+            for (var prop in obj)
+            {
+                if (obj.hasOwnProperty(prop))
+                {
+                    console.log(key+": "+obj);
+                }
+            }
+        }
+
+    };
 
     /*
             Original FORTRAN documentation
