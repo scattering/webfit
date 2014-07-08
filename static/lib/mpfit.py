@@ -2323,6 +2323,7 @@ class mpfit:
 
 		return r
 
+
 class machar:
 	def __init__(self, double=1):
 		if double == 0:
