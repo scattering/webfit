@@ -9,7 +9,7 @@ import numpy.oldnumeric as Numeric
 import numpy as np
 def myfunct(p, fjac=None, x=None, y=None, err=None) :
   model=p[1]*x+p[0]
-  print y-model
+  #print y-model
   status=0
   return ([status, np.abs(y-model)])
 x = np.arange(3, dtype=float)

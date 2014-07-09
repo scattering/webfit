@@ -410,437 +410,20 @@
 
 var lmfit = lmfit || {};
 $(document).ready(function () {
-    /*
-     Original FORTRAN documentation
-     **********
 
-     subroutine lmdif
-
-     the purpose of lmdif is to minimize the sum of the squares of
-     m nonlinear functions in n variables by a modification of
-     the levenberg-marquardt algorithm. the user must provide a
-     subroutine which calculates the functions. the jacobian is
-     then calculated by a forward-difference approximation.
-
-     the subroutine statement is
-
-     subroutine lmdif(fcn,m,n,x,fvec,ftol,xtol,gtol,maxfev,epsfcn,
-     diag,mode,factor,nprint,info,nfev,fjac,
-     ldfjac,ipvt,qtf,wa1,wa2,wa3,wa4)
-
-     where
-
-     fcn is the name of the user-supplied subroutine which
-     calculates the functions. fcn must be declared
-     in an external statement in the user calling
-     program, and should be written as follows.
-
-     subroutine fcn(m,n,x,fvec,iflag)
-     integer m,n,iflag
-     double precision x(n),fvec(m)
-     ----------
-     calculate the functions at x and
-     return this vector in fvec.
-     ----------
-     return
-     end
-
-     the value of iflag should not be changed by fcn unless
-     the user wants to terminate execution of lmdif.
-     in this case set iflag to a negative integer.
-
-     m is a positive integer input variable set to the number
-     of functions.
-
-     n is a positive integer input variable set to the number
-     of variables. n must not exceed m.
-
-     x is an array of length n. on input x must contain
-     an initial estimate of the solution vector. on output x
-     contains the final estimate of the solution vector.
-
-     fvec is an output array of length m which contains
-     the functions evaluated at the output x.
-
-     ftol is a nonnegative input variable. termination
-     occurs when both the actual and predicted relative
-     reductions in the sum of squares are at most ftol.
-     therefore, ftol measures the relative error desired
-     in the sum of squares.
-
-     xtol is a nonnegative input variable. termination
-     occurs when the relative error between two consecutive
-     iterates is at most xtol. therefore, xtol measures the
-     relative error desired in the approximate solution.
-
-     gtol is a nonnegative input variable. termination
-     occurs when the cosine of the angle between fvec and
-     any column of the jacobian is at most gtol in absolute
-     value. therefore, gtol measures the orthogonality
-     desired between the function vector and the columns
-     of the jacobian.
-
-     maxfev is a positive integer input variable. termination
-     occurs when the number of calls to fcn is at least
-     maxfev by the end of an iteration.
-
-     epsfcn is an input variable used in determining a suitable
-     step length for the forward-difference approximation. this
-     approximation assumes that the relative errors in the
-     functions are of the order of epsfcn. if epsfcn is less
-     than the machine precision, it is assumed that the relative
-     errors in the functions are of the order of the machine
-     precision.
-
-     diag is an array of length n. if mode = 1 (see
-     below), diag is internally set. if mode = 2, diag
-     must contain positive entries that serve as
-     multiplicative scale factors for the variables.
-
-     mode is an integer input variable. if mode = 1, the
-     variables will be scaled internally. if mode = 2,
-     the scaling is specified by the input diag. other
-     values of mode are equivalent to mode = 1.
-
-     factor is a positive input variable used in determining the
-     initial step bound. this bound is set to the product of
-     factor and the euclidean norm of diag*x if nonzero, or else
-     to factor itself. in most cases factor should lie in the
-     interval (.1,100.). 100. is a generally recommended value.
-
-     nprint is an integer input variable that enables controlled
-     printing of iterates if it is positive. in this case,
-     fcn is called with iflag = 0 at the beginning of the first
-     iteration and every nprint iterations thereafter and
-     immediately prior to return, with x and fvec available
-     for printing. if nprint is not positive, no special calls
-     of fcn with iflag = 0 are made.
-
-     info is an integer output variable. if the user has
-     terminated execution, info is set to the (negative)
-     value of iflag. see description of fcn. otherwise,
-     info is set as follows.
-
-     info = 0  improper input parameters.
-
-     info = 1  both actual and predicted relative reductions
-     in the sum of squares are at most ftol.
-
-     info = 2  relative error between two consecutive iterates
-     is at most xtol.
-
-     info = 3  conditions for info = 1 and info = 2 both hold.
-
-     info = 4  the cosine of the angle between fvec and any
-     column of the jacobian is at most gtol in
-     absolute value.
-
-     info = 5  number of calls to fcn has reached or
-     exceeded maxfev.
-
-     info = 6  ftol is too small. no further reduction in
-     the sum of squares is possible.
-
-     info = 7  xtol is too small. no further improvement in
-     the approximate solution x is possible.
-
-     info = 8  gtol is too small. fvec is orthogonal to the
-     columns of the jacobian to machine precision.
-
-     nfev is an integer output variable set to the number of
-     calls to fcn.
-
-     fjac is an output m by n array. the upper n by n submatrix
-     of fjac contains an upper triangular matrix r with
-     diagonal elements of nonincreasing magnitude such that
-
-     t        t                 t
-     p *(jac *jac)*p = r *r,
-
-     where p is a permutation matrix and jac is the final
-     calculated jacobian. column j of p is column ipvt(j)
-     (see below) of the identity matrix. the lower trapezoidal
-     part of fjac contains information generated during
-     the computation of r.
-
-     ldfjac is a positive integer input variable not less than m
-     which specifies the leading dimension of the array fjac.
-
-     ipvt is an integer output array of length n. ipvt
-     defines a permutation matrix p such that jac*p = q*r,
-     where jac is the final calculated jacobian, q is
-     orthogonal (not stored), and r is upper triangular
-     with diagonal elements of nonincreasing magnitude.
-     column j of p is column ipvt(j) of the identity matrix.
-
-     qtf is an output array of length n which contains
-     the first n elements of the vector (q transpose)*fvec.
-
-     wa1, wa2, and wa3 are work arrays of length n.
-
-     wa4 is a work array of length m.
-
-     subprograms called
-
-     user-supplied ...... fcn
-
-     minpack-supplied ... dpmpar,enorm,fdjac2,,qrfac
-
-     fortran-supplied ... dabs,dmax1,dmin1,dsqrt,mod
-
-     argonne national laboratory. minpack project. march 1980.
-     burton s. garbow, kenneth e. hillstrom, jorge j. more
-
-     **********
-     */
-
-    /*
-     Inputs:
-     fcn:
-     The function to be minimized.  The function should return the weighted
-     deviations between the model and the data, as described above.
-
-     xall:
-     An array of starting values for each of the parameters of the model.
-     The number of parameters should be fewer than the number of measurements.
-
-     This parameter is optional if the parinfo keyword is used (but see
-     parinfo).  The parinfo keyword provides a mechanism to fix or constrain
-     individual parameters.
-
-     Keywords:
-
-     autoderivative:
-     If this is set, derivatives of the function will be computed
-     automatically via a finite differencing procedure.  If not set, then
-     fcn must provide the (analytical) derivatives.
-     Default: set (=1)
-     NOTE: to supply your own analytical derivatives,
-     explicitly pass autoderivative=0
-
-     ftol:
-     A nonnegative input variable. Termination occurs when both the actual
-     and predicted relative reductions in the sum of squares are at most
-     ftol (and status is accordingly set to 1 or 3).  Therefore, ftol
-     measures the relative error desired in the sum of squares.
-     Default: 1E-10
-
-     functkw:
-     A dictionary which contains the parameters to be passed to the
-     user-supplied function specified by fcn via the standard Python
-     keyword dictionary mechanism.  This is the way you can pass additional
-     data to your user-supplied function without using global variables.
-
-     Consider the following example:
-     if functkw = {'xval':[1.,2.,3.], 'yval':[1.,4.,9.],
-     'errval':[1.,1.,1.] }
-     then the user supplied function should be declared like this:
-     def myfunct(p, fjac=None, xval=None, yval=None, errval=None):
-
-     Default: {}   No extra parameters are passed to the user-supplied
-     function.
-
-     gtol:
-     A nonnegative input variable. Termination occurs when the cosine of
-     the angle between fvec and any column of the jacobian is at most gtol
-     in absolute value (and status is accordingly set to 4). Therefore,
-     gtol measures the orthogonality desired between the function vector
-     and the columns of the jacobian.
-     Default: 1e-10
-
-     iterkw:
-     The keyword arguments to be passed to iterfunct via the dictionary
-     keyword mechanism.  This should be a dictionary and is similar in
-     operation to FUNCTKW.
-     Default: {}  No arguments are passed.
-
-     iterfunct:
-     The name of a function to be called upon each NPRINT iteration of the
-     MPFIT routine.  It should be declared in the following way:
-     def iterfunct(myfunct, p, iter, fnorm, functkw=None,
-     parinfo=None, quiet=0, dof=None, [iterkw keywords here])
-     # perform custom iteration update
-
-     iterfunct must accept all three keyword parameters (FUNCTKW, PARINFO
-     and QUIET).
-
-     myfunct:  The user-supplied function to be minimized,
-     p:              The current set of model parameters
-     iter:    The iteration number
-     functkw:  The arguments to be passed to myfunct.
-     fnorm:  The chi-squared value.
-     quiet:  Set when no textual output should be printed.
-     dof:      The number of degrees of freedom, normally the number of points
-     less the number of free parameters.
-     See below for documentation of parinfo.
-
-     In implementation, iterfunct can perform updates to the terminal or
-     graphical user interface, to provide feedback while the fit proceeds.
-     If the fit is to be stopped for any reason, then iterfunct should return a
-     a status value between -15 and -1.  Otherwise it should return None
-     (e.g. no return statement) or 0.
-     In principle, iterfunct should probably not modify the parameter values,
-     because it may interfere with the algorithm's stability.  In practice it
-     is allowed.
-
-     Default: an internal routine is used to print the parameter values.
-
-     Set iterfunct=None if there is no user-defined routine and you don't
-     want the internal default routine be called.
-
-     maxiter:
-     The maximum number of iterations to perform.  If the number is exceeded,
-     then the status value is set to 5 and MPFIT returns.
-     Default: 200 iterations
-
-     nocovar:
-     Set this keyword to prevent the calculation of the covariance matrix
-     before returning (see COVAR)
-     Default: clear (=0)  The covariance matrix is returned
-
-     nprint:
-     The frequency with which iterfunct is called.  A value of 1 indicates
-     that iterfunct is called with every iteration, while 2 indicates every
-     other iteration, etc.  Note that several Levenberg-Marquardt attempts
-     can be made in a single iteration.
-     Default value: 1
-
-     parinfo
-     Provides a mechanism for more sophisticated constraints to be placed on
-     parameter values.  When parinfo is not passed, then it is assumed that
-     all parameters are free and unconstrained.  Values in parinfo are never
-     modified during a call to MPFIT.
-
-     See description above for the structure of PARINFO.
-
-     Default value: None  All parameters are free and unconstrained.
-
-     quiet:
-     Set this keyword when no textual output should be printed by MPFIT
-
-     damp:
-     A scalar number, indicating the cut-off value of residuals where
-     "damping" will occur.  Residuals with magnitudes greater than this
-     number will be replaced by their hyperbolic tangent.  This partially
-     mitigates the so-called large residual problem inherent in
-     least-squares solvers (as for the test problem CURVI,
-     http://www.maxthis.com/curviex.htm).
-     A value of 0 indicates no damping.
-     Default: 0
-
-     Note: DAMP doesn't work with autoderivative=0
-
-     xtol:
-     A nonnegative input variable. Termination occurs when the relative error
-     between two consecutive iterates is at most xtol (and status is
-     accordingly set to 2 or 3).  Therefore, xtol measures the relative error
-     desired in the approximate solution.
-     Default: 1E-10
-
-     Outputs:
-
-     Returns an object of type mpfit.  The results are attributes of this class,
-     e.g. mpfit.status, mpfit.errmsg, mpfit.params, npfit.niter, mpfit.covar.
-
-     .status
-     An integer status code is returned.  All values greater than zero can
-     represent success (however .status == 5 may indicate failure to
-     converge). It can have one of the following values:
-
-     -16
-     A parameter or function value has become infinite or an undefined
-     number.  This is usually a consequence of numerical overflow in the
-     user's model function, which must be avoided.
-
-     -15 to -1
-     These are error codes that either MYFUNCT or iterfunct may return to
-     terminate the fitting process.  Values from -15 to -1 are reserved
-     for the user functions and will not clash with MPFIT.
-
-     0  Improper input parameters.
-
-     1  Both actual and predicted relative reductions in the sum of squares
-     are at most ftol.
-
-     2  Relative error between two consecutive iterates is at most xtol
-
-     3  Conditions for status = 1 and status = 2 both hold.
-
-     4  The cosine of the angle between fvec and any column of the jacobian
-     is at most gtol in absolute value.
-
-     5  The maximum number of iterations has been reached.
-
-     6  ftol is too small. No further reduction in the sum of squares is
-     possible.
-
-     7  xtol is too small. No further improvement in the approximate solution
-     x is possible.
-
-     8  gtol is too small. fvec is orthogonal to the columns of the jacobian
-     to machine precision.
-
-     .fnorm
-     The value of the summed squared residuals for the returned parameter
-     values.
-
-     .covar
-     The covariance matrix for the set of parameters returned by MPFIT.
-     The matrix is NxN where N is the number of  parameters.  The square root
-     of the diagonal elements gives the formal 1-sigma statistical errors on
-     the parameters if errors were treated "properly" in fcn.
-     Parameter errors are also returned in .perror.
-
-     To compute the correlation matrix, pcor, use this example:
-     cov = mpfit.covar
-     pcor = cov * 0.
-     for i in range(n):
-     for j in range(n):
-     pcor[i,j] = cov[i,j]/sqrt(cov[i,i]*cov[j,j])
-
-     If nocovar is set or MPFIT terminated abnormally, then .covar is set to
-     a scalar with value None.
-
-     .errmsg
-     A string error or warning message is returned.
-
-     .nfev
-     The number of calls to MYFUNCT performed.
-
-     .niter
-     The number of iterations completed.
-
-     .perror
-     The formal 1-sigma errors in each parameter, computed from the
-     covariance matrix.  If a parameter is held fixed, or if it touches a
-     boundary, then the error is reported as zero.
-
-     If the fit is unweighted (i.e. no errors were given, or the weights
-     were uniformly set to unity), then .perror will probably not represent
-     the true parameter uncertainties.
-
-     *If* you can assume that the true reduced chi-squared value is unity --
-     meaning that the fit is implicitly assumed to be of good quality --
-     then the estimated parameter uncertainties can be computed by scaling
-     .perror by the measured chi-squared value.
-
-     dof = len(x) - len(mpfit.params) # deg of freedom
-     # scaled uncertainties
-     pcerror = mpfit.perror * sqrt(mpfit.fnorm / dof)
-
-     */
     lmfit.lmfit = function (fcn, xall, functkw, parinfo, ftol, xtol, gtol, damp, maxiter, factor, nprint, iterfunct, iterkw, nocovar, rescale, autoderivative, quiet, diag, epsfcn, debug) {
+        var machep=Math.pow(2, -52);
         if (lmfit.typeOf(functkw) == 'undefined') {
             functkw = {};
         }
         if (lmfit.typeOf(ftol) == 'undefined') {
-            ftol = Math.pow(10, -10);
+            ftol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(xtol) == 'undefined') {
-            xtol = Math.pow(10, -10);
+            xtol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(gtol) == 'undefined') {
-            gtol = Math.pow(10, -10);
+            gtol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(damp) == 'undefined') {
             damp = 0;
@@ -1161,14 +744,14 @@ $(document).ready(function () {
 //            Determine if any of the parameters are pegged at the limits
             if (qanylim) {
                 catch_msg = 'zeroing derivatives of pegged parameters';
-                var whlpeg;
+                var whlpeg=[];
                 for (i = 0; i < qllim.length; i++) {
                     if (qllim[i] != 0 && x == llim[i]) {
                         whlpeg.push(i);
                     }
                 }
                 var nlpeg = whlpeg.length;
-                var whupeg;
+                var whupeg=[];
                 for (i = 0; i < qulim.length; i++) {
                     if (qulim[i] != 0 && x == ulim[i]) {
                         whupeg.push(i);
@@ -1247,7 +830,6 @@ $(document).ready(function () {
             for (i = 0; i < fvec.length; i++) {
                 wa4[i] = fvec[i];
             }
-
             for (j = 0; j < n; j++) {
                 var lj = ipvt[j];
                 var temp3 = fjac[j][lj];
@@ -1342,7 +924,33 @@ $(document).ready(function () {
 //            Rescale if necessary
 
             if (rescale == 0) {
-                //DO THIS. unsure of how to proceed with numpy.choose
+                //cheap way of doing numpy.choose(diag>wa2 ,(wa2,diag);
+                var temp=new Array(2);
+                temp[0]=[];
+                for(i=0; i<wa2.length; i++)
+                {
+                    temp[0].push(wa2[i]);
+                }
+                temp[1]=[];
+                for(i=0; i<wa2.length; i++)
+                {
+                    temp[1].push(wa2[i]);
+                }
+                var boolean=[];
+                for(i=0; i<diag.length; i++)
+                {
+                    if(diag[i]>wa2[i])
+                    {
+                        boolean.push(1);
+                    } else{
+                        boolean.push(0);
+                    }
+                }
+
+                for(i=0; i< boolean.length; i++)
+                {
+                    diag[i]=temp[boolean[i]][i];
+                }
             }
 
 //            Beginning of the inner loop
@@ -1357,12 +965,15 @@ $(document).ready(function () {
                 wa2 = a.sdiag;
 //                Store the direction p and x+p. Calculate the norm of p
 
-                wa1 = -wa1;
+                for(i=0; i<wa1.length; i++)
+                {
+                    wa1[i]=-wa1[i];
+                }
                 if (qanylim == 0 && qminmax == 0) {
 //                    No parameter limits, so just move to new position WA2
                     alpha = 1;
                     for (i = 0; i < wa2.length; i++) {
-                        wa2[i] = x + wa1[i];
+                        wa2[i] = x[i] + wa1[i];
                     }
 
                 }
@@ -1394,27 +1005,27 @@ $(document).ready(function () {
                             }
                         }
                         var dwa1 = true;
-                        var whl;
+                        var whl=[];
                         for (i = 0; i < wa1.length; i++) {
                             if (qllim[i] && (x[i] + wa1[i]) < llim[i]) {
                                 wh1.push(i);
                             }
                         }
                         if (whl.length > 0) {
-                            var t;
+                            var t=[];
                             for (i = 0; i < whl.length; i++) {
                                 t.push((llim[whl[i]] - x[whl[i]]) / wa1[whl[i]]);
                                 alpha = Math.min(alpha, t);
                             }
                         }
-                        var whu;
+                        var whu=[];
                         for (i = 0; i < wa1.length; i++) {
                             if (qulim[i] && (x[i] + wa1[i]) > ulim[i]) {
                                 whu.push(i);
                             }
                         }
                         if (whu.length > 0) {
-                            var t;
+                            var t=[];
                             for (i = 0; i < whl.length; i++) {
                                 t.push((ulim[whu[i]] - x[whu[i]]) / wa1[whu[i]]);
                                 alpha = Math.min(alpha, t);
@@ -1426,24 +1037,24 @@ $(document).ready(function () {
 //                    Obey any max step values
 
                     if (qminmax) {
-                        var nwa1;
+                        var nwa1=[];
                         for (i = 0; i < wa1.length; i++) {
                             nwa1.push(wa1[i] * alpha);
                         }
-                        var whmax;
+                        var whmax=[];
                         for (i = 0; i < qmax.length; i++) {
                             if (qmax[i] != 0 && maxstep[i] > 0) {
                                 whmax.push(i);
                             }
                         }
                         if (whmax.length > 0) {
-                            var mrat;
+                            var mrat=[];
                             for (i = 0; i < whmax.length; i++) {
                                 mrat.push(Math.max(Math.abs(nwa1[whmax[i]]), Math, abs(maxstep[ifree[whmax[i]]])));
                             }
-                            if (mrat > 1)//questionable move from array to scalar
+                            if (mrat.length > 1)//questionable move from array to scalar
                             {
-                                alpha = alph / mrat;
+                                alpha = alpha / mrat;
                             }
                         }
 
@@ -1461,7 +1072,7 @@ $(document).ready(function () {
 
 //                    Adjust the final output values.  If the step put us exactly
 //                    on a boundary, make sure it is exact.
-                    var sgnu;
+                    var sgnu=[];
                     for (i = 0; i < ulim.length; i++) {
                         if (ulim[i] >= 0) {
                             sgnu.push(1);
@@ -1470,7 +1081,7 @@ $(document).ready(function () {
                         }
 
                     }
-                    var sgnl;
+                    var sgnl=[];
                     for (i = 0; i < llim.length; i++) {
                         if (llim[i] >= 0) {
                             sgnl.push(1);
@@ -1486,7 +1097,7 @@ $(document).ready(function () {
                     //skip some rounding
                     var ulim1 = ulim.splice();
                     var llim1 = llim.splice();
-                    var wh;
+                    var wh=[];
                     for (i = 0; i < qulim; i++) {
                         if (qulim[i] != 0 && wa2[i] >= ulim1[i]) {
                             wh.push(i);
@@ -1497,7 +1108,7 @@ $(document).ready(function () {
                             wa2[wh[i]] = ulim[wh[i]];
                         }
                     }
-                    var wh;
+                    var wh=[];
                     for (i = 0; i < qllim; i++) {
                         if (qllim[i] != 0 && wa2[i] >= llim1[i]) {
                             wh.push(i);
@@ -1510,9 +1121,9 @@ $(document).ready(function () {
                     }
 
                 }//endelse
-                var wa3;
+                var wa3=[];
                 for (i = 0; i < wa1.length; i++) {
-                    wa3 = diag[i] * wa1[i];
+                    wa3.push(diag[i] * wa1[i]);
                 }
                 var pnorm = lmfit.enorm(wa3);
 
@@ -1555,7 +1166,12 @@ $(document).ready(function () {
 
 //                Remember, alpha is the fraction of the full LM step actually
 //                taken
-                var temp1 = lmfit.enorm(alpha * wa3) / this.fnorm;
+                var j=[];
+                for(i=0; i<wa3.length; i++)
+                {
+                    j.push(alpha*wa3[i]);
+                }
+                var temp1 = lmfit.enorm(j) / this.fnorm;
                 var temp2 = (Math.sqrt(alpha * par) * pnorm) / this.fnorm;
                 var prered = temp1 * temp1 + (temp2 * temp2) / 0.5;
                 var dirder = -(temp1 * temp1 + temp2 * temp2);
@@ -1599,7 +1215,7 @@ $(document).ready(function () {
                     fvec = wa4;
                     xnorm = lmfit.enorm(wa2);
                     this.fnorm = fnorm1;
-                    this.niter = this.niter++;
+                    this.niter++;
 
 
                 }
@@ -1622,6 +1238,7 @@ $(document).ready(function () {
                 if (this.niter >= maxiter) {
                     this.status = 5;
                 }
+
                 if (Math.abs(actred) <= machep && prered <= machep && .5 * ratio <= 1) {
                     this.status = 6;
                 }
@@ -1658,7 +1275,7 @@ $(document).ready(function () {
         }//end of outer loop
         catch_msg = 'in the termination phase';
 //        Termination, either normal or user imposed.
-        if (this.params.length() == 0) {
+        if (this.params.length == 0) {
             return;
         }
         if (nfree == 0) {
@@ -1688,18 +1305,24 @@ $(document).ready(function () {
             var sz = [fjac.length, fjac[0].length];
             if (n > 0 && sz[0] >= n && sz[1] >= n && ipvt.length >= n) {
                 catch_msg = 'computing the covariance matrix';
-                var tempfjac, tempipvt;
+                var tempfjac=new Array(n), tempipvt=new Array(n);
                 for (i = 0; i < n; i++) {
+                    tempfjac[i]=new Array(n);
                     for (j = 0; j < n; j++) {
                         tempfjac[i][j] = fjac[i][j];
                     }
                     tempipvt[i] = ipvt[i];
                 }
                 var cv = lmfit.calc_covar(tempfjac, tempipvt);
-                var tempcv = cv.splice();
-                cv = [];
+
+                var tempcv = [];
+                for(i=0; i<cv.length; i++){
+                    tempcv[i]=cv[i];
+                }
+                cv = new Array(n);
                 var counter = 0;
                 for (i = 0; i < n; i++) {
+                    cv[i]=new Array(n);
                     for (j = 0; j < n; j++) {
                         cv[i][j] = tempcv[counter];
                         counter++;
@@ -1709,9 +1332,11 @@ $(document).ready(function () {
 
 //                Fill in actual covariance matrix, accounting for fixed
 //                parameters.
+                this.covar=new Array(nn);
                 for (i = 0; i < nn; i++) {
+                    this.covar[i]=[];
                     for (j = 0; j < nn; j++) {
-                        this.covar[i][j] = 0;
+                        this.covar[i].push(0);
                     }
                 }
                 for (i = 0; i < n; i++) {
@@ -1722,8 +1347,9 @@ $(document).ready(function () {
 
 //                Compute errors in parameters
                 catch_msg = 'computing parameter errors';
+                this.perror=[];
                 for (i = 0; i < nn; i++) {
-                    this.perror[i] = 0;
+                    this.perror.push(0);
                 }
                 var tempcovar = Matrix.create(this.covar);
                 var d = tempcovar.diagonal().elements;
@@ -1820,7 +1446,7 @@ $(document).ready(function () {
         if (lmfit.typeOf(autoderivative) == 'undefined') {
             autoderivative = 1;
         }
-        var machep = Math.pow(2, -53);
+        var machep = Math.pow(2, -52);
         if (lmfit.typeOf(epsfcn) == 'undefined') {
             epsfcn = machep;
         }
@@ -1828,6 +1454,7 @@ $(document).ready(function () {
             xall = x;
         }
         if (lmfit.typeOf(ifree) == 'undefined') {
+            ifree=[];
             for (i = 0; i < xall.length; i++) {
                 ifree.push(i);
             }
@@ -1968,7 +1595,7 @@ $(document).ready(function () {
             for (i = 0; i < ulimited.length; i++) {
                 mask[i] = (mask[i] || (ulimited[i] != 0 && x > ulimit[i] - h[i]));
             }
-            var wh;
+            var wh=[];
             for (i = 0; i < mask.length; i++) {
                 if (mask[i] != 0) {
                     wh.push(i);
@@ -2157,9 +1784,9 @@ $(document).ready(function () {
         if (lmfit.typeOf(pivot) == 'undefined') {
             pivot = 0;
         }
-        a = Matrix.create(b);
+        var a = Matrix.create(b);
 
-        var machep = Math.pow(2, -53);
+        var machep = Math.pow(2, -52);
         var sz = [b.length, b[0].length];
         var m = sz[0];
         var n = sz[1];
@@ -2246,7 +1873,7 @@ $(document).ready(function () {
 //            but it actually got slower.  Reverted to "for" loop to keep
 //            it simple.
             var lk;
-            var ajk = []
+            var ajk = [];
             if (j + 1 < n) {
                 for (k = j + 1; k < n; k++) {
                     lk = ipvt[k];
@@ -2449,13 +2076,17 @@ $(document).ready(function () {
 //         copy r and (q transpose)*b to preserve input and initialize s.
 //         in particular, save the diagonal elements of r in x.
 
-        for (i = 0; i < n; i++) {
-            for (j = 0; j < n; j++) {
-                r.elements[j][i] = r.elements[i][j];
+        for (var j = 0; j < n; j++) {
+            for (var i = 0; i < n; i++) {
+                r.elements[i][j] = r.elements[j][i];
             }
         }
-        var x = Matrix.diagonal(r.diagonal());
-        var wa = Matrix.create(qtb.elements);
+        var x = Matrix.Diagonal(r.diagonal().elements);
+        var wa =[];
+            for(i=0; i<qtb.length; i++)
+            {
+             wa[i]=qtb[i];
+            }
 
 //       Eliminate the diagonal matrix d using a givens rotation
 
@@ -2467,14 +2098,14 @@ $(document).ready(function () {
             for (i = j; i < sdiag.length; i++) {
                 sdiag[i] = 0;
             }
-            stdiag[j] = diag[l];
+            sdiag[j] = diag[l];
 
 //            The transformations to eliminate the row of d modify only a
 //            single element of (q transpose)*b beyond the first n, which
 //            is initially zero.
 
             var qtbpj = 0;
-            for (k = j; k < n; k++) {
+            for (var k = j; k < n; k++) {
                 if (sdiag[k] == 0) {
                     break;
                 }
@@ -2500,14 +2131,19 @@ $(document).ready(function () {
 //                Accumulate the transformation in the row of s
 
                 if (n > k + 1) {
+                    temp=[];
                     for (i = k + 1; i < n; i++) {
-                        temp = cosine * r.elements[i][k] + sine * sdiag[i];
+                        temp[i] = cosine * r.elements[i][k] + sine * sdiag[i];
+                    }
+                    for(i=k+1; i<n; i++) {
                         sdiag[i] = -sine * r.elements[i][k] + cosine * sdiag[i];
+                    }
+                    for(i=k+1; i<n; i++){
                         r.elements[i][k] = temp;
                     }
                 }
                 sdiag[j] = r.elements[j][j];
-                r.elements[j][j] = x[j];
+                r.elements[j][j] = x.elements[j];
 
             }
 
@@ -2516,7 +2152,7 @@ $(document).ready(function () {
 //          Solve the triangular system for z.  If the system is singular
 //          then obtain a least squares solution
         var nsing = n;
-        var wh;
+        var wh=[];
         for (i = 0; i < sdiag.length; i++) {
             if (sdiag[i] == 0) {
                 wh.push(i);
@@ -2524,7 +2160,7 @@ $(document).ready(function () {
             }
         }
         if (wh.length > 0) {
-            nsign = wh[0];
+            nsing = wh[0];
             for (i = nsing; i < wa.length; i++) {
                 wa[i] = 0;
             }
@@ -2532,7 +2168,7 @@ $(document).ready(function () {
         if (nsing >= 1) {
             wa[nsing - 1] = wa[nsing - 1] / sdiag[nsing - 1];
             for (j = nsing - 2; j > -1; j--) {
-                var sum0;
+                var sum0=0;
 
                 for (k = j + 1; k < nsing; k++) {
                     sum0 += r.elements[k][j] * wa[k];
@@ -2543,8 +2179,10 @@ $(document).ready(function () {
 
 //        Permute the components of z back to components of x
 
-        x[ipvt] = wa;  //questionable; ipvt is a 1d array, x is a 1d array
-        return {r: r, x: x, sdiag: sdiag};      //questionable return
+        for(i=0; i<ipvt.length; i++) {
+            x.elements[ipvt[i]] = wa[i];  //questionable; ipvt is a 1d array, x is a 1d array
+        }
+        return {r: r, x: x.elements, sdiag: sdiag};      //questionable return
 
 
     };
@@ -2642,9 +2280,10 @@ $(document).ready(function () {
      argonne national laboratory. minpack project. march 1980.
      burton s. garbow, kenneth e. hillstrom, jorge j. more
      */
-    lmfit.lmpar = function (r, ipvt, diag, qtb, delta, x, sdiag, par) {  //must check the typeOf r array/matrix
+    lmfit.lmpar = function (y, ipvt, diag, qtb, delta, x, sdiag, par) {  //must check the typeOf r array/matrix
         console.log('entering lmpar...');
-        var sz = [r.length, r[0].length];
+        r=Matrix.create(y);
+        var sz = [y.length, y[0].length];
         var m = sz[0];
         var n = sz[1];
 
@@ -2652,7 +2291,11 @@ $(document).ready(function () {
 //         jacobian is rank-deficient, obtain a least-squares solution
 
         var nsing = n;
-        var wa1 = qtb.splice();
+
+        var wa1 = [];
+        for(i=0; i<qtb.length; i++){
+            wa1[i]=qtb[i];
+        }
         //skipping some rounding stuffs
         if (nsing >= 1) {
             for (j = nsing - 1; j > -1; j--) {
@@ -2665,14 +2308,21 @@ $(document).ready(function () {
             }
         }
 //      Note: ipvt here is a permutaiton array
-        x[ipvt] = wa1; //questionble "permutation array"
+        for(i=0; i<ipvt.length; i++)
+        {
+            x[ipvt[i]]=wa1[i];
+        }
+        //x[ipvt] = wa1; //questionble "permutation array"
 
         var iter = 0;
-        var wa2 = diag * x;//may have to change this because javascript doesn't support array * array operatoins
+        var wa2=[];
+        for(i=0; i<diag.length; i++) {
+            wa2.push(diag[i] * x[i]);//may have to change this because javascript doesn't support array * array operatoins
+        }
         var dxnorm = lmfit.enorm(wa2);
         var fp = dxnorm - delta;
         if (fp <= 0.1 * delta) {
-            return [r, 0, x, sdiag];
+            return {r: r.elements, par:0, x:x, sdiag:sdiag};
         }
 //         If the jacobian is not rank deficient, the newton step provides a
 //         lower bound, parl, for the zero of the function.  Otherwise set
@@ -2680,16 +2330,18 @@ $(document).ready(function () {
 
         var parl = 0;
         if (nsing >= n) {
-            wa1 = diag[ipvt] * wa2[ipvt] / dxnorm;//again the permutation array questionability
-            wa1[0] = wa1[0] / r[0][0];
+            for(i=0; i<ipvt.length; i++) {
+                wa1[i] = diag[ipvt[i]] * wa2[ipvt[i]] / dxnorm;//again the permutation array questionability
+            }
+            wa1[0] = wa1[0] / r.elements[0][0];
             for (j = 1; j < n; j++) {
-                var sum0;
+                var sum0=0;
                 for (i = 0; i < j; i++) {
-                    sum0 += r[i][j] * wa1[i];
+                    sum0 += r.elements[i][j] * wa1[i];
 
 
                 }
-                wa1[j] = (wa1[j] - sum0) / r[j][j];
+                wa1[j] = (wa1[j] - sum0) / r.elements[j][j];
             }
             var temp = lmfit.enorm(wa1);
             parl = ((fp / delta) / temp) / temp;
@@ -2698,9 +2350,9 @@ $(document).ready(function () {
         }
 //             Calculate an upper bound, paru, for the zero of the function
         for (j = 0; j < n; j++) {
-            var sum0;
+            var sum0=0;
             for (i = 0; i < j + 1; i++) {
-                sum0 += r[i][j] * qtb[i];
+                sum0 += r.elements[i][j] * qtb[i];
 
             }
             wa1[j] = sum0 / diag[ipvt[j]];
@@ -2726,12 +2378,17 @@ $(document).ready(function () {
             iter++;
 //            Evaluate the function at the current value of par
             var temp = Math.sqrt(par);
-            wa1 = temp * diag; //unsure whether will throw error due to scalar*array
+            wa1=[];
+            for(var i=0; i<diag.length; i++) {
+                wa1[i] = temp * diag[i]; //unsure whether will throw error due to scalar*array
+            }
             var a = lmfit.qrsolv(r, ipvt, wa1, qtb, sdiag);
             r = a.r;
             x = a.x;
             sdiag = a.sdiag;
-            wa2 = diag * x;
+            for(i=0; i<diag.length; i++) {
+                wa2[i] = diag[i] * x[i];
+            }
             dxnorm = lmfit.enorm(wa2);
             temp = fp;
             fp = dxnorm - delta;
@@ -2740,12 +2397,13 @@ $(document).ready(function () {
                 break;
             }
 //            Compute the newton correction
-            wa1 = diag[ipvt] * wa2[ipvt / dxnorm];
-
+            for(i=0; i<ipvt.length; i++) {
+                wa1[i] = diag[ipvt[i]] * wa2[ipvt[i]] / dxnorm;
+            }
             for (j = 0; j < n - 1; j++) {
                 wa1[j] = wa1[j] / sdiag[j];
                 for (i = j + 1; j < n; j++) {
-                    wa1[i] = wa[1] - r[i][j] * wa1[j];
+                    wa1[i] = wa1[1] - r.elements[i][j] * wa1[j];
 
                 }
             }
@@ -2764,7 +2422,7 @@ $(document).ready(function () {
 //            End of an iteration
         }
 //        Termination
-        return {r: r, par: par, x: x, sdiag: sdiag};
+        return {r: r.elements, par: par, x: x, sdiag: sdiag};
     };
 
 
@@ -2862,11 +2520,15 @@ $(document).ready(function () {
             return -1;
         }
         if (ipvt == lmfit.typeOf('undefined')) {//unsure whether this actually catches a null imput
+            ipvt=[];
             for (i = 0; i < n; i++) {
                 ipvt.push(i);
             }
         }
-        var r = rr.splice();
+        var r = [];
+        for(i=0; i<rr.length; i++){
+            r[i]=rr[i];
+        }
         r.shape = [n, n]; //unsure whether this will actually do anything
 
 //        For the inverse of r in the full upper triangle of r
@@ -2914,7 +2576,7 @@ $(document).ready(function () {
         }
 //         For the full lower triangle of the covariance matrix
 //         in the strict lower triangle or and in wa
-        var wa;
+        var wa=[];
         for (i = 0; i < n; i++) {
             wa.push(r[0][0]);
         }

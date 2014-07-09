@@ -31,5 +31,6 @@ $(document).ready(function () {
     var fa={};
     fa['x']=x;
     fa['y']=y;
-    m=lmfit.lmfit(myFunction, pfit, fa);
+    var m=lmfit.lmfit(myFunction, pfit, fa);
+    console.log(m);
 })
