@@ -1609,7 +1609,7 @@ $(document).ready(function () {
         }
 //        Loop through parameters, computing the derivative for each
 
-        for (j = 0; j < n; j++) {
+        for (var j = 0; j < n; j++) {
             var xp = [];
             for (i = 0; i < xall.length; i++) {
                 xp[i] = xall[i];

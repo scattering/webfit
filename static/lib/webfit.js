@@ -471,8 +471,8 @@ Ext.onReady(function () {
         x: 292,
         y: 8,
     });
-    functionSelector.fit = Ext.create('Ext.Button', {
-        text: 'Fit',
+    functionSelector.fit1 = Ext.create('Ext.Button', {
+        text: 'Simplex Fit',
         //id: 4,
         //renderTo: Ext.getBody(),
         handler: function () {
@@ -520,6 +520,69 @@ Ext.onReady(function () {
             var x = SimplexEq.simplex(sqResid, this.x0);
             //fit the function
         },
+        x: 40,
+        y: 38,
+    });
+    functionSelector.fit2 = Ext.create('Ext.Button', {
+        text: 'L-M Fit',
+        //id: 4,
+        //renderTo: Ext.getBody(),
+        handler: function () {
+            this.p = [];
+            var fitMin = -9999;
+            var fitMax = 9999;
+            if(functionSelector.plotFitDomain.items.getAt(1).getValue()!=functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+                fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
+                fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+            }
+            var x1=[],y1=[];
+            for (i = 0; i < webfit.plot.data[0].length; i++) {
+                if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+                    x1.push(webfit.plot.data[0][i][0]);
+                    y1.push(webfit.plot.data[0][i][1]);
+                }
+                //console.log(sqRes);
+            }
+            for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                    this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
+                    this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
+                }
+            }
+
+            var sqResid = function (p, fjac, x, y, err) {
+                //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
+                var counter = 0;
+                for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
+                        counter++;
+                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
+                        counter++;
+                        webfit.plot.replot();
+                    }
+                }
+                var sqRes = [];
+                for (i = 0; i < webfit.plot.data[0].length; i++) {
+                    if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+
+
+                        sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
+                    }
+                    //console.log(sqRes);
+                }
+                //console.log(sqRes);
+                var status=0;
+                //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
+                return {status:status, f:sqRes};
+            };
+            var fa={};
+            fa['x']=x1;
+            fa['y']=y1;
+            var x = lmfit.lmfit(sqResid, this.p, fa);
+
+            //fit the function
+        },
         x: 120,
         y: 38,
     });
@@ -531,7 +594,7 @@ Ext.onReady(function () {
         //height: 200,
         autoScroll: true,
         //bodyPadding: 50,
-        items: [functionSelector.chooser, functionSelector.add, functionSelector.fit],
+        items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1,functionSelector.fit2],
     });
 
     functionSelector.addStore = Ext.create('Ext.data.Store', {
@@ -1102,14 +1165,25 @@ Ext.onReady(function () {
         afterComponentLayout: function (width, height) {
             if (webfit.plot === undefined) {
                 var sinPoints = [];
+                var linPoints=[];
+
                 for (var i = 0; i < 2 * Math.PI; i += 0.4) {
-                    var yVal = 2 * Math.sin(i - .8);
+                    //var yVal = 2 * Math.sin(i - .8);
+                    var yVal=5.5*i +2.2;
                     sinPoints.push([i, yVal]);
                     dataP.store.add({
                         x: i,
                         y: yVal,
                     });
-                }
+                }/*
+                for (var i=0; i<3; i++) {
+                    var yVal=5.7*i +2.2;
+                    linPoints.push([i, yVal]);
+                    dataP.store.add({
+                        x: i,
+                        y: yVal,
+                    });*/
+
 
                 webfit.plot = $.jqplot(this.body.id, [sinPoints], {
                     //setTitle: function(newTitle){title: newTitle},
