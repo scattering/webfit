@@ -417,13 +417,13 @@ $(document).ready(function () {
             functkw = {};
         }
         if (lmfit.typeOf(ftol) == 'undefined') {
-            ftol = Math.pow(10, -10);
+            ftol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(xtol) == 'undefined') {
-            xtol = Math.pow(10, -10);
+            xtol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(gtol) == 'undefined') {
-            gtol = Math.pow(10, -10);
+            gtol = Math.pow(10, -5);
         }
         if (lmfit.typeOf(damp) == 'undefined') {
             damp = 0;
@@ -1097,8 +1097,14 @@ $(document).ready(function () {
 //                            ... nonzero *LIM ... ...zero * LIM
 
                     //skip some rounding
-                    var ulim1 = ulim.splice();
-                    var llim1 = llim.splice();
+                    var ulim1=[];
+                    for(var i=0; i<ulim.length; i++){
+                        ulim1.push(ulim[i]);
+                    }
+                    var llim1 = [];
+                    for(var i=0; i<llim.length; i++){
+                        llim1.push(llim[i]);
+                    }
                     var wh=[];
                     for (i = 0; i < qulim; i++) {
                         if (qulim[i] != 0 && wa2[i] >= ulim1[i]) {
@@ -1281,7 +1287,11 @@ $(document).ready(function () {
             return;
         }
         if (nfree == 0) {
-            this.params = xall.splice();
+            this.params=[];
+            for(i=0; i<xall.length; i++)
+            {
+                this.params.push(xall[i]);
+            }
         }
         else {
             for (i = 0; i < ifree.length; i++) {
@@ -1490,7 +1500,10 @@ $(document).ready(function () {
 //             This definition is consistent with CURVEFIT
 //             Sign error found (thanks Jesus Fernandez <fernande@irm.chu-caen.fr>)
             var counter;
-            var temp = fjac.splice();
+            var temp=[];
+            for(var i=0; i<fjac.length; i++){
+                temp.push(fjac[i]);
+            }
             while (fjac.length > 0) {
                 fjac.pop();
             }
@@ -1507,7 +1520,10 @@ $(document).ready(function () {
                     fjac[i][j] = -f[i][j];
                 }
             }
-            temp = fjac.splice();
+            temp=[];
+            for(var i=0; i<fjac.length; i++){
+                temp.push(fjac[i]);
+            }
             if (ifree.length < nall) {
                 while (fjac.length > 0) {
                     fjac.pop();
@@ -1515,7 +1531,10 @@ $(document).ready(function () {
                 for (i = 0; i < fjac.length; i++) {
                     fjac.push(temp[i][ifree]);
                 }
-                temp = fjac.splice();
+                temp=[];
+                for(var i=0; i<fjac.length; i++){
+                    temp.push(fjac[i]);
+                }
                 counter = 0;
                 for (i = 0; i < m; i++) {
                     for (j = 0; j < nall; j++) {
@@ -1879,7 +1898,7 @@ $(document).ready(function () {
             if (j + 1 < n) {
                 for (k = j + 1; k < n; k++) {
                     lk = ipvt[k];
-
+                    ajk = [];
                     for (i = j; i < a.elements.length; i++) {
                         ajk.push(a.elements[i][lk]);
 
@@ -1889,7 +1908,7 @@ $(document).ready(function () {
                     if (a.elements[j][lj] != 0) {
 
                         var sum = 0;
-                        for (i = j; i < ajk.length; i++) {
+                        for (i = 0; i < ajk.length; i++) {
                             sum += ajk[i] * ajj[i];
                         }
                         for (i = j; i < a.elements.length; i++) {
@@ -1973,11 +1992,12 @@ $(document).ready(function () {
          }
          }
          }*/
+        var a;
         for (i = 0; i < nprint; i++) {
             if (lmfit.typeOf(parinfo) != 'undefined' && lmfit.typeOf(parinfo[i]['parname']) != 'undefined') {
-                p = '   ' + parinfo[i]['parname'] + ' = ';
+                a = '   ' + parinfo[i]['parname'] + ' = ';
             } else {
-                p = '   P' + i + ' = ';
+                a = '   P' + i + ' = ';
             }
             if (lmfit.typeOf(parinfo) != 'undefined' && lmfit.typeOf(parinfo[i]['mpprint']) != 'undefined') {
                 iprint = parinfo[i]['mpprint'];
@@ -1985,7 +2005,7 @@ $(document).ready(function () {
                 iprint = 1;
             }
             if (iprint) {
-                console.log(p + x[i]);
+                console.log(a + x[i]);
             }
 
         }
