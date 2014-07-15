@@ -93,6 +93,7 @@ Ext.onReady(function () {
                 //$('#contents').html(html);
                 webfit.plot.redraw();
                 webfit.ResidualPlot.replot();
+                console.log("UPDATING PLOTS");
             };
             reader.onerror = function () {
                 alert('Unable to read ' + file.fileName);
@@ -501,6 +502,7 @@ Ext.onReady(function () {
                         webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = x[counter];
                         counter++;
                         webfit.plot.replot();
+
                     }
                 }
                 var sqRes = 0;
@@ -518,6 +520,9 @@ Ext.onReady(function () {
             };
 
             var x = SimplexEq.simplex(sqResid, this.x0);
+            residualUpdate();
+            webfit.ResidualPlot.replot();
+            console.log('UPDATING RESIDUALS');
             //fit the function
         },
         x: 40,
@@ -560,6 +565,8 @@ Ext.onReady(function () {
                         webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
                         counter++;
                         webfit.plot.replot();
+                        webfit.ResidualPlot.replot();
+
                     }
                 }
                 var sqRes = [];
@@ -580,7 +587,8 @@ Ext.onReady(function () {
             fa['x']=x1;
             fa['y']=y1;
             var x = lmfit.lmfit(sqResid, this.p, fa);
-
+            webfit.ResidualPlot.replot();
+            console.log('UPDATING RESIDUALS');
             //fit the function
         },
         x: 120,
@@ -1168,8 +1176,8 @@ Ext.onReady(function () {
                 var linPoints=[];
 
                 for (var i = 0; i < 2 * Math.PI; i += 0.4) {
-                    //var yVal = 2 * Math.sin(i - .8);
-                    var yVal=5.5*i +2.2;
+                    var yVal = 2 * Math.sin(i - .8);
+                    //var yVal=5.5*i +2.2;
                     sinPoints.push([i, yVal]);
                     dataP.store.add({
                         x: i,

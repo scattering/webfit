@@ -1385,7 +1385,9 @@ $(document).ready(function () {
      Procedure to parse the parameter values in PARINFO, which is a list of dictionaries
      */
     lmfit.parinfo = function (parinfo, key, def, n) {
-        console.log('entering parinfo');
+        if(this.debug) {
+            console.log('entering parinfo');
+        }
         var values;
         if (lmfit.typeOf(key) == 'undefined') {
             key = 'a';
@@ -1420,7 +1422,9 @@ $(document).ready(function () {
      derivatives or not.
      */
     lmfit.call = function (fcn, x, functkw, fjac) {
-        console.log('entering call...');
+        if(this.debug) {
+            console.log('entering call...');
+        }
         if (this.qantied) {
             x = lmfit.tie(x, this.ptied);
         }
@@ -1454,7 +1458,9 @@ $(document).ready(function () {
      derivatives or not.
      */
     lmfit.fdjac2 = function (fcn, x, fvec, step, ulimited, ulimit, dside, epsfcn, autoderivative, functkw, xall, ifree, dstep) { //no clue what types any of these are
-        console.log('entering fdjac2...');
+        if(this.debug) {
+            console.log('entering fdjac2...');
+        }
         if (lmfit.typeOf(autoderivative) == 'undefined') {
             autoderivative = 1;
         }
@@ -1801,7 +1807,9 @@ $(document).ready(function () {
      Note that it is usually never necessary to form the Q matrix
      explicitly, and MPFIT does not.*/
     lmfit.qrfac = function (b, pivot) {
-        console.log("entering qrfac...");
+        if(this.debug) {
+            console.log("entering qrfac...");
+        }
         if (lmfit.typeOf(pivot) == 'undefined') {
             pivot = 0;
         }
@@ -1922,7 +1930,7 @@ $(document).ready(function () {
                             if (0.05 * temp * temp <= machep) {
                                 var temp1 = [];
                                 for (i = j + 1; i < a.elements.length; i++) {
-                                    temp1.push(a[i][lk]);
+                                    temp1.push(a.elements[i][lk]);
                                 }
                                 rdiag[k] = lmfit.enorm(temp1);
                                 wa[k] = rdiag[k];
@@ -1959,7 +1967,9 @@ $(document).ready(function () {
      the parameter values.
      */
     lmfit.defiter = function (fcn, x, iter, fnorm, functkw, quiet, iterstop, parinfo, format, pformat, dof) {
-        console.log('entering defiter...');
+        if(this.debug) {
+            console.log('entering defiter...');
+        }
         if (lmfit.typeOf(quiet) == 'undefined') {
             quiet = 0;
         }
@@ -2090,7 +2100,9 @@ $(document).ready(function () {
      argonne national laboratory. minpack project. march 1980.
      burton s. garbow, kenneth e. hillstrom, jorge j. more*/
     lmfit.qrsolv = function (r, ipvt, diag, qtb, sdiag) {
+        if(this.debug) {
         console.log("entering qrsolv");
+        }
         var sz = r.dimensions();
         var m = sz.rows;
         var n = sz.cols;
@@ -2302,7 +2314,9 @@ $(document).ready(function () {
      burton s. garbow, kenneth e. hillstrom, jorge j. more
      */
     lmfit.lmpar = function (y, ipvt, diag, qtb, delta, x, sdiag, par) {  //must check the typeOf r array/matrix
-        console.log('entering lmpar...');
+        if(this.debug) {
+            console.log('entering lmpar...');
+        }
         r=Matrix.create(y);
         var sz = [y.length, y[0].length];
         var m = sz[0];
@@ -2451,7 +2465,9 @@ $(document).ready(function () {
      Procedure to tie one parameter to another
      */
     lmfit.tie = function (p, ptied) {
-        console.log('entering tie...');
+        if(this.debug) {
+            console.log('entering tie...');
+        }
         if (lmfit.typeOf(ptied) == 'undefined') {
             return;
         }
@@ -2528,7 +2544,9 @@ $(document).ready(function () {
 
      **********/
     lmfit.calc_covar = function (rr, ipvt, tol) {
-        console.log("entering calc_covar...");
+        if(this.debug) {
+            console.log("entering calc_covar...");
+        }
         if (lmfit.typeOf(rr.length) == 'undefined' || lmfit.typeOf(rr[0].length) == 'undefined') {
             console.log("rr not 2d array, calc_covar failed");
             return -1;

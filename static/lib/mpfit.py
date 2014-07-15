@@ -10,7 +10,7 @@ class mpfit:
 
 
 	def __init__(self, fcn, xall=None, functkw={}, parinfo=None,
-				 ftol=1.e-10, xtol=1.e-10, gtol=1.e-10,
+				 ftol=1.e-5, xtol=1.e-5, gtol=1.e-5,
 				 damp=0., maxiter=200, factor=100., nprint=1,
 				 iterfunct='default', iterkw={}, nocovar=0,
 				 rescale=0, autoderivative=1, quiet=0,

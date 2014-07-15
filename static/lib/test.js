@@ -15,7 +15,7 @@ $(document).ready(function () {
     }
     var mod= function(p, x)
     {
-        return p[1]*x+p[0];
+        return p[1]*x*x+p[0]*x;
     }
     var  toMod=function(p, x)
     {

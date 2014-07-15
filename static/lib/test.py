@@ -8,14 +8,14 @@ import mpfit
 import numpy.oldnumeric as Numeric
 import numpy as np
 def myfunct(p, fjac=None, x=None, y=None, err=None) :
-  model=p[1]*x+p[0]
+  model=p[0]*x*x + p[1]*x +p[2]
   #print y-model
   status=0
-  return ([status, np.abs(y-model)])
+  return ([status, np.square((y-model))])
 x = np.arange(3, dtype=float)
-p = [5.7, 2.2]
-y = ( p[0] + p[1]*x )
-pfit = [3.7, 1.2]
+p = [5.7, 2.2, 4.3]
+y = ( p[0]*x*x + p[1]*x +p[2])
+pfit = [3.7, 1.2, 9.5]
 fa = {'x':x, 'y':y}
 m = mpfit.mpfit(myfunct, pfit, functkw=fa)
 print m
