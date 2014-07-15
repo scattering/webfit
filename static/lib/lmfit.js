@@ -417,13 +417,13 @@ $(document).ready(function () {
             functkw = {};
         }
         if (lmfit.typeOf(ftol) == 'undefined') {
-            ftol = Math.pow(10, -5);
+            ftol = Math.pow(10, -10);
         }
         if (lmfit.typeOf(xtol) == 'undefined') {
-            xtol = Math.pow(10, -5);
+            xtol = Math.pow(10, -10);
         }
         if (lmfit.typeOf(gtol) == 'undefined') {
-            gtol = Math.pow(10, -5);
+            gtol = Math.pow(10, -10);
         }
         if (lmfit.typeOf(damp) == 'undefined') {
             damp = 0;
@@ -816,6 +816,8 @@ $(document).ready(function () {
 //                  On the first iteration, calculate the norm of the scaled x
 //                  and initialize the step bound delta
                 for (i = 0; i < diag.length; i++) {
+
+                    //DO IT: wa3 does not necessairly push the values
                     wa3.push(diag[i] * x[i]);
                     var xnorm = lmfit.enorm(wa3);
                     var delta = factor * xnorm;
@@ -932,9 +934,9 @@ $(document).ready(function () {
                     temp[0].push(wa2[i]);
                 }
                 temp[1]=[];
-                for(i=0; i<wa2.length; i++)
+                for(i=0; i<diag.length; i++)
                 {
-                    temp[1].push(wa2[i]);
+                    temp[1].push(diag[i]);
                 }
                 var boolean=[];
                 for(i=0; i<diag.length; i++)
@@ -1609,29 +1611,29 @@ $(document).ready(function () {
         }
 //        Loop through parameters, computing the derivative for each
 
-        for (var j = 0; j < n; j++) {
+        for (var z = 0; z < n; z++) {
             var xp = [];
             for (i = 0; i < xall.length; i++) {
                 xp[i] = xall[i];
             }
-            xp[ifree[j]] = xp[ifree[j]] + h[j];
+            xp[ifree[z]] = xp[ifree[z]] + h[z];
             var a = lmfit.call(fcn, xp, functkw);
             var status = a.status;
             var fp = a.f;
             if (status < 0) {
                 return;
             }
-            if (Math.abs(dside[ifree[j]]) <= 1) {
+            if (Math.abs(dside[ifree[z]]) <= 1) {
 //            # COMPUTE THE ONE-SIDED DERIVATIVE
 //             Note optimization fjac(0:*,j)
-                for (i = 0; i < fjac.length; i++) {
-                    fjac[i][j] = (fp[i] - fvec[i]) / h[j];
+                for (var i = 0; i < fjac.length; i++) {
+                    fjac[i][z] = (fp[i] - fvec[i]) / h[z];
                 }
             } else {
 
 //             COMPUTE THE TWO-SIDED DERIVATIVE
-                xp[ifree[j]] = xall[ifree[j]] - h[j]
-                mperr = 0
+                xp[ifree[z]] = xall[ifree[z]] - h[z]
+                mperr = 0;
                 var a = lmfit.call(fcn, xp, functkw);
                 status = a.status;
                 var fm = a.f;
@@ -1640,7 +1642,7 @@ $(document).ready(function () {
                 }
 //                 Note optimization fjac(0:*,j)
                 for (i = 0; i < fjac; i++) {
-                    fjac[i][j] = (fp - fm) / (2 * h[j]);
+                    fjac[i][z] = (fp - fm) / (2 * h[z]);
                 }
             }
         }
@@ -2081,7 +2083,7 @@ $(document).ready(function () {
                 r.elements[i][j] = r.elements[j][i];
             }
         }
-        var x = Matrix.Diagonal(r.diagonal().elements);
+        var x = r.diagonal().elements;
         var wa =[];
             for(i=0; i<qtb.length; i++)
             {
@@ -2133,19 +2135,18 @@ $(document).ready(function () {
                 if (n > k + 1) {
                     temp=[];
                     for (i = k + 1; i < n; i++) {
-                        temp[i] = cosine * r.elements[i][k] + sine * sdiag[i];
+                        temp.push(cosine * r.elements[i][k] + sine * sdiag[i]);
                     }
                     for(i=k+1; i<n; i++) {
                         sdiag[i] = -sine * r.elements[i][k] + cosine * sdiag[i];
                     }
                     for(i=k+1; i<n; i++){
-                        r.elements[i][k] = temp;
+                        r.elements[i][k] = temp[i-k-1];
                     }
                 }
-                sdiag[j] = r.elements[j][j];
-                r.elements[j][j] = x.elements[j];
-
             }
+            sdiag[j] = r.elements[j][j];
+            r.elements[j][j] = x[j];
 
 
         }
@@ -2180,9 +2181,9 @@ $(document).ready(function () {
 //        Permute the components of z back to components of x
 
         for(i=0; i<ipvt.length; i++) {
-            x.elements[ipvt[i]] = wa[i];  //questionable; ipvt is a 1d array, x is a 1d array
+            x[ipvt[i]] = wa[i];  //questionable; ipvt is a 1d array, x is a 1d array
         }
-        return {r: r, x: x.elements, sdiag: sdiag};      //questionable return
+        return {r: r, x: x, sdiag: sdiag};      //questionable return
 
 
     };
