@@ -58,7 +58,7 @@ Ext.onReady(function () {
             reader.onload = function (event) {
                 var csv = event.target.result;
                 var webfitData = webfit.plot.series[0].data;
-                var residualData=webfit.ResidualPlot.series[0].data;
+                var residualData = webfit.ResidualPlot.series[0].data;
 
                 //CLEAR PREVIOUS DATA
                 while (webfitData.length !== 0) {
@@ -100,13 +100,13 @@ Ext.onReady(function () {
             };
         }
         console.log('imported');
-    }
+    };
 
     Ext.define('Ext.ux.upload.BrowseButton', {
         extend: 'Ext.form.field.File',
 
         buttonOnly: true,
-
+        renderTo: Ext.getBody(),
         iconCls: 'ux-mu-icon-action-browse',
         buttonText: 'Import Data',
 
@@ -157,10 +157,79 @@ Ext.onReady(function () {
         },
 
     });
+    /*Ext.define('Ext.ux.upload.BrowseButton', {
+        extend : 'Ext.form.field.File',
 
-    toolbarFunctions.importData = Ext.create('Ext.ux.upload.BrowseButton', {
+        buttonOnly : true,
+
+        iconCls : 'ux-mu-icon-action-browse',
+        buttonText : 'Import Data',
+
+        initComponent : function() {
+
+            this.addEvents({
+                'fileselected' : true
+            });
+
+            Ext.apply(this, {
+                buttonConfig : {
+                    iconCls : this.iconCls,
+                    text : this.buttonText
+                }
+            });
+
+            this.on('afterrender', function() {
+                /*
+                 * Fixing the issue when adding an icon to the button - the text does not render properly. OBSOLETE - from
+                 * ExtJS v4.1 the internal implementation has changed, there is no button object anymore.
+
+
+                if (this.iconCls) {
+                    // this.button.removeCls('x-btn-icon');
+                    // var width = this.button.getWidth();
+                    // this.setWidth(width);
+                }
+
+                // Allow picking multiple files at once.   Actually, for now, only allow one file.
+                this.fileInputEl.dom.setAttribute('multiple', '0');
+
+            }, this);
+
+            this.on('change', function(field, value, options) {
+                var files = this.fileInputEl.dom.files;
+                if (files) {
+                    this.fireEvent('fileselected', this, files);
+                    var reader=new FileReader();
+                    reader.readAsText(files);
+                    reader.onload=function(event){
+                        webfit.plot.data=[];
+                        var csv=event.target.result;
+                        var data= $.csv.toArray(csv);
+                        for(var row in data){
+                            webfit.plot.data.push[data[row][0], data[row][1]];
+                        }
+
+                    };
+                    reader.onerror = function(){ alert('Unable to read ' + files.fileName); };
+                }
+            }, this);
+
+            this.callParent(arguments);
+        },
+
+        // OBSOLETE - the method is not used by the superclass anymore
+        createFileInput : function() {
+            this.callParent(arguments);
+            this.fileInputEl.dom.setAttribute('multiple', '1');
+        },
 
     });
+*/
+    //var importDataButton = Ext.create('Ext.ux.upload.BrowseButton', {
+//});
+    /*toolbarFunctions.importData = Ext.create('Ext.ux.upload.BrowseButton', {
+
+    });*/
 
     //THE START OF REDISPLAYING
     var toolbar = Ext.create('Ext.toolbar.Toolbar', {
@@ -172,7 +241,8 @@ Ext.onReady(function () {
                 xtype: 'splitbutton',
                 text: 'File',
                 menu: new Ext.menu.Menu({
-                    items: [toolbarFunctions.importData,
+                    items: [  Ext.create('Ext.ux.upload.BrowseButton', {
+                    }),
                         {text: 'Export Graph', handler: function () {
                         }},
                         //{text: 'Save', handler: function(){  }},
@@ -488,7 +558,7 @@ Ext.onReady(function () {
             //var a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g;
             var fitMin = -9999;
             var fitMax = 9999;
-            if(functionSelector.plotFitDomain.items.getAt(1).getValue()!=functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+            if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
                 fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
                 fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
             }
@@ -507,7 +577,7 @@ Ext.onReady(function () {
                 }
                 var sqRes = 0;
                 for (i = 0; i < webfit.plot.data[0].length; i++) {
-                    if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+                    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
 
 
                         sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
@@ -517,6 +587,8 @@ Ext.onReady(function () {
                 console.log(sqRes);
                 //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
                 return sqRes;
+
+
             };
 
             var x = SimplexEq.simplex(sqResid, this.x0);
@@ -524,6 +596,7 @@ Ext.onReady(function () {
             webfit.ResidualPlot.replot();
             console.log('UPDATING RESIDUALS');
             //fit the function
+
         },
         x: 40,
         y: 38,
@@ -536,13 +609,13 @@ Ext.onReady(function () {
             this.p = [];
             var fitMin = -9999;
             var fitMax = 9999;
-            if(functionSelector.plotFitDomain.items.getAt(1).getValue()!=functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+            if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
                 fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
                 fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
             }
-            var x1=[],y1=[];
+            var x1 = [], y1 = [];
             for (i = 0; i < webfit.plot.data[0].length; i++) {
-                if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+                if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                     x1.push(webfit.plot.data[0][i][0]);
                     y1.push(webfit.plot.data[0][i][1]);
                 }
@@ -571,7 +644,7 @@ Ext.onReady(function () {
                 }
                 var sqRes = [];
                 for (i = 0; i < webfit.plot.data[0].length; i++) {
-                    if(webfit.plot.data[0][i][0]>fitMin && webfit.plot.data[0][i][0]<fitMax) {
+                    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
 
 
                         sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
@@ -579,13 +652,13 @@ Ext.onReady(function () {
                     //console.log(sqRes);
                 }
                 //console.log(sqRes);
-                var status=0;
+                var status = 0;
                 //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-                return {status:status, f:sqRes};
+                return {status: status, f: sqRes};
             };
-            var fa={};
-            fa['x']=x1;
-            fa['y']=y1;
+            var fa = {};
+            fa['x'] = x1;
+            fa['y'] = y1;
             var x = lmfit.lmfit(sqResid, this.p, fa);
             webfit.ResidualPlot.replot();
             console.log('UPDATING RESIDUALS');
@@ -602,7 +675,7 @@ Ext.onReady(function () {
         //height: 200,
         autoScroll: true,
         //bodyPadding: 50,
-        items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1,functionSelector.fit2],
+        items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1, functionSelector.fit2],
     });
 
     functionSelector.addStore = Ext.create('Ext.data.Store', {
@@ -1173,7 +1246,7 @@ Ext.onReady(function () {
         afterComponentLayout: function (width, height) {
             if (webfit.plot === undefined) {
                 var sinPoints = [];
-                var linPoints=[];
+                var linPoints = [];
 
                 for (var i = 0; i < 2 * Math.PI; i += 0.4) {
                     var yVal = 2 * Math.sin(i - .8);
@@ -1183,14 +1256,15 @@ Ext.onReady(function () {
                         x: i,
                         y: yVal,
                     });
-                }/*
-                for (var i=0; i<3; i++) {
-                    var yVal=5.7*i +2.2;
-                    linPoints.push([i, yVal]);
-                    dataP.store.add({
-                        x: i,
-                        y: yVal,
-                    });*/
+                }
+                /*
+                 for (var i=0; i<3; i++) {
+                 var yVal=5.7*i +2.2;
+                 linPoints.push([i, yVal]);
+                 dataP.store.add({
+                 x: i,
+                 y: yVal,
+                 });*/
 
 
                 webfit.plot = $.jqplot(this.body.id, [sinPoints], {
