@@ -826,7 +826,10 @@ Ext.onReady(function () {
                         tooltip: 'Delete Plant',
                         scope: this,
                         handler: function (grid, rowIndex) {
+                            console.log(grid);
+                            console.log(rowIndex);
                             var removed = functionSelector.addedFunctions.getStore().data.removeAt(rowIndex);
+                            functionSelector.addedFunctions.getStore().sync();
                             var removedInteractor = webfit.plot.plugins.interactors.fcursor.unregister(removed.data.name);
 
                             var indexPlugins = webfit.plot.plugins._interactor.interactors.indexOf(removedInteractor)
@@ -834,9 +837,10 @@ Ext.onReady(function () {
                                 webfit.plot.plugins._interactor.interactors.pop();
                             }
                             else if (indexPlugins !== -1) {
-                                for (var i = indexPlugins; i < webfit.plot.plugins._interactor.interactors.length; i++) {
+                                for (var i = indexPlugins; i < webfit.plot.plugins._interactor.interactors.length-1; i++) {
                                     webfit.plot.plugins._interactor.interactors[i] = webfit.plot.plugins._interactor.interactors[i + 1];
                                 }
+                                webfit.plot.plugins._interactor.interactors.pop();
                             }
 
                             /*var tcursor={
@@ -862,12 +866,13 @@ Ext.onReady(function () {
                                 webfit.plot.options.interactors.pop();
                             }
                             else if (indexOptions !== -1) {
-                                for (var i = indexOptions; i < webfit.plot.options.interactors.length; i++) {
+                                for (var i = indexOptions; i < webfit.plot.options.interactors.length-1; i++) {
                                     webfit.plot.options.interactors[i] = webfit.plot.options.interactors[i + 1];
                                 }
+                                webfit.plot.options.interactors.pop();
                             }
-                            functionSelector.addedFunctions.getStore().removeAt(rowIndex);
                             console.log('Deleted');
+                            webfit.plot.plugins._interactor.grobs[0].parent.interactors.pop();
                             webfit.plot.redraw();
                         },
                     }
