@@ -1298,7 +1298,7 @@ Ext.onReady(function () {
                 for (var i = 0; i < 2 * Math.PI; i += 0.4) {
                     var yVal = 2 * Math.sin(i - .8);
                     //var yVal=5.5*i +2.2;
-                    sinPoints.push([i, yVal]);
+                    sinPoints.push([i, yVal, {"xupper":i+.5, "xlower":i-.5,"yupper": yVal+1, "ylower": yVal-1}]);
                     dataP.store.add({
                         x: i,
                         y: yVal,
@@ -1324,6 +1324,10 @@ Ext.onReady(function () {
                             showLine: false
                         }
                     ],
+                    seriesDefaults: {
+                        renderer : $.jqplot.errorbarRenderer,
+                        rendererOptions : {errorBar: true},
+                    },
                     grid: {shadow: false},
                     sortData: false,
                     axes: {
