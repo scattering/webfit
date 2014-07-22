@@ -108,7 +108,7 @@ Ext.onReady(function () {
         extend: 'Ext.form.field.File',
 
         buttonOnly: true,
-        renderTo: Ext.getBody(),
+        //renderTo: Ext.getBody(),
         iconCls: 'ux-mu-icon-action-browse',
         buttonText: 'Import Data',
 
