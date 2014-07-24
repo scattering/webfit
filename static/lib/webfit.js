@@ -701,6 +701,7 @@ var sqResid=function(p, fjac, x, y, err) {
     var x = lmfit.lmfit(sqResid, this.p, fa);
     webfit.ResidualPlot.replot();
     counter=0;
+    var iter=0;
     while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
         if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
             webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=0;
@@ -710,13 +711,14 @@ var sqResid=function(p, fjac, x, y, err) {
             fitP.store.add({
             func: name+counter,
             a: map[counter].p[0],
-            aerr:0,
+            aerr:x.error[0+iter],
             b:map[counter].p[1],
-            berr:0,
+            berr:x.error[1+iter],
             c:0,
             cerr: 0,
     
         });
+        iter+=2;
 
     } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
         webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=map[counter].p[1];
@@ -726,13 +728,14 @@ var sqResid=function(p, fjac, x, y, err) {
     fitP.store.add({
             func: name+counter,
             a: map[counter].p[0],
-            aerr:0,
+            aerr:x.error[0+iter],
             b:map[counter].p[1],
-            berr:0,
+            berr:x.error[1+iter],
             c:map[counter].p[2],
-            cerr: 0,
+            cerr: x.error[2+iter],
     
         });    
+        iter+=3;
     }
     
 
