@@ -1807,8 +1807,7 @@ $(document).ready(function () {
 		console.log(this.covar);
             }
         }
-	console.log({p:x, covar: this.covar, error: this.perror});
-        return {p:x, covar: this.covar, error: this.perror};
+        return {p:x, covar: this.covar, error: this.perror, chisq: this.fnorm};
     };
 
     /*

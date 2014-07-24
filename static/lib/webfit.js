@@ -704,6 +704,8 @@ var sqResid=function(p, fjac, x, y, err) {
     webfit.ResidualPlot.replot();
     counter=0;
     var iter=0;
+    var retStr="";
+    
     while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
         if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
             webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=0;
@@ -720,6 +722,7 @@ var sqResid=function(p, fjac, x, y, err) {
             cerr: 0,
     
         });
+        retStr+=name+counter+": y = "+Math.round(map[counter].p[0]*1000)/1000+"x + "+Math.round(map[counter].p[1]*1000)/1000+'\n';
         iter+=2;
 
     } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
@@ -737,14 +740,17 @@ var sqResid=function(p, fjac, x, y, err) {
             cerr: x.error[2+iter],
     
         });    
+        retStr+=name+counter+": y = "+ Math.round(map[counter].p[0]*1000)/1000+ " * exp( - ( x - "+Math.round(map[counter].p[1]*1000)/1000+" )^2 / ( 2 * "+Math.round(map[counter].p[2]*1000)/1000+"^2)"+'\n';
         iter+=3;
     }
     
 
     counter++;
 }
+functionSelector.fitResults.items.items[0].setText(retStr+ '\nChisq: '+ x.chisq);
 webfit.plot.replot();
 webfit.ResidualPlot.replot();
+
 console.log('UPDATING RESIDUALS');
 //fit the function
 },
@@ -1111,6 +1117,25 @@ width: 496,
             allowBlank: false,
         }]
     });
+    functionSelector.fitResults = Ext.create('Ext.panel.Panel', {
+        height: 90,
+        width: 400,
+        bodyPadding: 10,
+        layout: {type: 'hbox',
+            align: 'stretch',
+            pack: 'start',
+        },
+        border: false,
+        bodyBorder: false,
+        hideBorders: true,
+        items: [{
+        xtype: 'label',
+        name:'chisq',
+        
+        text: 'Chi-sq: ',
+        margins: '0 0 0 0'
+    }]
+    });
 
     functionSelector.rangeDomainAxis = Ext.create('Ext.tab.Panel', {
         width: 450,
@@ -1202,7 +1227,34 @@ width: 496,
             }
         }
     ]
-}
+},
+    {
+        title: 'Fit Results',
+        layout: {type: 'vbox',
+            align: 'stretch',
+            pack: 'center',
+        },
+        items: [functionSelector.fitResults, ],
+        //buttons: [
+            //{
+                //text: 'Update',
+                //handler: function () {
+////                            plotymin = Math.floor(functionSelector.plotFitDomain.items.getAt(1).getValue());
+////                            plotymax = Math.floor(functionSelector.plotFitDomain.items.getAt(2).getValue());
+////                            console.log('min', plotymin);
+////                            console.log('max', plotymax);
+////
+////                            webfit.plot.axes.yaxis.min = plotymin;
+////                            webfit.plot.axes.yaxis.max = plotymax;
+////                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
+////                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
+////                            webfit.plot.replot();
+////                            webfit.ResidualPlot.replot();
+    ////alert('You clicked the button!')
+//}
+//}
+//]
+},
 ]
 });
 
