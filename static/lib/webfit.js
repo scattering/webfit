@@ -635,11 +635,12 @@ functionSelector.fit3 = Ext.create('Ext.Button', {
             fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
             console.log(fitMin+" "+fitMax);
         }
-        var xDat = [], yDat = [];
+        var xDat = [], yDat = [], err=[];
         for (i = 0; i < webfit.plot.data[0].length; i++) {
             if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                 xDat.push(webfit.plot.data[0][i][0]);
                 yDat.push(webfit.plot.data[0][i][1]);
+                err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
             }
         }
         var linF=function(p, x) {
@@ -687,7 +688,7 @@ var sqResid=function(p, fjac, x, y, err) {
     }
     var sqRes=[];
     for (var i = 0; i < xDat.length; i++) {
-            sqRes.push(Math.pow(z(xDat[i]) - yDat[i], 2)); //fix this               
+            sqRes.push(Math.pow(z(xDat[i]) - yDat[i], 2)/err[i]); //fix this               
     }
     var status = 0;
 
@@ -698,6 +699,7 @@ var sqResid=function(p, fjac, x, y, err) {
     var fa = {};
     fa['x'] = x1;
     fa['y'] = y1;
+    fa['err']= err;
     var x = lmfit.lmfit(sqResid, this.p, fa);
     webfit.ResidualPlot.replot();
     counter=0;

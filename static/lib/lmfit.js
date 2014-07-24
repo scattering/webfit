@@ -1862,6 +1862,7 @@ $(document).ready(function () {
         var x1 = [], y = [], err = [];
         x1 = functkw['x'];
         y = functkw['y'];
+	err=functkw['err'];
         if (lmfit.typeOf(fjac) == 'undefined') {
             var a = fcn(x, fjac, x1, y, err); //some funk with double astericks
             var status = a.status;
@@ -3049,7 +3050,7 @@ $(document).ready(function () {
         }
         for (j = 0; j < n; j++) {
             var jj = ipvt[j];
-            sing = Boolean(j > 1);
+            sing = Boolean(j > l);
             for (i = 0; i < j + 1; i++) {
                 if (sing) {
                     r[i][j] = 0
