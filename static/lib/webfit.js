@@ -7,33 +7,33 @@ Ext.Loader.setPath('Ext.selection', '/static/lib/ext/src/selection');
 Ext.Loader.setPath('Ext.grid', '/static/lib/ext/src/grid');
 
 Ext.require([
-        'Ext.layout.container.*',
-        'Ext.tab.*',
-        'Ext.grid.*',
-        'Ext.form.*',
-        'Ext.data.*',
-        'Ext.util.*',
-        'Ext.state.*',
-        'Ext.form.*',
-        'Ext.ux.RowExpander',
-        'Ext.selection.CellModel',
-        'Ext.button.*',
-        'Ext.filefield.*',
-        "Ext.util.Cookies",
-        "Ext.decode",
-        "Ext.Ajax",
-        'Ext.ux.CheckColumn',
-    ], function () {
-        // Add csrf token to every ajax request
-        var token = Ext.util.Cookies.get('csrftoken');
-        if (!token) {
-            Ext.Error.raise("Missing csrftoken cookie");
-        } else {
-            Ext.Ajax.defaultHeaders = Ext.apply(Ext.Ajax.defaultHeaders || {}, {
-                'X-CSRFToken': token
-            });
-        }
+    'Ext.layout.container.*',
+    'Ext.tab.*',
+    'Ext.grid.*',
+    'Ext.form.*',
+    'Ext.data.*',
+    'Ext.util.*',
+    'Ext.state.*',
+    'Ext.form.*',
+    'Ext.ux.RowExpander',
+    'Ext.selection.CellModel',
+    'Ext.button.*',
+    'Ext.filefield.*',
+    "Ext.util.Cookies",
+    "Ext.decode",
+    "Ext.Ajax",
+    'Ext.ux.CheckColumn',
+], function () {
+    // Add csrf token to every ajax request
+    var token = Ext.util.Cookies.get('csrftoken');
+    if (!token) {
+        Ext.Error.raise("Missing csrftoken cookie");
+    } else {
+        Ext.Ajax.defaultHeaders = Ext.apply(Ext.Ajax.defaultHeaders || {}, {
+            'X-CSRFToken': token
+        });
     }
+}
 );
 
 Ext.onReady(function () {
@@ -45,6 +45,7 @@ Ext.onReady(function () {
     Ext.namespace("residualPanel");
     Ext.namespace("toolbarFunctions");
     Ext.namespace('dataP');
+    Ext.namespace('fitP');
 
     webfit.updatePlotData = function (files) {
         var reader = new FileReader();
@@ -60,103 +61,118 @@ Ext.onReady(function () {
                 var webfitData = webfit.plot.series[0].data;
                 var residualData = webfit.ResidualPlot.series[0].data;
 
-                //CLEAR PREVIOUS DATA
-                while (webfitData.length !== 0) {
-                    webfitData.pop();
-                    residualData.pop();
-                    webfit.plot.data[0].pop();
-                    console.log(webfitData.length);
-                }
-                if (dataP.store.data.items.length !== 0) {
-                    dataP.store.removeAll();
-                }
+    //CLEAR PREVIOUS DATA
+    while (webfitData.length !== 0) {
+        webfitData.pop();
+        residualData.pop();
+        webfit.plot.data[0].pop();
+        console.log(webfitData.length);
+    }
+    if (dataP.store.data.items.length !== 0) {
+        dataP.store.removeAll();
+    }
 
-                //webfit.plot.redraw();
-                var data = $.csv.toArrays(csv);
-                //var html = '';
-                for (var row in data) {
-                    webfitData.push(data[row]);
-                    residualData.push(data[row]);
-                    webfit.plot.data[0].push(data[row]);
-                    dataP.store.add({
-                        x: data[row][0],
-                        y: data[row][1],
-                    });
-                    //  var item={x: data[row][0],
-                    //	y: data[row][1],};
-                    //dataP.store.add(Ext.create('dataModel', item);
-                    //html += '<tr>\r\n';
-                    //for(var item in data[row]) {
-                    //html += '<td>' + data[row][item] + '</td>\r\n';
-                    //}
-                    //html += '</tr>\r\n';
-                }
-                dataPanel.getView().refresh();
-                //$('#contents').html(html);
-                webfit.plot.redraw();
-                webfit.ResidualPlot.replot();
-                console.log("UPDATING PLOTS");
-            };
-            reader.onerror = function () {
-                alert('Unable to read ' + file.fileName);
-            };
-        }
-        console.log('imported');
-    };
+    //webfit.plot.redraw();
+    var data = $.csv.toArrays(csv);
+    //var html = '';
+    for (var row in data) {
+    if(typeof data[row][2]=='undefined'){
+     webfitData.push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
+        residualData.push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
+        webfit.plot.data[0].push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
+        dataP.store.add({
+            x: data[row][0],
+            y: data[row][1],
+            yupper: data[row][1]+1,
+            ylower:data[row][1]-1,});
+    } else {
+        webfitData.push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
+        residualData.push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
+        webfit.plot.data[0].push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
+        dataP.store.add({
+            x: data[row][0],
+            y: data[row][1],
+            xupper:data[row][2],
+            xlower:data[row][3],
+            yupper:data[row][4],
+            ylower:data[row][5],
+    
+        });}
+        //  var item={x: data[row][0],
+        //	y: data[row][1],};
+        //dataP.store.add(Ext.create('dataModel', item);
+        //html += '<tr>\r\n';
+        //for(var item in data[row]) {
+        //html += '<td>' + data[row][item] + '</td>\r\n';
+        //}
+        //html += '</tr>\r\n';
+    }
+    dataPanel.getView().refresh();
+    //$('#contents').html(html);
+    webfit.plot.redraw();
+    webfit.ResidualPlot.replot();
+    console.log("UPDATING PLOTS");
+};
+reader.onerror = function () {
+    alert('Unable to read ' + file.fileName);
+};
+}
+console.log('imported');
+};
 
     Ext.define('Ext.ux.upload.BrowseButton', {
         extend: 'Ext.form.field.File',
 
-        buttonOnly: true,
-        //renderTo: Ext.getBody(),
-        iconCls: 'ux-mu-icon-action-browse',
-        buttonText: 'Import Data',
+    buttonOnly: true,
+    //renderTo: Ext.getBody(),
+    iconCls: 'ux-mu-icon-action-browse',
+    buttonText: 'Import Data',
 
-        initComponent: function () {
+    initComponent: function () {
 
-            this.addEvents({
-                'fileselected': true
-            });
+    this.addEvents({
+        'fileselected': true
+    });
 
-            Ext.apply(this, {
-                buttonConfig: {
-                    iconCls: this.iconCls,
-                    text: this.buttonText
-                }
-            });
+    Ext.apply(this, {
+        buttonConfig: {
+            iconCls: this.iconCls,
+            text: this.buttonText
+        }
+    });
 
-            this.on('afterrender', function () {
-                /*
-                 * Fixing the issue when adding an icon to the button - the text does not render properly. OBSOLETE - from
-                 * ExtJS v4.1 the internal implementation has changed, there is no button object anymore.
-                 */
-                if (this.iconCls) {
-                    // this.button.removeCls('x-btn-icon');
-                    // var width = this.button.getWidth();
-                    // this.setWidth(width);
-                }
+    this.on('afterrender', function () {
+        /*
+            * Fixing the issue when adding an icon to the button - the text does not render properly. OBSOLETE - from
+            * ExtJS v4.1 the internal implementation has changed, there is no button object anymore.
+            */
+        if (this.iconCls) {
+            // this.button.removeCls('x-btn-icon');
+            // var width = this.button.getWidth();
+            // this.setWidth(width);
+        }
 
-                // Allow picking multiple files at once.
-                this.fileInputEl.dom.setAttribute('multiple', '1');
+    // Allow picking multiple files at once.
+    this.fileInputEl.dom.setAttribute('multiple', '1');
 
-            }, this);
+    }, this);
 
-            this.on('change', function (field, value, options) {
-                var files = this.fileInputEl.dom.files;
-                if (files) {
-                    this.fireEvent('fileselected', this, files);
-                    webfit.updatePlotData(files);
-                }
-            }, this);
+    this.on('change', function (field, value, options) {
+        var files = this.fileInputEl.dom.files;
+        if (files) {
+            this.fireEvent('fileselected', this, files);
+            webfit.updatePlotData(files);
+        }
+    }, this);
 
-            this.callParent(arguments);
-        },
+    this.callParent(arguments);
+},
 
-        // OBSOLETE - the method is not used by the superclass anymore
-        createFileInput: function () {
-            this.callParent(arguments);
-            this.fileInputEl.dom.setAttribute('multiple', '1');
-        },
+    // OBSOLETE - the method is not used by the superclass anymore
+    createFileInput: function () {
+        this.callParent(arguments);
+        this.fileInputEl.dom.setAttribute('multiple', '1');
+    },
 
     });
 
@@ -242,13 +258,13 @@ Ext.onReady(function () {
     });
 
     /*functionSelector.chooserStore = Ext.create('Ext.data.Store', {
-     fields: ['name'],
-     id: 2,
-     data : [
-     {"name":"Gaussian"},
-     {"name":"Linear"},
-     ]
-     });*/
+        fields: ['name'],
+        id: 2,
+        data : [
+        {"name":"Gaussian"},
+        {"name":"Linear"},
+        ]
+        });*/
 
     functionSelector.chooser = Ext.create('Ext.form.ComboBox', {
         fieldLabel: 'Choose Function',
@@ -274,40 +290,40 @@ Ext.onReady(function () {
 
     var addInteractor = function (functionType) {
 
-        var tcursor = {
-            type: functionType,
-            name: 'cursor' + webfit.plot.plugins.interactors.fcursor.interactors.length,
-            xmin: 0.0001,
-            xmin: webfit.plot.axes.xaxis.min,
-            xmax: webfit.plot.axes.xaxis.max,
-            ymin: webfit.plot.axes.yaxis.min,
-            ymax: webfit.plot.axes.yaxis.max,
-            color1: 'green',
-            color2: 'blue',
-            plot: webfit.plot,
-        };
-        webfit.plot.options.interactors.push(tcursor);	//remove
+    var tcursor = {
+        type: functionType,
+        name: 'cursor' + webfit.plot.plugins.interactors.fcursor.interactors.length,
+        xmin: 0.0001,
+        xmin: webfit.plot.axes.xaxis.min,
+        xmax: webfit.plot.axes.xaxis.max,
+        ymin: webfit.plot.axes.yaxis.min,
+        ymax: webfit.plot.axes.yaxis.max,
+        color1: 'green',
+        color2: 'blue',
+        plot: webfit.plot,
+    };
+    webfit.plot.options.interactors.push(tcursor);	//remove
 
 
-        var name = tcursor.name;
-        var newi = new $.jqplot.InteractorPluginSubtypes[tcursor.type]();
-        webfit.plot.plugins.interactors[name] = newi;
-        newi.init(tcursor);
-        newi.plot = webfit.plot;
-        //for (var j in newi.grobs) {
-        //    this.plugins._interactor.grobs.push(newi.grobs[j]);
-        //}
-        webfit.plot.plugins._interactor.interactors.push(newi);	//remove
-        webfit.plot.plugins.interactors.fcursor.register(newi);	//unregister first
-        webfit.plot.redraw();
+    var name = tcursor.name;
+    var newi = new $.jqplot.InteractorPluginSubtypes[tcursor.type]();
+    webfit.plot.plugins.interactors[name] = newi;
+    newi.init(tcursor);
+    newi.plot = webfit.plot;
+    //for (var j in newi.grobs) {
+    //    this.plugins._interactor.grobs.push(newi.grobs[j]);
+    //}
+    webfit.plot.plugins._interactor.interactors.push(newi);	//remove
+    webfit.plot.plugins.interactors.fcursor.register(newi);	//unregister first
+    webfit.plot.redraw();
 
-        //UPDATE RESIDUALS
-        webfit.ResidualPlot.series[0].data = residualUpdate();
-        webfit.ResidualPlot.replot();
-        console.log('UPDATED RESIDUALS');
+    //UPDATE RESIDUALS
+    webfit.ResidualPlot.series[0].data = residualUpdate();
+    webfit.ResidualPlot.replot();
+    console.log('UPDATED RESIDUALS');
 
-        return tcursor.name;
-    }
+    return tcursor.name;
+}
 
     functionSelector.params = function (functionName) {
         var store = Ext.create('Ext.data.Store', {
@@ -344,82 +360,82 @@ Ext.onReady(function () {
             },
             items: [
                 /*{
-                 xtype: 'label',
-                 //forId: 'myFieldId',
-                 text: functionName,
-                 //margins: '0 0 0 10'
-                 },*/{
-                    xtype: 'gridpanel',
-                    layout: {type: 'hbox',
-                        align: 'stretch',
-                        pack: 'start',
-                    },
-                    plugins: [new Ext.grid.plugin.CellEditing({
-                        clicksToEdit: 1
-                    })],
-                    //autoScroll: true,
-                    store: functionSelector.params(functionName),
-                    columns: [
-                        {
-                            //header: '',
-                            dataIndex: 'name',
-                            width: 70,
-                            editable: false,
-                            /*editor: {
-                             allowBlank: false
-                             }*/
+                    xtype: 'label',
+                    //forId: 'myFieldId',
+                    text: functionName,
+                    //margins: '0 0 0 10'
+                    },*/{
+                        xtype: 'gridpanel',
+                        layout: {type: 'hbox',
+                            align: 'stretch',
+                            pack: 'start',
                         },
-                        {
-                            xtype: 'checkcolumn',
-                            header: 'Fixed',
-                            dataIndex: 'fixed',
-                            width: 40,
-                            stopSelection: false,
-                        },
-                        {
-                            header: 'Value',
-                            dataIndex: 'val',
-                            width: 40,
-                            editor: {
-                            }
-                        },
-                        {
-                            xtype: 'checkcolumn',
-                            header: 'Bounded',
-                            dataIndex: 'bounded',
-                            width: 60,
-                            stopSelection: false,
-                        },
-                        {
-                            header: 'Upper',
-                            dataIndex: 'up',
-                            width: 40,
-                            editor: {
-                            }
-                        },
-                        {
-                            header: 'Lower',
-                            dataIndex: 'low',
-                            width: 40,
-                            editor: {
-                            }
-                        },
-                        {
-                            xtype: 'checkcolumn',
-                            header: 'Tied To',
-                            dataIndex: 'tied',
-                            width: 50,
-                            stopSelection: false,
-                        },
-                        {
-                            dataIndex: 'relationship',
-                            flex: 1,
-                            editor: {
-                            }
-                        },
-                    ],
-                    height: 398,
-                    width: 496,
+                        plugins: [new Ext.grid.plugin.CellEditing({
+                            clicksToEdit: 1
+                        })],
+                        //autoScroll: true,
+                        store: functionSelector.params(functionName),
+                        columns: [
+                            {
+                                //header: '',
+                                dataIndex: 'name',
+                                width: 70,
+                                editable: false,
+                                /*editor: {
+                                    allowBlank: false
+                                    }*/
+                            },
+                            {
+                                xtype: 'checkcolumn',
+                                header: 'Fixed',
+                                dataIndex: 'fixed',
+                                width: 40,
+                                stopSelection: false,
+                            },
+                            {
+                                header: 'Value',
+                                dataIndex: 'val',
+                                width: 40,
+                                editor: {
+                                }
+                            },
+                            {
+                                xtype: 'checkcolumn',
+                                header: 'Bounded',
+                                dataIndex: 'bounded',
+                                width: 60,
+                                stopSelection: false,
+                            },
+                            {
+                                header: 'Upper',
+                                dataIndex: 'up',
+                                width: 40,
+                                editor: {
+                                }
+                            },
+                            {
+                                header: 'Lower',
+                                dataIndex: 'low',
+                                width: 40,
+                                editor: {
+                                }
+                            },
+                            {
+                                xtype: 'checkcolumn',
+                                header: 'Tied To',
+                                dataIndex: 'tied',
+                                width: 50,
+                                stopSelection: false,
+                            },
+                            {
+                                dataIndex: 'relationship',
+                                flex: 1,
+                                editor: {
+                                }
+                            },
+                        ],
+                        height: 398,
+                        width: 496,
                 },
             ]
         });
@@ -503,208 +519,233 @@ Ext.onReady(function () {
                         counter++;
                         webfit.plot.replot();
 
-                    }
-                }
-                var sqRes = 0;
-                for (i = 0; i < webfit.plot.data[0].length; i++) {
-                    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+    }
+}
+var sqRes = 0;
+for (i = 0; i < webfit.plot.data[0].length; i++) {
+    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
 
 
-                        sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
-                    }
-                    //console.log(sqRes);
-                }
-                console.log(sqRes);
-                //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-                return sqRes;
+    sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
+}
+//console.log(sqRes);
+}
+console.log(sqRes);
+//console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
+return sqRes;
 
 
-            };
+    };
 
-            var x = SimplexEq.simplex(sqResid, this.x0);
-            residualUpdate();
-            webfit.ResidualPlot.replot();
-            console.log('UPDATING RESIDUALS');
-            //fit the function
+    var x = SimplexEq.simplex(sqResid, this.x0);
+    residualUpdate();
+    webfit.ResidualPlot.replot();
+    console.log('UPDATING RESIDUALS');
+    //fit the function
 
-        },
-        x: 40,
-        y: 38,
-    });
-    functionSelector.fit2 = Ext.create('Ext.Button', {
-        text: 'L-M Fit',
-        //id: 4,
-        //renderTo: Ext.getBody(),
-        handler: function () {
-            this.p = [];
-            var fitMin = -9999;
-            var fitMax = 9999;
-            if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
-                fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
-                fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+    },
+    x: 40,
+    y: 38,
+});
+functionSelector.fit2 = Ext.create('Ext.Button', {
+    text: 'L-M Fit',
+    //id: 4,
+    //renderTo: Ext.getBody(),
+    handler: function () {
+        this.p = [];
+        var fitMin = -9999;
+        var fitMax = 9999;
+        if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+            fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
+            fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+        }
+        var x1 = [], y1 = [];
+        for (i = 0; i < webfit.plot.data[0].length; i++) {
+            if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+                x1.push(webfit.plot.data[0][i][0]);
+                y1.push(webfit.plot.data[0][i][1]);
             }
-            var x1 = [], y1 = [];
-            for (i = 0; i < webfit.plot.data[0].length; i++) {
-                if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-                    x1.push(webfit.plot.data[0][i][0]);
-                    y1.push(webfit.plot.data[0][i][1]);
-                }
-                //console.log(sqRes);
+            //console.log(sqRes);
+        }
+        for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+            for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
+                this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
             }
-            for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                    this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
-                    this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
-                }
-            }
+        }
 
-            var sqResid = function (p, fjac, x, y, err) {
-                //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
-                var counter = 0;
-                for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
-                        counter++;
-                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
-                        counter++;
-                        webfit.plot.replot();
-                        webfit.ResidualPlot.replot();
-
-                    }
-                }
-                var sqRes = [];
-                for (i = 0; i < webfit.plot.data[0].length; i++) {
-                    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-
-
-                        sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
-                    }
-                    //console.log(sqRes);
-                }
-                //console.log(sqRes);
-                var status = 0;
-                //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-                return {status: status, f: sqRes};
-            };
-            var fa = {};
-            fa['x'] = x1;
-            fa['y'] = y1;
-            var x = lmfit.lmfit(sqResid, this.p, fa);
-            webfit.ResidualPlot.replot();
-            console.log('UPDATING RESIDUALS');
-            //fit the function
-        },
-        x: 120,
-        y: 38,
-    });
-    var map=[];
-    functionSelector.fit3 = Ext.create('Ext.Button', {
-        text: 'L-M Fast Fit',
-        //id: 4,
-        //renderTo: Ext.getBody(),
-        handler: function () {
-            this.p = [];
-            var fitMin = -9999;
-            var fitMax = 9999;
-            //this.map=[];
-            map=[];
-            var name="cursor";
-            var counter=0;
-            var pcount=1;
-            if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
-                fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
-                fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
-            }
-            var xDat = [], yDat = [];
-            for (i = 0; i < webfit.plot.data[0].length; i++) {
-                if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-                    xDat.push(webfit.plot.data[0][i][0]);
-                    yDat.push(webfit.plot.data[0][i][1]);
-                }
-            }
-            var linF=function(p, x) {
-                return p[0]*x+p[1];            
-            };
-            var gauF= function(p, x) {
-                return p[0]*Math.exp(- Math.pow((x-p[1]), 2)/(2*p[2]*p[2]));
-            };     
-            var x1,x2,y1,y2;
-            while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
-                x1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x;
-                y1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y;
-                x2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x;
-                y2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y;
-                if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
-                    
-                    map.push({type: "Line", params:2, func:linF, p:[1,2]});
-                    this.p.push((y2-y1)/(x2-x1));
-                    this.p.push((y2*x1-y1*x2)/(x1-x2));
-                } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
-                    map.push({type: "Gaussian", params:3, func:gauF, p:[1,2,3]}); 
-                    this.p.push(5);
-                    this.p.push(x1);
-                    this.p.push(x2/(3*2.35482));
-                }
-                
+    var sqResid = function (p, fjac, x, y, err) {
+        //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
+        var counter = 0;
+        for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+            for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
                 counter++;
-            }
-            var sqResid=function(p, fjac, x, y, err) {
-                var count=0;
-                for(var i=0; i<map.length; i++) {
-                    map[i].p=[]; 
-                    for(var j=0; j<map[i].params;j++) {
-                        map[i].p.push(p[count]);  
-                        count++;
-                    }
-                }
-                var z=function(x) {
-                    var c=0;
-                    for(var i=0; i<map.length; i++) {
-                        c+=map[i].func(map[i].p, x);
-                    }
-                    return c;
-                }
-                var sqRes=[];
-                for (var i = 0; i < webfit.plot.data[0].length; i++) {
-                    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-                        sqRes.push(Math.pow(z(xDat[i]) - yDat[i], 2)); //fix this
-                    }                 
-                }
-                var status = 0;
-                return {status: status, f: sqRes};
-            }
-            
-            
-            var fa = {};
-            fa['x'] = x1;
-            fa['y'] = y1;
-            var x = lmfit.lmfit(sqResid, this.p, fa);
-            webfit.ResidualPlot.replot();
-            counter=0;
-            while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
-                if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
-                    webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=0;
-                    webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].func(map[counter].p,0);
-                    webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=1;
-                    webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,1);
-
-                } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
-                    webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=map[counter].p[1];
-                    webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].func(map[counter].p,webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x);
-                    webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=map[counter].p[2]*4.29193;
-                    webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x);
-                }
-                
+                webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
                 counter++;
+                webfit.plot.replot();
+                webfit.ResidualPlot.replot();
+
+    }
+}
+var sqRes = [];
+for (i = 0; i < webfit.plot.data[0].length; i++) {
+    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+
+
+    sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
+}
+//console.log(sqRes);
+}
+//console.log(sqRes);
+var status = 0;
+//console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
+return {status: status, f: sqRes};
+};
+var fa = {};
+fa['x'] = x1;
+fa['y'] = y1;
+var x = lmfit.lmfit(sqResid, this.p, fa);
+webfit.ResidualPlot.replot();
+console.log('UPDATING RESIDUALS');
+//fit the function
+},
+x: 120,
+y: 38,
+});
+var map=[];
+functionSelector.fit3 = Ext.create('Ext.Button', {
+    text: 'L-M Fast Fit',
+    //id: 4,
+    //renderTo: Ext.getBody(),
+    handler: function () {
+    if (fitP.store.data.items.length !== 0) {
+        fitP.store.removeAll();
+    }
+        this.p = [];
+        var fitMin = -9999;
+        var fitMax = 9999;
+        //this.map=[];
+        map=[];
+        var name="cursor";
+        var counter=0;
+        var pcount=1;
+        if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+            fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
+            fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+            console.log(fitMin+" "+fitMax);
+        }
+        var xDat = [], yDat = [];
+        for (i = 0; i < webfit.plot.data[0].length; i++) {
+            if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+                xDat.push(webfit.plot.data[0][i][0]);
+                yDat.push(webfit.plot.data[0][i][1]);
             }
-            webfit.plot.replot();
-            webfit.ResidualPlot.replot();
-            console.log('UPDATING RESIDUALS');
-            //fit the function
-        },
-        x: 100,
-        y: 38,
-    });
+        }
+        var linF=function(p, x) {
+            return p[0]*x+p[1];            
+        };
+        var gauF= function(p, x) {
+            return p[0]*Math.exp(- Math.pow((x-p[1]), 2)/(2*Math.pow(p[2],2)));
+        };     
+        var x1,x2,y1,y2;
+        while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
+            x1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x;
+            y1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y;
+            x2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x;
+            y2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y;
+            if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
+
+    map.push({type: "Line", params:2, func:linF, p:[1,2]});
+    this.p.push((y2-y1)/(x2-x1));
+    this.p.push((y2*x1-y1*x2)/(x1-x2));
+} else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
+    map.push({type: "Gaussian", params:3, func:gauF, p:[1,2,3]}); 
+    this.p.push(y1);
+    this.p.push(x1);
+    this.p.push(x2/(4.29193));
+}
+
+    counter++;
+}
+var z;
+var sqResid=function(p, fjac, x, y, err) {
+    var count=0;
+    for(var i=0; i<map.length; i++) {
+        map[i].p=[]; 
+        for(var j=0; j<map[i].params;j++) {
+            map[i].p.push(p[count]);  
+            count++;
+        }
+    }
+    z=function(x) {
+        var c=0;
+        for(var i=0; i<map.length; i++) {
+            c+=map[i].func(map[i].p, x);
+        }
+        return c;
+    }
+    var sqRes=[];
+    for (var i = 0; i < xDat.length; i++) {
+            sqRes.push(Math.pow(z(xDat[i]) - yDat[i], 2)); //fix this               
+    }
+    var status = 0;
+
+    return {status: status, f: sqRes};
+}
+
+
+    var fa = {};
+    fa['x'] = x1;
+    fa['y'] = y1;
+    var x = lmfit.lmfit(sqResid, this.p, fa);
+    webfit.ResidualPlot.replot();
+    counter=0;
+    while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
+        if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
+            webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=0;
+            webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].func(map[counter].p,0);
+            webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=1;
+            webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,1);
+            fitP.store.add({
+            func: name+counter,
+            a: map[counter].p[0],
+            aerr:0,
+            b:map[counter].p[1],
+            berr:0,
+            c:0,
+            cerr: 0,
+    
+        });
+
+    } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
+        webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=map[counter].p[1];
+        webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].p[0];
+        webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=map[counter].p[2]*12.5/3.5+map[counter].p[1];
+        webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x);
+    fitP.store.add({
+            func: name+counter,
+            a: map[counter].p[0],
+            aerr:0,
+            b:map[counter].p[1],
+            berr:0,
+            c:map[counter].p[2],
+            cerr: 0,
+    
+        });    
+    }
+    
+
+    counter++;
+}
+webfit.plot.replot();
+webfit.ResidualPlot.replot();
+console.log('UPDATING RESIDUALS');
+//fit the function
+},
+x: 100,
+y: 38,
+});
 
 
     functionSelector.selection = Ext.create('Ext.panel.Panel', {
@@ -743,18 +784,18 @@ Ext.onReady(function () {
                 fieldLabel: 'Type in javascript:',
                 autoScroll: true,
 
-                //allowBlank: false,
-            }
-        ],
-        buttons: [
-            {
-                text: 'Add',
-                handler: function () {
+    //allowBlank: false,
+}
+],
+buttons: [
+    {
+        text: 'Add',
+        handler: function () {
 
-                },
-            }
-        ],
-    });
+    },
+}
+],
+});
 
     functionSelector.currentlyFitting = Ext.create('Ext.window.Window', {
         //title: 'Specifications',
@@ -871,81 +912,81 @@ Ext.onReady(function () {
                             functionSelector.addedFunctions.getStore().sync();
                             var removedInteractor = webfit.plot.plugins.interactors.fcursor.unregister(removed.data.name);
 
-                            var indexPlugins = webfit.plot.plugins._interactor.interactors.indexOf(removedInteractor)
-                            if (indexPlugins === webfit.plot.plugins._interactor.interactors.length - 1) {
-                                webfit.plot.plugins._interactor.interactors.pop();
-                            }
-                            else if (indexPlugins !== -1) {
-                                for (var i = indexPlugins; i < webfit.plot.plugins._interactor.interactors.length-1; i++) {
-                                    webfit.plot.plugins._interactor.interactors[i] = webfit.plot.plugins._interactor.interactors[i + 1];
-                                }
-                                webfit.plot.plugins._interactor.interactors.pop();
-                            }
+    var indexPlugins = webfit.plot.plugins._interactor.interactors.indexOf(removedInteractor)
+    if (indexPlugins === webfit.plot.plugins._interactor.interactors.length - 1) {
+        webfit.plot.plugins._interactor.interactors.pop();
+    }
+    else if (indexPlugins !== -1) {
+        for (var i = indexPlugins; i < webfit.plot.plugins._interactor.interactors.length-1; i++) {
+            webfit.plot.plugins._interactor.interactors[i] = webfit.plot.plugins._interactor.interactors[i + 1];
+        }
+        webfit.plot.plugins._interactor.interactors.pop();
+    }
 
-                            /*var tcursor={
-                             type: removed.data.type,
-                             name: removed.data.name,
-                             x0: 0.0001,
-                             color1: removed.data.color1,
-                             color2: removed.data.color2,
-                             __proto__: Object
-                             };*/
+    /*var tcursor={
+        type: removed.data.type,
+        name: removed.data.name,
+        x0: 0.0001,
+        color1: removed.data.color1,
+        color2: removed.data.color2,
+        __proto__: Object
+        };*/
 
-                            //DOES NOT WORK
-                            //var indexOptions = webfit.plot.options.interactors.indexOf(tcursor);
-                            var indexOptions = -1;
-                            functionSelector.addedFunctions.getStore().sync();
-                            for (var i = 0; i < webfit.plot.options.interactors.length; i++) {
-                                console.log(webfit.plot.options.interactors[i].name);
-                                if (webfit.plot.options.interactors[i].name === removed.data.name) {
-                                    indexOptions = i;
-                                }
-                            }
-                            if (indexOptions === webfit.plot.options.interactors.length - 1) {
-                                console.log('last complete');
-                                webfit.plot.options.interactors.pop();
-                            }
-                            else if (indexOptions !== -1) {
-                                for (var i = indexOptions; i < webfit.plot.options.interactors.length-1; i++) {
-                                    webfit.plot.options.interactors[i] = webfit.plot.options.interactors[i + 1];
-                                }
-                                webfit.plot.options.interactors.pop();
-                            }
-                            console.log('Deleted');
-                            if(typeof webfit.plot.plugins._interactor.grobs[0].parent.interactors[webfit.plot.plugins._interactor.grobs[0].parent.interactors.length-1]=='undefined'){
-                                webfit.plot.plugins._interactor.grobs[0].parent.interactors.pop();
-                            }
-                            webfit.plot.redraw();
-                        },
-                    }
-                ]
-            }
-        ],
-        tbar: [
-            /*{
-             text: 'Specifications',
-             scope: this,
-             handler: function(){
-             functionSelector.specs.setVisible(true);
-             },
-             },*/ {
-                text: 'Fit',
-                width: 70,
-                scope: this,
-                handler: function () {
-                    functionSelector.currentlyFitting.setVisible(true);
-                },
-            }
-        ],
-        height: 398,
-        width: 496,
-    });
+    //DOES NOT WORK
+    //var indexOptions = webfit.plot.options.interactors.indexOf(tcursor);
+    var indexOptions = -1;
+    functionSelector.addedFunctions.getStore().sync();
+    for (var i = 0; i < webfit.plot.options.interactors.length; i++) {
+        console.log(webfit.plot.options.interactors[i].name);
+        if (webfit.plot.options.interactors[i].name === removed.data.name) {
+            indexOptions = i;
+        }
+    }
+    if (indexOptions === webfit.plot.options.interactors.length - 1) {
+        console.log('last complete');
+        webfit.plot.options.interactors.pop();
+    }
+    else if (indexOptions !== -1) {
+        for (var i = indexOptions; i < webfit.plot.options.interactors.length-1; i++) {
+            webfit.plot.options.interactors[i] = webfit.plot.options.interactors[i + 1];
+        }
+        webfit.plot.options.interactors.pop();
+    }
+    console.log('Deleted');
+    if(typeof webfit.plot.plugins._interactor.grobs[0].parent.interactors[webfit.plot.plugins._interactor.grobs[0].parent.interactors.length-1]=='undefined'){
+        webfit.plot.plugins._interactor.grobs[0].parent.interactors.pop();
+    }
+    webfit.plot.redraw();
+},
+}
+]
+}
+],
+tbar: [
+    /*{
+        text: 'Specifications',
+        scope: this,
+        handler: function(){
+        functionSelector.specs.setVisible(true);
+        },
+        },*/ {
+            text: 'Fit',
+            width: 70,
+            scope: this,
+            handler: function () {
+                functionSelector.currentlyFitting.setVisible(true);
+            },
+    }
+],
+height: 398,
+width: 496,
+});
 
     /*functionSelector.color1Select = function( combo, records, eOpts ) {
 
-     };
+    };
 
-     functionSelector.addedFunctions.columns[2].getEditor().on("select", functionSelector.color1Select, functionSelector.addedFunctions);*/
+    functionSelector.addedFunctions.columns[2].getEditor().on("select", functionSelector.color1Select, functionSelector.addedFunctions);*/
 
     functionSelector.plot = Ext.create('Ext.panel.Panel', {
         html: 'Plot',
@@ -1036,8 +1077,8 @@ Ext.onReady(function () {
         ],
         handler: function () {
 
-        }
-    });
+    }
+});
 
     functionSelector.plotFitDomain = Ext.create('Ext.panel.Panel', {
         height: 45,
@@ -1099,66 +1140,66 @@ Ext.onReady(function () {
 //                    }
 //                ]
 //            },
-            {
-                title: 'Fit Domain',
-                bodyPadding: 15,
-                layout: {type: 'vbox',
-                    align: 'stretch',
-                    pack: 'center',
-                },
-                items: [functionSelector.plotFitDomain, ],
-                buttons: [
-                    {
-                        text: 'Update',
-                        handler: function () {
-//                            plotymin = Math.floor(functionSelector.plotFitDomain.items.getAt(1).getValue());
-//                            plotymax = Math.floor(functionSelector.plotFitDomain.items.getAt(2).getValue());
-//                            console.log('min', plotymin);
-//                            console.log('max', plotymax);
-//
-//                            webfit.plot.axes.yaxis.min = plotymin;
-//                            webfit.plot.axes.yaxis.max = plotymax;
-//                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
-//                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
-//                            webfit.plot.replot();
-//                            webfit.ResidualPlot.replot();
-                            //alert('You clicked the button!')
-                        }
-                    }
-                ]
-            },
-            {
-                title: 'Axis Names',
-                //bodyPadding: 20,
-                padding: '0 50 0 50',
-                layout: {type: 'vbox',
-                    align: 'stretch',
-                    pack: 'center',
-                },
-                items: [functionSelector.axisNames],
-                //KEYS:["textfield-1081", "textfield-1082", "textfield-1083"]
-                buttons: [
-                    {
-                        text: 'Update',
-                        handler: function () {
-                            var changeTit = functionSelector.axisNames.items.items[0].getValue();
-                            var changeXLab = functionSelector.axisNames.items.items[1].getValue();
-                            var changeYLab = functionSelector.axisNames.items.items[2].getValue();
-                            //webfit.plot.title=changeTit;
-                            webfit.plot.title.text = changeTit;
-                            webfit.plot.axes.xaxis.labelOptions.label = changeXLab;
-                            webfit.plot.axes.yaxis.labelOptions.label = changeYLab;
-                            webfit.ResidualPlot.axes.xaxis.labelOptions.label = changeXLab;
-                            webfit.ResidualPlot.axes.yaxis.labelOptions.label = changeYLab;
-                            webfit.plot.replot();
-                            webfit.ResidualPlot.replot();
-                            //can't refresh?
-                        }
-                    }
-                ]
+    {
+        title: 'Fit Domain',
+        bodyPadding: 15,
+        layout: {type: 'vbox',
+            align: 'stretch',
+            pack: 'center',
+        },
+        items: [functionSelector.plotFitDomain, ],
+        //buttons: [
+            //{
+                //text: 'Update',
+                //handler: function () {
+////                            plotymin = Math.floor(functionSelector.plotFitDomain.items.getAt(1).getValue());
+////                            plotymax = Math.floor(functionSelector.plotFitDomain.items.getAt(2).getValue());
+////                            console.log('min', plotymin);
+////                            console.log('max', plotymax);
+////
+////                            webfit.plot.axes.yaxis.min = plotymin;
+////                            webfit.plot.axes.yaxis.max = plotymax;
+////                            webfit.ResidualPlot.axes.yaxis.min = plotymin;
+////                            webfit.ResidualPlot.axes.yaxis.max = plotymax;
+////                            webfit.plot.replot();
+////                            webfit.ResidualPlot.replot();
+    ////alert('You clicked the button!')
+//}
+//}
+//]
+},
+{
+    title: 'Axis Names',
+    //bodyPadding: 20,
+    padding: '0 50 0 50',
+    layout: {type: 'vbox',
+        align: 'stretch',
+        pack: 'center',
+    },
+    items: [functionSelector.axisNames],
+    //KEYS:["textfield-1081", "textfield-1082", "textfield-1083"]
+    buttons: [
+        {
+            text: 'Update',
+            handler: function () {
+                var changeTit = functionSelector.axisNames.items.items[0].getValue();
+                var changeXLab = functionSelector.axisNames.items.items[1].getValue();
+                var changeYLab = functionSelector.axisNames.items.items[2].getValue();
+                //webfit.plot.title=changeTit;
+                webfit.plot.title.text = changeTit;
+                webfit.plot.axes.xaxis.labelOptions.label = changeXLab;
+                webfit.plot.axes.yaxis.labelOptions.label = changeYLab;
+                webfit.ResidualPlot.axes.xaxis.labelOptions.label = changeXLab;
+                webfit.ResidualPlot.axes.yaxis.labelOptions.label = changeYLab;
+                webfit.plot.replot();
+                webfit.ResidualPlot.replot();
+                //can't refresh?
             }
-        ]
-    });
+        }
+    ]
+}
+]
+});
 
     var functionSelectionRanges = Ext.create('Ext.panel.Panel', {
         width: 350,
@@ -1177,6 +1218,21 @@ Ext.onReady(function () {
         fields: [
             {name: 'x', type: 'number'},
             {name: 'y', type: 'number'},
+            {name: 'xupper', type: 'number'},
+            {name: 'xlower', type: 'number'},
+            {name: 'yupper', type: 'number'},
+            {name: 'ylower', type: 'number'},
+        ],
+    });
+    fitP.store = Ext.create('Ext.data.Store', {
+        fields: [
+            {name: 'func'},
+            {name: 'a', type: 'number'},
+            {name: 'aerr', type: 'number'},
+            {name: 'b', type: 'number'},
+            {name: 'berr', type: 'number'},
+            {name: 'c', type: 'number'},
+            {name: 'cerr', type: 'number'},
         ],
     });
 
@@ -1212,6 +1268,38 @@ Ext.onReady(function () {
                 }
             },
             {
+                header: 'X-Upper',
+                dataIndex: 'xupper',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'X-Lower',
+                dataIndex: 'xlower',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'Y-Upper',
+                dataIndex: 'yupper',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'Y-Lower',
+                dataIndex: 'ylower',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
                 xtype: 'actioncolumn',
                 width: 35,
                 dataIndex: 'delete',
@@ -1226,14 +1314,88 @@ Ext.onReady(function () {
                         handler: function (grid, rowIndex) {
                             var removed = dataPanel.getStore().data.removeAt(rowIndex);
 
-                            dataPanel.getStore().removeAt(rowIndex);
-                            console.log('Deleted');
-                        },
-                    }
-                ]
-            }
-        ],
-    });
+    dataPanel.getStore().removeAt(rowIndex);
+    console.log('Deleted');
+},
+}
+]
+}
+],
+});
+var fitPanel = Ext.create('Ext.grid.Panel', {
+        //xtype: 'cell-editing',
+        //title: 'Added Functions',
+        //id: 6,
+        //plugins: [new Ext.grid.plugin.CellEditing({
+            //clicksToEdit: 1
+        //})],
+        autoScroll: true,
+        store: fitP.store,
+        columns: [
+            {
+                header: 'Function',
+                dataIndex: 'func',
+                flex: 1,
+                enableKeyEvents: true,
+                editor: {
+                    allowBlank: false,
+                },
+                handler: function (grid, rowIndex) {
+                    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    webfit.plot.redraw();
+                }
+            },
+            {
+                header: 'a',
+                dataIndex: 'a',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'a error',
+                dataIndex: 'aerr',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'b',
+                dataIndex: 'b',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'b error',
+                dataIndex: 'berr',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'c',
+                dataIndex: 'c',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+            {
+                header: 'c error',
+                dataIndex: 'cerr',
+                flex: 1,
+                editor: {
+                    allowBlank: false
+                }
+            },
+        
+],
+});
 
     dataP.updatePlot = function (store, record, operation, modifiedFieldNames, eOpts) {
         console.log("updating");
@@ -1295,114 +1457,120 @@ Ext.onReady(function () {
                 var sinPoints = [];
                 var linPoints = [];
 
-                for (var i = 0; i < 2 * Math.PI; i += 0.4) {
-                    var yVal = 2 * Math.sin(i - .8);
-                    //var yVal=5.5*i +2.2;
-                    sinPoints.push([i, yVal, {"xupper":i+.5, "xlower":i-.5,"yupper": yVal+1, "ylower": yVal-1}]);
-                    dataP.store.add({
-                        x: i,
-                        y: yVal,
-                    });
-                }
-                /*
-                 for (var i=0; i<3; i++) {
-                 var yVal=5.7*i +2.2;
-                 linPoints.push([i, yVal]);
-                 dataP.store.add({
-                 x: i,
-                 y: yVal,
-                 });*/
+    for (var i = 0; i < 2 * Math.PI; i += 0.4) {
+        var yVal = 2 * Math.sin(i - .8);
+        //var yVal=5.5*i +2.2;
+        sinPoints.push([i, yVal, {"xupper":i+.1, "xlower":i-.1,"yupper": yVal+1, "ylower": yVal-1}]);
+        dataP.store.add({
+            x: i,
+            y: yVal,
+            xupper:i+.1,
+            xlower:i-.1,
+            yupper:yVal+1,
+            ylower:yVal-1,
+            
+            
+        });
+    }
+    /*
+        for (var i=0; i<3; i++) {
+        var yVal=5.7*i +2.2;
+        linPoints.push([i, yVal]);
+        dataP.store.add({
+        x: i,
+        y: yVal,
+        });*/
 
 
-                webfit.plot = $.jqplot(this.body.id, [sinPoints], {
-                    //setTitle: function(newTitle){title: newTitle},
-                    title: 'Title',
-                    series: [
-                        {shadow: false,
-                            color: 'red',
-                            markerOptions: {shadow: false, size: 4},
-                            showLine: false
-                        }
-                    ],
-                    seriesDefaults: {
-                        renderer : $.jqplot.errorbarRenderer,
-                        rendererOptions : {errorBar: true},
-                    },
-                    grid: {shadow: false},
-                    sortData: false,
-                    axes: {
-                        xaxis: {
-                            min: -1,
-                            max: 7,
-                            label: 'X Axis',
-                            labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                            tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                            tickOptions: {
-                                formatString: "%.2g"
-                            }
-                        },
-                        yaxis: {
-                            min: -3,
-                            max: 3,
-                            label: 'Y Axis',
-                            labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                            tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                            tickOptions: {
-                                formatString: "%.2g",
-                                // fix for ticks drifting to the left in accordionview!
-                                _styles: {right: 0}
-                            }
-                        }
-                    },
-                    cursor: {show: true, zoom: false},
-                    interactors: [
-                        /*{type: 'Line',
-                         name: 'lcursor',
-                         x0: 0.0001,
-                         color1: 'green',
-                         color2: 'blue'
-                         },
-                         {type: 'Gaussian',
-                         name: 'gcursor',
-                         x0: 0.0001,
-                         color1: 'green',
-                         color2: 'blue'
-                         },*/
-                        {type: 'FunctionCollection',
-                            name: 'fcursor',
-                            x0: 0.0001,
-                            color1: 'grey',
-                        },
-                        /*{type: 'Gaussian',
-                         name: 'g2cursor',
-                         x0: 0.0001,
-                         color1: 'green',
-                         color2: 'blue'
-                         },*/
-                    ]
-
-                });
-
-
-                //$(document).on("updated", updateResiduals);
-                //webfit.plot.plugins.interactors.fcursor.on('updated', updateResiduals ,webfit.plotPanel);
-                //WORKING LISTENER
-                /*            mylistener=function() {};
-                 mylistener.update=function update(pos){
-                 console.log(pos.x,pos.y);
-                 }
-                 //the pluginpoint name differs per interactor
-                 webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
-                 this.callParent(arguments);*/
-                //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-                //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
-                //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
-                //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
-                //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
-                //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
+    webfit.plot = $.jqplot(this.body.id, [sinPoints], {
+        //setTitle: function(newTitle){title: newTitle},
+        title: 'Title',
+        series: [
+            {shadow: false,
+                color: 'red',
+                markerOptions: {shadow: false, size: 4},
+                showLine: false
             }
-        }
+        ],
+        seriesDefaults: {
+            renderer : $.jqplot.errorbarRenderer,
+            rendererOptions : {errorBar: true},
+        },
+        grid: {shadow: false},
+        sortData: false,
+        axes: {
+            xaxis: {
+                min: -1,
+                max: 7,
+                label: 'X Axis',
+                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                tickOptions: {
+                    formatString: "%.2g"
+                }
+            },
+            yaxis: {
+                min: -3,
+                max: 3,
+                label: 'Y Axis',
+                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                tickOptions: {
+                    formatString: "%.2g",
+                    // fix for ticks drifting to the left in accordionview!
+                    _styles: {right: 0}
+                }
+            }
+        },
+        cursor: {show: true, zoom: false},
+        interactors: [
+            /*{type: 'Line',
+                name: 'lcursor',
+                x0: 0.0001,
+                color1: 'green',
+                color2: 'blue'
+                },
+                {type: 'Gaussian',
+                name: 'gcursor',
+                x0: 0.0001,
+                color1: 'green',
+                color2: 'blue'
+                },*/
+            {type: 'FunctionCollection',
+                name: 'fcursor',
+                x0: 0.0001,
+                color1: 'grey',
+            },
+            /*{type: 'Gaussian',
+                name: 'g2cursor',
+                x0: 0.0001,
+                color1: 'green',
+                color2: 'blue'
+                },*/
+        ]
+
     });
+
+
+    //$(document).on("updated", updateResiduals);
+    //webfit.plot.plugins.interactors.fcursor.on('updated', updateResiduals ,webfit.plotPanel);
+    //WORKING LISTENER
+    /*            mylistener=function() {};
+        mylistener.update=function update(pos){
+        console.log(pos.x,pos.y);
+        }
+        //the pluginpoint name differs per interactor
+        webfit.plot.plugins.interactors.lgcursor.pw.listeners.push(mylistener);
+        this.callParent(arguments);*/
+    //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+    //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.lcursor);
+    //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.gcursor);
+    //webfit.plot.plugins.interactors.fcursor.register(webfit.plot.plugins.interactors.g2cursor);
+    //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.lcursor);
+    //webfit.plot.plugins.interactors.fcursor.unregister(webfit.plot.plugins.interactors.gcursor);
+}
+}
+});
 
 
     var updateResiduals = function () {
@@ -1448,49 +1616,49 @@ Ext.onReady(function () {
         },
         afterComponentLayout: function (width, height) {
 
-            /*var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];*/
-            $('#' + this.body.id).empty();
-            /*var sinPoints = [];
-             for (var i=0; i<2*Math.PI; i+=0.4){
-             sinPoints.push([i, 2*Math.sin(i-.8)]);
-             }*/
-            var dataPoints = residualUpdate();
+    /*var data = [['1/2012', 50],['2/2012', 66],['3/2012', 75]];*/
+    $('#' + this.body.id).empty();
+    /*var sinPoints = [];
+        for (var i=0; i<2*Math.PI; i+=0.4){
+        sinPoints.push([i, 2*Math.sin(i-.8)]);
+        }*/
+    var dataPoints = residualUpdate();
 
-            webfit.ResidualPlot = $.jqplot(this.body.id, [dataPoints], {
-                //title: 'Scan space',
-                /*series: [ {shadow: false,
-                 color: 'red',
-                 markerOptions: {shadow: false, size: 4},
-                 showLine:false
-                 }],*/
-                grid: {shadow: false},
-                sortData: false,
-                axes: {
-                    xaxis: {
-                        label: 'X',
-                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                        tickOptions: {
-                            formatString: "%.2g"
-                        }
-                    },
+    webfit.ResidualPlot = $.jqplot(this.body.id, [dataPoints], {
+        //title: 'Scan space',
+        /*series: [ {shadow: false,
+            color: 'red',
+            markerOptions: {shadow: false, size: 4},
+            showLine:false
+            }],*/
+        grid: {shadow: false},
+        sortData: false,
+        axes: {
+            xaxis: {
+                label: 'X',
+                labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                tickOptions: {
+                    formatString: "%.2g"
+                }
+            },
 
-                    yaxis: {
-                        label: 'Y',
-                        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
-                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                        tickOptions: {
-                            formatString: "%.2g",
-                            // fix for ticks drifting to the left in accordionview!
-                            _styles: {right: 0}
-                        }
-                    }
-                },
-                cursor: {show: true, zoom: false},
-
-            });
+    yaxis: {
+        label: 'Y',
+        labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+        tickOptions: {
+            formatString: "%.2g",
+            // fix for ticks drifting to the left in accordionview!
+            _styles: {right: 0}
         }
+    }
+},
+cursor: {show: true, zoom: false},
+
     });
+}
+});
 
     var plot = Ext.create('Ext.panel.Panel', {
         width: 848,
@@ -1535,25 +1703,31 @@ Ext.onReady(function () {
             },
             {
                 title: 'Help Manual',
+                id: 'helpmanualtab',
+                //iconCls: '/static/img/silk/help.png',
+                    html: '<font face="Verdana"><font size="5"><h1>WebFit - Hosted by UTK, Sponsored by the NCNR</h1><font size="4"><br>Variables for Gaussian functions: <br><a href="http://tinypic.com?ref=xnddll" target="_blank"><img src="http://i58.tinypic.com/xnddll.gif"></a><br>Variables for Linear functions: <br><a href="http://tinypic.com?ref=2prz9g1" target="_blank"><img src="http://i61.tinypic.com/2prz9g1.gif"></a>'
+            }, {
+                title: 'Fit Results', 
+                items: [fitPanel],
             }
         ],
 
-        afterComponentLayout: function (width, height) {
+    afterComponentLayout: function (width, height) {
 //	    webfit.plot.plugins.interactors.fcursor.onDrag = new function(pos){
 //		webfit.plot.plugins.interactors.fcursor.onDrag(pos);
 //		webfit.ResidualPlot.series[0].data = residualUpdate();
 //		webfit.ResidualPlot.redraw();
 
-            if (typeof window.myApp === 'undefined') {
-                window.myApp = {};
-            }
-            ;
+    if (typeof window.myApp === 'undefined') {
+        window.myApp = {};
+    }
+    ;
 //}
-            $(myApp).on('function_collection_update', function (e) {
-                console.log('function collection updated');
-                updateResiduals();
-            });
-        }
+    $(myApp).on('function_collection_update', function (e) {
+        console.log('function collection updated');
+        updateResiduals();
+    });
+}
 
 
 

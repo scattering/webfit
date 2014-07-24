@@ -1755,19 +1755,19 @@ $(document).ready(function () {
                 }
                 var cv = lmfit.calc_covar(tempfjac, tempipvt);
 
-                var tempcv = [];
-                for(i=0; i<cv.length; i++){
-                    tempcv[i]=cv[i];
-                }
-                cv = new Array(n);
-                var counter = 0;
-                for (i = 0; i < n; i++) {
-                    cv[i]=new Array(n);
-                    for (j = 0; j < n; j++) {
-                        cv[i][j] = tempcv[counter];
-                        counter++;
-                    }
-                }
+//                var tempcv = [];
+//                for(i=0; i<cv.length; i++){
+//                    tempcv[i]=cv[i];
+//                }
+//                cv = new Array(n);
+//                var counter = 0;
+//                for (i = 0; i < n; i++) {
+//                    cv[i]=new Array(n);
+//                    for (j = 0; j < n; j++) {
+//                        cv[i][j] = tempcv[counter];
+//                        counter++;
+//                    }
+//                }
                 var nn = xall.length;
 
 //                Fill in actual covariance matrix, accounting for fixed
@@ -1781,7 +1781,7 @@ $(document).ready(function () {
                 }
                 for (i = 0; i < n; i++) {
                     for (j = 0; j < ifree.length; j++) {
-                        this.covar[ifree[j]][ifree[j][i]] = cv[j][i];
+                        this.covar[ifree[j]][ifree[i]] = cv[j][i];
                     }
                 }
 
@@ -1795,7 +1795,7 @@ $(document).ready(function () {
                 var d = tempcovar.diagonal().elements;
                 wh = [];
                 for (i = 0; i < d.length; i++) {
-                    if (d >= 0) {
+                    if (d[i] >= 0) {
                         wh.push(i);
                     }
                 }
@@ -1804,9 +1804,11 @@ $(document).ready(function () {
                         this.perror[wh[i]] = Math.sqrt(d[wh[i]]);
                     }
                 }
+		console.log(this.covar);
             }
         }
-        return {p:x};
+	console.log({p:x, covar: this.covar, error: this.perror});
+        return {p:x, covar: this.covar, error: this.perror};
     };
 
     /*
@@ -3014,12 +3016,9 @@ $(document).ready(function () {
                 temp = r[k][k] * r[j][k];
                 r[j][k] = 0;
                 for (i = 0; i < j + 1; i++) {
-                    r[i][j] = r[i][j] - temp * r[i][k];
+                    r[i][k] = r[i][k] - temp * r[i][j];
                 }
-                temp = r[k][k];
-                for (i = 0; i < k + 1; i++) {
-                    r[i][k] = temp * r[i][k];
-                }
+                
             }
             l = k;
 
@@ -3034,11 +3033,12 @@ $(document).ready(function () {
                     for (i = 0; i < j + 1; i++) {
                         r[i][j] = r[i][j] + temp * r[i][k];
                     }
-                    temp = r[k][k];
-                    for (i = 0; i < k + 1; i++) {
-                        r[i][k] = temp * r[i][k];
-                    }
+                    
                 }
+				temp = r[k][k];
+                for (i = 0; i < k + 1; i++) {
+                    r[i][k] = temp * r[i][k];
+                    }
             }
         }
 //         For the full lower triangle of the covariance matrix
