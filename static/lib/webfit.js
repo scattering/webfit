@@ -2,9 +2,9 @@ Ext.Loader.setConfig({
     enabled: true
 });
 
-Ext.Loader.setPath('Ext.ux', 'static/lib/ext/examples/ux');
-Ext.Loader.setPath('Ext.selection', 'static/lib/ext/src/selection');
-Ext.Loader.setPath('Ext.grid', 'static/lib/ext/src/grid');
+Ext.Loader.setPath('Ext.ux', '/static/lib/ext/examples/ux');
+Ext.Loader.setPath('Ext.selection', '/static/lib/ext/src/selection');
+Ext.Loader.setPath('Ext.grid', '/static/lib/ext/src/grid');
 
 Ext.require([
     'Ext.layout.container.*',
@@ -27,7 +27,7 @@ Ext.require([
     // Add csrf token to every ajax request
     var token = Ext.util.Cookies.get('csrftoken');
     if (!token) {
-        //Ext.Error.raise("Missing csrftoken cookie");
+        Ext.Error.raise("Missing csrftoken cookie");
     } else {
         Ext.Ajax.defaultHeaders = Ext.apply(Ext.Ajax.defaultHeaders || {}, {
             'X-CSRFToken': token
@@ -77,25 +77,23 @@ Ext.onReady(function () {
     //var html = '';
     for (var row in data) {
     if(typeof data[row][2]=='undefined'){
-     webfitData.push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
-        residualData.push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
-        webfit.plot.data[0].push([data[row][0],data[row][1], {"yupper": data[row][1]+1, "ylower": data[row][1]-1}]);
+     webfitData.push([data[row][0],data[row][1], {"yerr":1, "xerr":0}]);
+        residualData.push([data[row][0],data[row][1], {"yerr":1, "xerr":0}]);
+        webfit.plot.data[0].push([data[row][0],data[row][1], {"yerr":1, "xerr":0}]);
         dataP.store.add({
             x: data[row][0],
             y: data[row][1],
-            yupper: data[row][1]+1,
-            ylower:data[row][1]-1,});
+            yerr:1,
+            xerr:0});
     } else {
-        webfitData.push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
-        residualData.push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
-        webfit.plot.data[0].push([data[row][0],data[row][1], {"xupper":data[row][2], "xlower":data[row][3],"yupper": data[row][4], "ylower": data[row][5]}]);
+        webfitData.push([data[row][0],data[row][1], {"yerr":data[row][2], "xerr":data[row][3],}]);
+        residualData.push([data[row][0],data[row][1], {"yerr":data[row][2], "xerr":data[row][3],}]);
+        webfit.plot.data[0].push([data[row][0],data[row][1], {"yerr":data[row][2], "xerr":data[row][3],}]);
         dataP.store.add({
             x: data[row][0],
             y: data[row][1],
-            xupper:data[row][2],
-            xlower:data[row][3],
-            yupper:data[row][4],
-            ylower:data[row][5],
+            xerr:data[row][2],
+            yerr:data[row][3],
     
         });}
         //  var item={x: data[row][0],
@@ -1275,10 +1273,9 @@ width: 496,
         fields: [
             {name: 'x', type: 'number'},
             {name: 'y', type: 'number'},
-            {name: 'xupper', type: 'number'},
-            {name: 'xlower', type: 'number'},
-            {name: 'yupper', type: 'number'},
-            {name: 'ylower', type: 'number'},
+            {name: 'xerr', type: 'number'},
+            {name: 'yerr', type: 'number'},
+
         ],
     });
     fitP.store = Ext.create('Ext.data.Store', {
@@ -1325,37 +1322,22 @@ width: 496,
                 }
             },
             {
-                header: 'X-Upper',
-                dataIndex: 'xupper',
+                header: 'X-Error',
+                dataIndex: 'xerr',
                 flex: 1,
                 editor: {
                     allowBlank: false
                 }
             },
             {
-                header: 'X-Lower',
-                dataIndex: 'xlower',
+                header: 'Y-Error',
+                dataIndex: 'yerr',
                 flex: 1,
                 editor: {
                     allowBlank: false
                 }
             },
-            {
-                header: 'Y-Upper',
-                dataIndex: 'yupper',
-                flex: 1,
-                editor: {
-                    allowBlank: false
-                }
-            },
-            {
-                header: 'Y-Lower',
-                dataIndex: 'ylower',
-                flex: 1,
-                editor: {
-                    allowBlank: false
-                }
-            },
+
             {
                 xtype: 'actioncolumn',
                 width: 35,
@@ -1517,14 +1499,12 @@ var fitPanel = Ext.create('Ext.grid.Panel', {
     for (var i = 0; i < 2 * Math.PI; i += 0.4) {
         var yVal = 2 * Math.sin(i - .8);
         //var yVal=5.5*i +2.2;
-        sinPoints.push([i, yVal, {"xupper":i+.1, "xlower":i-.1,"yupper": yVal+1, "ylower": yVal-1}]);
+        sinPoints.push([i, yVal, {"yerr":1,"xerr":0}]);
         dataP.store.add({
             x: i,
             y: yVal,
-            xupper:i+.1,
-            xlower:i-.1,
-            yupper:yVal+1,
-            ylower:yVal-1,
+            xerr:0,
+            yerr:1,
             
             
         });
