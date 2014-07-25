@@ -638,7 +638,7 @@ functionSelector.fit3 = Ext.create('Ext.Button', {
             if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                 xDat.push(webfit.plot.data[0][i][0]);
                 yDat.push(webfit.plot.data[0][i][1]);
-                err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
+                err.push(webfit.plot.data[0][i][2].yerr);
             }
         }
         var linF=function(p, x) {
