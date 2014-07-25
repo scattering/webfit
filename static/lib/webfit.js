@@ -522,13 +522,10 @@ console.log('imported');
 var sqRes = 0;
 for (i = 0; i < webfit.plot.data[0].length; i++) {
     if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-
-
     sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
 }
 //console.log(sqRes);
 }
-console.log(sqRes);
 //console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
 return sqRes;
 
@@ -536,6 +533,7 @@ return sqRes;
     };
 
     var x = SimplexEq.simplex(sqResid, this.x0);
+	console.log(x);
     residualUpdate();
     webfit.ResidualPlot.replot();
     console.log('UPDATING RESIDUALS');
@@ -545,72 +543,72 @@ return sqRes;
     x: 40,
     y: 38,
 });
-functionSelector.fit2 = Ext.create('Ext.Button', {
-    text: 'L-M Fit',
-    //id: 4,
-    //renderTo: Ext.getBody(),
-    handler: function () {
-        this.p = [];
-        var fitMin = -9999;
-        var fitMax = 9999;
-        if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
-            fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
-            fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
-        }
-        var x1 = [], y1 = [];
-        for (i = 0; i < webfit.plot.data[0].length; i++) {
-            if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-                x1.push(webfit.plot.data[0][i][0]);
-                y1.push(webfit.plot.data[0][i][1]);
-            }
-            //console.log(sqRes);
-        }
-        for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-            for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
-                this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
-            }
-        }
+//functionSelector.fit2 = Ext.create('Ext.Button', {
+    //text: 'L-M Fit',
+    ////id: 4,
+    ////renderTo: Ext.getBody(),
+    //handler: function () {
+        //this.p = [];
+        //var fitMin = -9999;
+        //var fitMax = 9999;
+        //if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
+            //fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
+            //fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
+        //}
+        //var x1 = [], y1 = [];
+        //for (i = 0; i < webfit.plot.data[0].length; i++) {
+            //if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+                //x1.push(webfit.plot.data[0][i][0]);
+                //y1.push(webfit.plot.data[0][i][1]);
+            //}
+            ////console.log(sqRes);
+        //}
+        //for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+            //for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                //this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
+                //this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
+            //}
+        //}
 
-    var sqResid = function (p, fjac, x, y, err) {
-        //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
-        var counter = 0;
-        for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-            for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
-                counter++;
-                webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
-                counter++;
-                webfit.plot.replot();
-                webfit.ResidualPlot.replot();
+    //var sqResid = function (p, fjac, x, y, err) {
+        ////a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
+        //var counter = 0;
+        //for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
+            //for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
+                //webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
+                //counter++;
+                //webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
+                //counter++;
+                //webfit.plot.replot();
+                //webfit.ResidualPlot.replot();
 
-    }
-}
-var sqRes = [];
-for (i = 0; i < webfit.plot.data[0].length; i++) {
-    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+    //}
+//}
+//var sqRes = [];
+//for (i = 0; i < webfit.plot.data[0].length; i++) {
+    //if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
 
 
-    sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
-}
-//console.log(sqRes);
-}
-//console.log(sqRes);
-var status = 0;
-//console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-return {status: status, f: sqRes};
-};
-var fa = {};
-fa['x'] = x1;
-fa['y'] = y1;
-var x = lmfit.lmfit(sqResid, this.p, fa);
-webfit.ResidualPlot.replot();
-console.log('UPDATING RESIDUALS');
-//fit the function
-},
-x: 120,
-y: 38,
-});
+    //sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
+//}
+////console.log(sqRes);
+//}
+////console.log(sqRes);
+//var status = 0;
+////console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
+//return {status: status, f: sqRes};
+//};
+//var fa = {};
+//fa['x'] = x1;
+//fa['y'] = y1;
+//var x = lmfit.lmfit(sqResid, this.p, fa);
+//webfit.ResidualPlot.replot();
+//console.log('UPDATING RESIDUALS');
+////fit the function
+//},
+//x: 120,
+//y: 38,
+//});
 var map=[];
 functionSelector.fit3 = Ext.create('Ext.Button', {
     text: 'L-M Fast Fit',
@@ -720,7 +718,7 @@ var sqResid=function(p, fjac, x, y, err) {
             cerr: 0,
     
         });
-        retStr+=name+counter+": y = "+Math.round(map[counter].p[0]*1000)/1000+"x + "+Math.round(map[counter].p[1]*1000)/1000+'\n';
+        retStr+="line"+counter+": a = "+Math.round(map[counter].p[0]*1000)/1000+"("+Math.round(x.error[0+iter]*1000)/1000 +")"+'\t'+"b = "+Math.round(map[counter].p[1]*1000)/1000+"("+Math.round(x.error[1+iter]*1000)/1000+")"+'</br>';
         iter+=2;
 
     } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
@@ -738,14 +736,14 @@ var sqResid=function(p, fjac, x, y, err) {
             cerr: x.error[2+iter],
     
         });    
-        retStr+=name+counter+": y = "+ Math.round(map[counter].p[0]*1000)/1000+ " * exp( - ( x - "+Math.round(map[counter].p[1]*1000)/1000+" )^2 / ( 2 * "+Math.round(map[counter].p[2]*1000)/1000+"^2)"+'\n';
+        retStr+="gaus"+counter+": a = "+Math.round(map[counter].p[0]*1000)/1000+"("+Math.round(x.error[0+iter]*1000)/1000 +")"+'\t'+"b = "+Math.round(map[counter].p[1]*1000)/1000+"("+Math.round(x.error[1+iter]*1000)/1000+")"+'\t'+"c = "+Math.round(map[counter].p[2]*1000)/1000+"("+Math.round(x.error[2+iter]*1000)/1000+")"+'</br>'; 
         iter+=3;
     }
     
 
     counter++;
 }
-functionSelector.fitResults.items.items[0].setText(retStr+ '\nChisq: '+ x.chisq);
+functionSelector.fitResults.items.items[0].update(retStr+ 'Chisq: '+ x.chisq);
 webfit.plot.replot();
 webfit.ResidualPlot.replot();
 
@@ -764,7 +762,8 @@ y: 38,
         //height: 200,
         autoScroll: true,
         //bodyPadding: 50,
-        items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1,  functionSelector.fit3,functionSelector.fit2],
+        //items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1,  functionSelector.fit3,functionSelector.fit2],
+		items: [functionSelector.chooser, functionSelector.add, functionSelector.fit1,  functionSelector.fit3],
     });
 
     functionSelector.addStore = Ext.create('Ext.data.Store', {
@@ -1134,7 +1133,7 @@ width: 496,
         margins: '0 0 0 0'
     }]
     });
-
+    //document.write("\[ \left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right) \]");
     functionSelector.rangeDomainAxis = Ext.create('Ext.tab.Panel', {
         width: 450,
         height: 198,
