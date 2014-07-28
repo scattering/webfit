@@ -486,135 +486,171 @@ console.log('imported');
         x: 292,
         y: 8,
     });
+    var fitMin = -9999;
+    var fitMax = 9999;
+    var map;
+    var xDat, yDat, err;
     functionSelector.fit1 = Ext.create('Ext.Button', {
         text: 'Simplex Fit',
         //id: 4,
         //renderTo: Ext.getBody(),
         handler: function () {
+	    map=[];
+	    xDat=[];
+	    yDat=[];
+	    err=[];
+	    var name="cursor"
+	    var counter=0;
             //functionSelector.currentlyFitting.setVisible(true);
-            this.x0 = [];
-            for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                    this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
-                    this.x0.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
-                }
-            }
+            this.x0 = []; 
+	    var x1,y1,x2,y2;
+	    var linF=function(p, x) {
+		return p[0]*x+p[1];            
+	    };
+	    var gauF= function(p, x) {
+		return p[0]*Math.exp(- Math.pow((x-p[1]), 2)/(2*Math.pow(p[2],2)));
+	    }; 
+            while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
+		x1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x;
+		y1=webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y;
+		x2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x;
+		y2=webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y;
+		if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
+
+		    map.push({type: "Line", params:2, func:linF, p:[1,2]});
+		    this.x0.push((y2-y1)/(x2-x1));
+		    this.x0.push((y2*x1-y1*x2)/(x1-x2));
+		} else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
+		    map.push({type: "Gaussian", params:3, func:gauF, p:[1,2,3]}); 
+		    this.x0.push(y1);
+		    this.x0.push(x1);
+		    this.x0.push(x2/(4.29193));
+		}    counter++;
+	    }
+	    
             //var a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g;
-            var fitMin = -9999;
-            var fitMax = 9999;
+            
             if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
                 fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
                 fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
             }
+	    for (i = 0; i < webfit.plot.data[0].length; i++) {
+		if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+		    xDat.push(webfit.plot.data[0][i][0]);
+		    yDat.push(webfit.plot.data[0][i][1]);
+		    err.push(webfit.plot.data[0][i][2].yerr);
+		}
+	    }
             var sqResid = function (x) {
                 //a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
-                var counter = 0;
-                for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-                    for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = x[counter];
-                        counter++;
-                        webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = x[counter];
-                        counter++;
-                        webfit.plot.replot();
+                var count=0;
+		for(var i=0; i<map.length; i++) {
+		    map[i].p=[]; 
+		    for(var j=0; j<map[i].params;j++) {
+			map[i].p.push(x[count]);  
+			count++;
+		    }
+		}
+		var z=function(x) {
+		    var c=0;
+		    for(var i=0; i<map.length; i++) {
+			c+=map[i].func(map[i].p, x);
+		    }
+		    return c;
+		}
+	    var sqRes = 0;
+	    for (i = 0; i < webfit.plot.data[0].length; i++) {
+		if (xDat[i] > fitMin && xDat[i] < fitMax) {
+		    sqRes += Math.pow(z(xDat[i]) - yDat[i], 2); //fix this
+		}
+	    }
+	    return sqRes;
 
-    }
-}
-var sqRes = 0;
-for (i = 0; i < webfit.plot.data[0].length; i++) {
-    if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-    sqRes += Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(webfit.plot.data[0][i][0]) - webfit.plot.data[0][i][1], 2); //fix this
-}
-//console.log(sqRes);
-}
-//console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-return sqRes;
 
-
-    };
+	};
 
     var x = SimplexEq.simplex(sqResid, this.x0);
 	console.log(x);
     residualUpdate();
-    webfit.ResidualPlot.replot();
-    console.log('UPDATING RESIDUALS');
+
+    var counter=0;
+    var iter=0;
+    var retStr="";
+    
+    while (typeof webfit.plot.plugins.interactors[name+counter]!='undefined') {
+        if(webfit.plot.plugins.interactors[name+counter].type=="Line") {
+            webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=0;
+            webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].func(map[counter].p,0);
+            webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=1;
+            webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,1);
+            fitP.store.add({
+            func: name+counter,
+            a: map[counter].p[0],
+            aerr:0,
+            b:map[counter].p[1],
+            berr:0,
+            c:0,
+            cerr: 0,
+    
+        });
+        retStr+="line"+counter+": a = "+Math.round(map[counter].p[0]*1000)/1000+'\t'+"b = "+Math.round(map[counter].p[1]*1000)/1000+'</br>';
+        iter+=2;
+
+    } else if(webfit.plot.plugins.interactors[name+counter].type=="Gaussian"){
+        webfit.plot.plugins.interactors[name+counter].grobs[0].coords.x=map[counter].p[1];
+        webfit.plot.plugins.interactors[name+counter].grobs[0].coords.y = map[counter].p[0];
+        webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x=map[counter].p[2]*12.5/3.5+map[counter].p[1];
+        webfit.plot.plugins.interactors[name+counter].grobs[1].coords.y = map[counter].func(map[counter].p,webfit.plot.plugins.interactors[name+counter].grobs[1].coords.x);
+    fitP.store.add({
+            func: name+counter,
+            a: map[counter].p[0],
+            aerr:0,
+            b:map[counter].p[1],
+            berr:0,
+            c:map[counter].p[2],
+            cerr: 0,
+    
+        });    
+        retStr+="gaus"+counter+": a = "+Math.round(map[counter].p[0]*1000)/1000+'\t'+"b = "+Math.round(map[counter].p[1]*1000)/1000+'\t'+"c = "+Math.round(map[counter].p[2]*1000)/1000+'</br>'; 
+        iter+=3;
+    }
+    
+
+    counter++;
+}
+var z=function(x) {
+		    var c=0;
+		    for(var i=0; i<map.length; i++) {
+			c+=map[i].func(map[i].p, x);
+		    }
+		    return c;
+		}
+	    var sqRes = 0;
+	    for (i = 0; i < webfit.plot.data[0].length; i++) {
+		if (xDat[i] > fitMin && xDat[i] < fitMax) {
+		    sqRes += Math.pow(z(xDat[i]) - yDat[i], 2); //fix this
+		}
+	    }
+functionSelector.fitResults.items.items[0].update(retStr+ 'Chisq: '+ sqRes);
+webfit.plot.replot();
+webfit.ResidualPlot.replot();
     //fit the function
 
     },
     x: 40,
     y: 38,
-});
-//functionSelector.fit2 = Ext.create('Ext.Button', {
-    //text: 'L-M Fit',
-    ////id: 4,
-    ////renderTo: Ext.getBody(),
-    //handler: function () {
-        //this.p = [];
-        //var fitMin = -9999;
-        //var fitMax = 9999;
-        //if (functionSelector.plotFitDomain.items.getAt(1).getValue() != functionSelector.plotFitDomain.items.getAt(2).getValue()) {
-            //fitMin = functionSelector.plotFitDomain.items.getAt(1).getValue();
-            //fitMax = functionSelector.plotFitDomain.items.getAt(2).getValue();
-        //}
-        //var x1 = [], y1 = [];
-        //for (i = 0; i < webfit.plot.data[0].length; i++) {
-            //if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
-                //x1.push(webfit.plot.data[0][i][0]);
-                //y1.push(webfit.plot.data[0][i][1]);
-            //}
-            ////console.log(sqRes);
-        //}
-        //for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-            //for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                //this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x);
-                //this.p.push(webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y);
-            //}
-        //}
-
-    //var sqResid = function (p, fjac, x, y, err) {
-        ////a = webfit.plot.plugins.interactors.fcursor.FunctionCollection.g
-        //var counter = 0;
-        //for (i = 0; i < webfit.plot.plugins.interactors.fcursor.interactors.length; i++) {
-            //for (j = 0; j < webfit.plot.plugins.interactors.fcursor.interactors[i].grobs.length - 1; j++) {
-                //webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.x = p[counter];
-                //counter++;
-                //webfit.plot.plugins.interactors.fcursor.interactors[i].grobs[j].coords.y = p[counter];
-                //counter++;
-                //webfit.plot.replot();
-                //webfit.ResidualPlot.replot();
-
-    //}
-//}
-//var sqRes = [];
-//for (i = 0; i < webfit.plot.data[0].length; i++) {
-    //if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
+    });
 
 
-    //sqRes.push(Math.pow(webfit.plot.plugins.interactors.fcursor.FunctionCollection.f(x[i]) - y[i], 2)); //fix this
-//}
-////console.log(sqRes);
-//}
-////console.log(sqRes);
-//var status = 0;
-////console.log("y:"+a(webfit.plot.data[0][i][0])+" y0:"+webfit.plot.data[i][1]+" res:"+sqRes);
-//return {status: status, f: sqRes};
-//};
-//var fa = {};
-//fa['x'] = x1;
-//fa['y'] = y1;
-//var x = lmfit.lmfit(sqResid, this.p, fa);
-//webfit.ResidualPlot.replot();
-//console.log('UPDATING RESIDUALS');
-////fit the function
-//},
-//x: 120,
-//y: 38,
-//});
-var map=[];
 functionSelector.fit3 = Ext.create('Ext.Button', {
     text: 'L-M Fast Fit',
     //id: 4,
     //renderTo: Ext.getBody(),
     handler: function () {
+    map=[];
+    xDat=[];
+    yDat=[];
+    err=[];
     if (fitP.store.data.items.length !== 0) {
         fitP.store.removeAll();
     }
@@ -622,7 +658,6 @@ functionSelector.fit3 = Ext.create('Ext.Button', {
         var fitMin = -9999;
         var fitMax = 9999;
         //this.map=[];
-        map=[];
         var name="cursor";
         var counter=0;
         var pcount=1;
