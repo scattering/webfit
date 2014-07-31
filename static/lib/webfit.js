@@ -2,9 +2,9 @@ Ext.Loader.setConfig({
     enabled: true
 });
 
-Ext.Loader.setPath('Ext.ux', 'static/lib/ext/examples/ux');
-Ext.Loader.setPath('Ext.selection', 'static/lib/ext/src/selection');
-Ext.Loader.setPath('Ext.grid', 'static/lib/ext/src/grid');
+Ext.Loader.setPath('Ext.ux', '/static/lib/ext/examples/ux');
+Ext.Loader.setPath('Ext.selection', '/static/lib/ext/src/selection');
+Ext.Loader.setPath('Ext.grid', '/static/lib/ext/src/grid');
 
 Ext.require([
     'Ext.layout.container.*',
