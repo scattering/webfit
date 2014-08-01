@@ -1881,7 +1881,7 @@ Ext.onReady(function() {
             title: 'Help Manual',
             id: 'helpmanualtab',
             //iconCls: '/static/img/silk/help.png',
-            html: '<font face="Verdana"><font size="5"><h1>WebFit - Hosted by UTK, Sponsored by the NCNR</h1><font size="4"><br>Variables for Gaussian functions: <br><a href="http://tinypic.com?ref=xnddll" target="_blank"><img src="http://i58.tinypic.com/xnddll.gif"></a><br>Variables for Linear functions: <br><a href="http://tinypic.com?ref=2prz9g1" target="_blank"><img src="http://i61.tinypic.com/2prz9g1.gif"></a>'
+            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1><img src="http://i59.tinypic.com/rcvnzs.png" border="0">'
         }, {
             title: 'Fit Results',
             items: [fitPanel],
