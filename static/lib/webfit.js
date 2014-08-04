@@ -548,6 +548,9 @@ Ext.onReady(function() {
             xDat = [];
             yDat = [];
             err = [];
+            if (fitP.store.data.items.length !== 0) {
+                fitP.store.removeAll();
+            }
             var name = "cursor"
             var counter = 0;
             //functionSelector.currentlyFitting.setVisible(true);
@@ -1881,7 +1884,7 @@ Ext.onReady(function() {
             title: 'Help Manual',
             id: 'helpmanualtab',
             //iconCls: '/static/img/silk/help.png',
-            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="static/lib/scattering.png" border="0">'
+            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="/static/lib/scattering.png" border="0">'
         }, {
             title: 'Fit Results',
             items: [fitPanel],
