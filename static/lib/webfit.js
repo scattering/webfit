@@ -806,8 +806,8 @@ Ext.onReady(function() {
 
 
             var fa = {};
-            fa['x'] = x1;
-            fa['y'] = y1;
+            fa['x'] = xDat;
+            fa['y'] = yDat;
             fa['err'] = err;
             var x = lmfit.lmfit(sqResid, this.p, fa);
             webfit.ResidualPlot.replot();
@@ -1440,6 +1440,8 @@ Ext.onReady(function() {
                 },
                 handler: function(grid, rowIndex) {
                     webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
+                    webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
                     webfit.plot.redraw();
                 }
             }, {
@@ -1448,6 +1450,12 @@ Ext.onReady(function() {
                 flex: 1,
                 editor: {
                     allowBlank: false
+                },
+                handler: function(grid, rowIndex) {
+                    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
+                    webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
+                    webfit.plot.redraw();
                 }
             }, {
                 header: 'X-Error',
@@ -1565,10 +1573,20 @@ Ext.onReady(function() {
                         break;
                     }
                 }
-                webfit.plot.series[0].data[row][0] = (String)(record.data.x);
-                webfit.plot.series[0].data[row][1] = (String)(record.data.y);
-                //webfit.plot.draw();
-                //webfit.plot.redraw();
+                webfit.plot.series[0].data[row][0] = (record.data.x);
+                webfit.plot.series[0].data[row][1] = (record.data.y);
+                webfit.plot.series[0].data[row][2].yerr =record.data.yerr;
+                webfit.plot.series[0].data[row][2].yupper = record.data.y+record.data.yerr;
+                webfit.plot.series[0].data[row][2].ylower = record.data.y-record.data.yerr;
+                
+                webfit.plot.data[0][0][0]= record.data.x;
+                webfit.plot.data[0][0][1]= (record.data.y);
+                webfit.plot.data[0][0][2].yerr=record.data.yerr;
+                webfit.plot.data[0][0][2].yupper= record.data.y+record.data.yerr;
+                webfit.plot.data[0][0][2].ylower= record.data.y-record.data.yerr;
+                
+                webfit.plot.draw();
+               //webfit.plot.redraw();
                 break;
             case Ext.data.Model.COMMIT:
                 console.log('INFO', 'Record successfully sent to server!');
@@ -1884,7 +1902,7 @@ Ext.onReady(function() {
             title: 'Help Manual',
             id: 'helpmanualtab',
             //iconCls: '/static/img/silk/help.png',
-            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="static/lib/scattering.png" border="0">'
+            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="/static/lib/scattering.png" border="0">'
         }, {
             title: 'Fit Results',
             items: [fitPanel],
