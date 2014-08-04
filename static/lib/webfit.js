@@ -2,9 +2,9 @@ Ext.Loader.setConfig({
     enabled: true
 });
 
-Ext.Loader.setPath('Ext.ux', '/static/lib/ext/examples/ux');
-Ext.Loader.setPath('Ext.selection', '/static/lib/ext/src/selection');
-Ext.Loader.setPath('Ext.grid', '/static/lib/ext/src/grid');
+Ext.Loader.setPath('Ext.ux', 'static/lib/ext/examples/ux');
+Ext.Loader.setPath('Ext.selection', 'static/lib/ext/src/selection');
+Ext.Loader.setPath('Ext.grid', 'static/lib/ext/src/grid');
 
 Ext.require([
     'Ext.layout.container.*',
@@ -548,6 +548,9 @@ Ext.onReady(function() {
             xDat = [];
             yDat = [];
             err = [];
+            if (fitP.store.data.items.length !== 0) {
+                fitP.store.removeAll();
+            }
             var name = "cursor"
             var counter = 0;
             //functionSelector.currentlyFitting.setVisible(true);
@@ -803,8 +806,8 @@ Ext.onReady(function() {
 
 
             var fa = {};
-            fa['x'] = x1;
-            fa['y'] = y1;
+            fa['x'] = xDat;
+            fa['y'] = yDat;
             fa['err'] = err;
             var x = lmfit.lmfit(sqResid, this.p, fa);
             webfit.ResidualPlot.replot();
@@ -1437,6 +1440,8 @@ Ext.onReady(function() {
                 },
                 handler: function(grid, rowIndex) {
                     webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
+                    webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
                     webfit.plot.redraw();
                 }
             }, {
@@ -1445,6 +1450,12 @@ Ext.onReady(function() {
                 flex: 1,
                 editor: {
                     allowBlank: false
+                },
+                handler: function(grid, rowIndex) {
+                    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
+                    webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
+                    webfit.plot.redraw();
                 }
             }, {
                 header: 'X-Error',
@@ -1562,10 +1573,20 @@ Ext.onReady(function() {
                         break;
                     }
                 }
-                webfit.plot.series[0].data[row][0] = (String)(record.data.x);
-                webfit.plot.series[0].data[row][1] = (String)(record.data.y);
-                //webfit.plot.draw();
-                //webfit.plot.redraw();
+                webfit.plot.series[0].data[row][0] = (record.data.x);
+                webfit.plot.series[0].data[row][1] = (record.data.y);
+                webfit.plot.series[0].data[row][2].yerr =record.data.yerr;
+                webfit.plot.series[0].data[row][2].yupper = record.data.y+record.data.yerr;
+                webfit.plot.series[0].data[row][2].ylower = record.data.y-record.data.yerr;
+                
+                webfit.plot.data[0][0][0]= record.data.x;
+                webfit.plot.data[0][0][1]= (record.data.y);
+                webfit.plot.data[0][0][2].yerr=record.data.yerr;
+                webfit.plot.data[0][0][2].yupper= record.data.y+record.data.yerr;
+                webfit.plot.data[0][0][2].ylower= record.data.y-record.data.yerr;
+                
+                webfit.plot.draw();
+               //webfit.plot.redraw();
                 break;
             case Ext.data.Model.COMMIT:
                 console.log('INFO', 'Record successfully sent to server!');
