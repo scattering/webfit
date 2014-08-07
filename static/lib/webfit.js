@@ -103,20 +103,28 @@ Ext.onReady(function() {
                     if (typeof data[row][2] == 'undefined') {
                         webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-                            xerr: 0
+                            yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
+							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
+							xerr: 0
                         }]);
                         residualData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-                            xerr: 0
+                            yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
+							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
+							xerr: 0
                         }]);
                         webfit.plot.data[0].push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
+							yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
+							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
                             xerr: 0
                         }]);
                         dataP.store.add({
                             x: parseFloat(parseFloat(data[row][0])),
                             y: parseFloat(parseFloat(data[row][1])),
                             yerr: Math.sqrt(parseFloat(data[row][1])),
+							yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
+							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
                             xerr: 0
                         });
                     } else {
@@ -641,7 +649,7 @@ Ext.onReady(function() {
                 if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                     xDat.push(webfit.plot.data[0][i][0]);
                     yDat.push(webfit.plot.data[0][i][1]);
-                    err.push(webfit.plot.data[0][i][2].yerr);
+                    err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
                 }
             }
             var sqResid = function(x) {
@@ -731,7 +739,7 @@ Ext.onReady(function() {
             var sqRes = 0;
             for (i = 0; i < webfit.plot.data[0].length; i++) {
                 if (xDat[i] > fitMin && xDat[i] < fitMax) {
-                    sqRes += Math.pow(z(xDat[i]) - yDat[i], 2); //fix this
+                    sqRes += Math.pow((z(xDat[i]) - yDat[i])/err[i], 2); //fix this
                 }
             }
             functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + sqRes);
@@ -774,7 +782,7 @@ Ext.onReady(function() {
                 if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                     xDat.push(webfit.plot.data[0][i][0]);
                     yDat.push(webfit.plot.data[0][i][1]);
-                    err.push(webfit.plot.data[0][i][2].yerr);
+                    err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
                 }
             }
             var linF = function(p, x) {
@@ -1478,10 +1486,10 @@ Ext.onReady(function() {
                     allowBlank: false,
                 },
                 handler: function(grid, rowIndex) {
-                    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    /*webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
                     webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
                     webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
-                    webfit.plot.redraw();
+                    webfit.plot.redraw();*/
                 }
             }, {
                 header: 'Y',
@@ -1491,10 +1499,10 @@ Ext.onReady(function() {
                     allowBlank: false
                 },
                 handler: function(grid, rowIndex) {
-                    webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
+                    /*webfit.plot.series[0].data[rowIndex][0] = dataP.store.data.items[rowIndex].data.x;
                     webfit.plot.series[0].data[rowIndex][1] = dataP.store.data.items[rowIndex].data.y;
                     webfit.plot.series[0].data[rowIndex][2].yerr=dataP.store.data.items[rowIndex].data.yerr;
-                    webfit.plot.redraw();
+                    webfit.plot.redraw();*/
                 }
             }, {
                 header: 'X-Error',
@@ -1614,13 +1622,13 @@ Ext.onReady(function() {
                 }
                 webfit.plot.series[0].data[row][0] = (record.data.x);
                 webfit.plot.series[0].data[row][1] = (record.data.y);
-                webfit.plot.series[0].data[row][2].yerr =record.data.yerr;
+                //webfit.plot.series[0].data[row][2].yerr =record.data.yerr;
                 webfit.plot.series[0].data[row][2].yupper = record.data.y+record.data.yerr;
                 webfit.plot.series[0].data[row][2].ylower = record.data.y-record.data.yerr;
                 
                 webfit.plot.data[0][0][0]= record.data.x;
                 webfit.plot.data[0][0][1]= (record.data.y);
-                webfit.plot.data[0][0][2].yerr=record.data.yerr;
+                //webfit.plot.data[0][0][2].yerr=record.data.yerr;
                 webfit.plot.data[0][0][2].yupper= record.data.y+record.data.yerr;
                 webfit.plot.data[0][0][2].ylower= record.data.y-record.data.yerr;
                 
