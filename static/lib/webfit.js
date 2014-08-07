@@ -57,7 +57,7 @@ Ext.onReady(function() {
             //  }
             reader.readAsText(file);
             reader.onload = function(event) {
-                var csv = event.target.result;
+                var inData = event.target.result;
                 var webfitData = webfit.plot.series[0].data;
                 var residualData = webfit.ResidualPlot.series[0].data;
 
@@ -71,48 +71,80 @@ Ext.onReady(function() {
                 if (dataP.store.data.items.length !== 0) {
                     dataP.store.removeAll();
                 }
-
+				
+				var a = file.name.split("."); //ICP reader
+				var data=[];
+				if(a[a.length-1]=="bt4") {
+					ICP= new ICPParser();
+					ICP.read(inData);
+					var name="";
+					var maxRange=-9999;
+					for(var d=0; d<ICP.columnnames.length; d++) {
+						if(ICP.columnnames[d]!="counts" && ICP.columnnames[d]!="points") {
+							if(maxRange<scaledRange(ICP.column[ICP.columnnames[d]])) {
+								name=ICP.columnnames[d];
+								maxRange=scaledRange(ICP.column[ICP.columnnames[d]]);
+							}
+						}
+					}
+					if(maxRange==-9999) {
+						name="points";
+					}				
+					for(var z=0; z<ICP.column["counts"].length; z++){
+						data.push([ICP.column[name][z],ICP.column["counts"][z], Math.sqrt(ICP.column["counts"][z])]);
+					}
+				
+				} else {
                 //webfit.plot.redraw();
-                var data = $.csv.toArrays(csv);
+                data = $.csv.toArrays(inData);
+				}
                 //var html = '';
                 for (var row in data) {
                     if (typeof data[row][2] == 'undefined') {
-                        webfitData.push([data[row][0], data[row][1], {
-                            "yerr": 1,
-                            "xerr": 0
+                        webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            yerr: Math.sqrt(parseFloat(data[row][1])),
+                            xerr: 0
                         }]);
-                        residualData.push([data[row][0], data[row][1], {
-                            "yerr": 1,
-                            "xerr": 0
+                        residualData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            yerr: Math.sqrt(parseFloat(data[row][1])),
+                            xerr: 0
                         }]);
-                        webfit.plot.data[0].push([data[row][0], data[row][1], {
-                            "yerr": 1,
-                            "xerr": 0
+                        webfit.plot.data[0].push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            yerr: Math.sqrt(parseFloat(data[row][1])),
+                            xerr: 0
                         }]);
                         dataP.store.add({
-                            x: data[row][0],
-                            y: data[row][1],
-                            yerr: 1,
+                            x: parseFloat(parseFloat(data[row][0])),
+                            y: parseFloat(parseFloat(data[row][1])),
+                            yerr: Math.sqrt(parseFloat(data[row][1])),
                             xerr: 0
                         });
                     } else {
-                        webfitData.push([data[row][0], data[row][1], {
-                            "yerr": data[row][2],
-                            "xerr": data[row][3],
+                        webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            yerr: parseFloat(data[row][2]),
+                            xerr: 0,
+                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
                         }]);
-                        residualData.push([data[row][0], data[row][1], {
-                            "yerr": data[row][2],
-                            "xerr": data[row][3],
+                        residualData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            xerr: 0,
+                            yerr: parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
                         }]);
-                        webfit.plot.data[0].push([data[row][0], data[row][1], {
-                            "yerr": data[row][2],
-                            "xerr": data[row][3],
+                        webfit.plot.data[0].push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
+                            xerr: 0,
+                            yerr: parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
                         }]);
                         dataP.store.add({
-                            x: data[row][0],
-                            y: data[row][1],
-                            xerr: data[row][2],
-                            yerr: data[row][3],
+                            x: parseFloat(data[row][0]),
+                            y: parseFloat(data[row][1]),
+                            xerr: 0,
+                            yerr: parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
 
                         });
                     }
@@ -179,11 +211,11 @@ Ext.onReady(function() {
                 var files = this.fileInputEl.dom.files;
                 if (files) {
                     this.fireEvent('fileselected', this, files);
-                    webfit.updatePlotData(files);
+					webfit.updatePlotData(files);
                 }
             }, this);
-
             this.callParent(arguments);
+
         },
 
         // OBSOLETE - the method is not used by the superclass anymore
@@ -193,7 +225,15 @@ Ext.onReady(function() {
         },
 
     });
-
+	var scaledRange= function(x) {
+		var min=9999;
+		var max=-9999;
+		for(var a=0; a<x; a++) {
+			min=Math.min(x[a], min);
+			max=Math.max(x[a],max);
+		}
+		return(max-min)*max;
+	};
 
     //THE START OF REDISPLAYING
     var toolbar = Ext.create('Ext.toolbar.Toolbar', {
@@ -703,8 +743,6 @@ Ext.onReady(function() {
         x: 40,
         y: 38,
     });
-
-
     functionSelector.fit3 = Ext.create('Ext.Button', {
         text: 'L-M Fast Fit',
         //id: 4,
@@ -794,7 +832,8 @@ Ext.onReady(function() {
                 }
                 var sqRes = [];
                 for (var i = 0; i < xDat.length; i++) {
-                    sqRes.push(Math.pow(z(xDat[i]) - yDat[i], 2) / (err[i]+1)); //fix this               
+                    sqRes.push((z(xDat[i]) - yDat[i])/ (err[i])); //fix this   
+
                 }
                 var status = 0;
 
@@ -856,7 +895,7 @@ Ext.onReady(function() {
 
                 counter++;
             }
-            functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + x.chisq);
+            functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + x.chisq/x.dof);
             webfit.plot.replot();
             webfit.ResidualPlot.replot();
 
