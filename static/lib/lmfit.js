@@ -418,195 +418,194 @@
  Translated from MPFIT(Sergey Koposov's astrolibpy library) to Javascript, 
  July, 2014. Alexander Zhang
  */
-
 var lmfit = lmfit || {};
-$(document).ready(function () {
-/*
-        Original FORTRAN documentation
-        **********
+$(document).ready(function() {
+    /*
+            Original FORTRAN documentation
+            **********
 
-        subroutine lmdif
+            subroutine lmdif
 
-        the purpose of lmdif is to minimize the sum of the squares of
-        m nonlinear functions in n variables by a modification of
-        the levenberg-marquardt algorithm. the user must provide a
-        subroutine which calculates the functions. the jacobian is
-        then calculated by a forward-difference approximation.
+            the purpose of lmdif is to minimize the sum of the squares of
+            m nonlinear functions in n variables by a modification of
+            the levenberg-marquardt algorithm. the user must provide a
+            subroutine which calculates the functions. the jacobian is
+            then calculated by a forward-difference approximation.
 
-        the subroutine statement is
+            the subroutine statement is
 
-          subroutine lmdif(fcn,m,n,x,fvec,ftol,xtol,gtol,maxfev,epsfcn,
-                                               diag,mode,factor,nprint,info,nfev,fjac,
-                                               ldfjac,ipvt,qtf,wa1,wa2,wa3,wa4)
+              subroutine lmdif(fcn,m,n,x,fvec,ftol,xtol,gtol,maxfev,epsfcn,
+                                                   diag,mode,factor,nprint,info,nfev,fjac,
+                                                   ldfjac,ipvt,qtf,wa1,wa2,wa3,wa4)
 
-        where
+            where
 
-          fcn is the name of the user-supplied subroutine which
-                calculates the functions. fcn must be declared
-                in an external statement in the user calling
-                program, and should be written as follows.
+              fcn is the name of the user-supplied subroutine which
+                    calculates the functions. fcn must be declared
+                    in an external statement in the user calling
+                    program, and should be written as follows.
 
-                subroutine fcn(m,n,x,fvec,iflag)
-                integer m,n,iflag
-                double precision x(n),fvec(m)
-                ----------
-                calculate the functions at x and
-                return this vector in fvec.
-                ----------
-                return
-                end
+                    subroutine fcn(m,n,x,fvec,iflag)
+                    integer m,n,iflag
+                    double precision x(n),fvec(m)
+                    ----------
+                    calculate the functions at x and
+                    return this vector in fvec.
+                    ----------
+                    return
+                    end
 
-                the value of iflag should not be changed by fcn unless
-                the user wants to terminate execution of lmdif.
-                in this case set iflag to a negative integer.
+                    the value of iflag should not be changed by fcn unless
+                    the user wants to terminate execution of lmdif.
+                    in this case set iflag to a negative integer.
 
-          m is a positive integer input variable set to the number
-                of functions.
+              m is a positive integer input variable set to the number
+                    of functions.
 
-          n is a positive integer input variable set to the number
-                of variables. n must not exceed m.
+              n is a positive integer input variable set to the number
+                    of variables. n must not exceed m.
 
-          x is an array of length n. on input x must contain
-                an initial estimate of the solution vector. on output x
-                contains the final estimate of the solution vector.
+              x is an array of length n. on input x must contain
+                    an initial estimate of the solution vector. on output x
+                    contains the final estimate of the solution vector.
 
-          fvec is an output array of length m which contains
-                the functions evaluated at the output x.
+              fvec is an output array of length m which contains
+                    the functions evaluated at the output x.
 
-          ftol is a nonnegative input variable. termination
-                occurs when both the actual and predicted relative
-                reductions in the sum of squares are at most ftol.
-                therefore, ftol measures the relative error desired
-                in the sum of squares.
+              ftol is a nonnegative input variable. termination
+                    occurs when both the actual and predicted relative
+                    reductions in the sum of squares are at most ftol.
+                    therefore, ftol measures the relative error desired
+                    in the sum of squares.
 
-          xtol is a nonnegative input variable. termination
-                occurs when the relative error between two consecutive
-                iterates is at most xtol. therefore, xtol measures the
-                relative error desired in the approximate solution.
+              xtol is a nonnegative input variable. termination
+                    occurs when the relative error between two consecutive
+                    iterates is at most xtol. therefore, xtol measures the
+                    relative error desired in the approximate solution.
 
-          gtol is a nonnegative input variable. termination
-                occurs when the cosine of the angle between fvec and
-                any column of the jacobian is at most gtol in absolute
-                value. therefore, gtol measures the orthogonality
-                desired between the function vector and the columns
-                of the jacobian.
+              gtol is a nonnegative input variable. termination
+                    occurs when the cosine of the angle between fvec and
+                    any column of the jacobian is at most gtol in absolute
+                    value. therefore, gtol measures the orthogonality
+                    desired between the function vector and the columns
+                    of the jacobian.
 
-          maxfev is a positive integer input variable. termination
-                occurs when the number of calls to fcn is at least
-                maxfev by the end of an iteration.
+              maxfev is a positive integer input variable. termination
+                    occurs when the number of calls to fcn is at least
+                    maxfev by the end of an iteration.
 
-          epsfcn is an input variable used in determining a suitable
-                step length for the forward-difference approximation. this
-                approximation assumes that the relative errors in the
-                functions are of the order of epsfcn. if epsfcn is less
-                than the machine precision, it is assumed that the relative
-                errors in the functions are of the order of the machine
-                precision.
+              epsfcn is an input variable used in determining a suitable
+                    step length for the forward-difference approximation. this
+                    approximation assumes that the relative errors in the
+                    functions are of the order of epsfcn. if epsfcn is less
+                    than the machine precision, it is assumed that the relative
+                    errors in the functions are of the order of the machine
+                    precision.
 
-          diag is an array of length n. if mode = 1 (see
-                below), diag is internally set. if mode = 2, diag
-                must contain positive entries that serve as
-                multiplicative scale factors for the variables.
+              diag is an array of length n. if mode = 1 (see
+                    below), diag is internally set. if mode = 2, diag
+                    must contain positive entries that serve as
+                    multiplicative scale factors for the variables.
 
-          mode is an integer input variable. if mode = 1, the
-                variables will be scaled internally. if mode = 2,
-                the scaling is specified by the input diag. other
-                values of mode are equivalent to mode = 1.
+              mode is an integer input variable. if mode = 1, the
+                    variables will be scaled internally. if mode = 2,
+                    the scaling is specified by the input diag. other
+                    values of mode are equivalent to mode = 1.
 
-          factor is a positive input variable used in determining the
-                initial step bound. this bound is set to the product of
-                factor and the euclidean norm of diag*x if nonzero, or else
-                to factor itself. in most cases factor should lie in the
-                interval (.1,100.). 100. is a generally recommended value.
+              factor is a positive input variable used in determining the
+                    initial step bound. this bound is set to the product of
+                    factor and the euclidean norm of diag*x if nonzero, or else
+                    to factor itself. in most cases factor should lie in the
+                    interval (.1,100.). 100. is a generally recommended value.
 
-          nprint is an integer input variable that enables controlled
-                printing of iterates if it is positive. in this case,
-                fcn is called with iflag = 0 at the beginning of the first
-                iteration and every nprint iterations thereafter and
-                immediately prior to return, with x and fvec available
-                for printing. if nprint is not positive, no special calls
-                of fcn with iflag = 0 are made.
+              nprint is an integer input variable that enables controlled
+                    printing of iterates if it is positive. in this case,
+                    fcn is called with iflag = 0 at the beginning of the first
+                    iteration and every nprint iterations thereafter and
+                    immediately prior to return, with x and fvec available
+                    for printing. if nprint is not positive, no special calls
+                    of fcn with iflag = 0 are made.
 
-          info is an integer output variable. if the user has
-                terminated execution, info is set to the (negative)
-                value of iflag. see description of fcn. otherwise,
-                info is set as follows.
+              info is an integer output variable. if the user has
+                    terminated execution, info is set to the (negative)
+                    value of iflag. see description of fcn. otherwise,
+                    info is set as follows.
 
-                info = 0  improper input parameters.
+                    info = 0  improper input parameters.
 
-                info = 1  both actual and predicted relative reductions
-                                  in the sum of squares are at most ftol.
+                    info = 1  both actual and predicted relative reductions
+                                      in the sum of squares are at most ftol.
 
-                info = 2  relative error between two consecutive iterates
-                                  is at most xtol.
+                    info = 2  relative error between two consecutive iterates
+                                      is at most xtol.
 
-                info = 3  conditions for info = 1 and info = 2 both hold.
+                    info = 3  conditions for info = 1 and info = 2 both hold.
 
-                info = 4  the cosine of the angle between fvec and any
-                                  column of the jacobian is at most gtol in
-                                  absolute value.
+                    info = 4  the cosine of the angle between fvec and any
+                                      column of the jacobian is at most gtol in
+                                      absolute value.
 
-                info = 5  number of calls to fcn has reached or
-                                  exceeded maxfev.
+                    info = 5  number of calls to fcn has reached or
+                                      exceeded maxfev.
 
-                info = 6  ftol is too small. no further reduction in
-                                  the sum of squares is possible.
+                    info = 6  ftol is too small. no further reduction in
+                                      the sum of squares is possible.
 
-                info = 7  xtol is too small. no further improvement in
-                                  the approximate solution x is possible.
+                    info = 7  xtol is too small. no further improvement in
+                                      the approximate solution x is possible.
 
-                info = 8  gtol is too small. fvec is orthogonal to the
-                                  columns of the jacobian to machine precision.
+                    info = 8  gtol is too small. fvec is orthogonal to the
+                                      columns of the jacobian to machine precision.
 
-          nfev is an integer output variable set to the number of
-                calls to fcn.
+              nfev is an integer output variable set to the number of
+                    calls to fcn.
 
-          fjac is an output m by n array. the upper n by n submatrix
-                of fjac contains an upper triangular matrix r with
-                diagonal elements of nonincreasing magnitude such that
+              fjac is an output m by n array. the upper n by n submatrix
+                    of fjac contains an upper triangular matrix r with
+                    diagonal elements of nonincreasing magnitude such that
 
-                               t        t                 t
-                          p *(jac *jac)*p = r *r,
+                                   t        t                 t
+                              p *(jac *jac)*p = r *r,
 
-                where p is a permutation matrix and jac is the final
-                calculated jacobian. column j of p is column ipvt(j)
-                (see below) of the identity matrix. the lower trapezoidal
-                part of fjac contains information generated during
-                the computation of r.
+                    where p is a permutation matrix and jac is the final
+                    calculated jacobian. column j of p is column ipvt(j)
+                    (see below) of the identity matrix. the lower trapezoidal
+                    part of fjac contains information generated during
+                    the computation of r.
 
-          ldfjac is a positive integer input variable not less than m
-                which specifies the leading dimension of the array fjac.
+              ldfjac is a positive integer input variable not less than m
+                    which specifies the leading dimension of the array fjac.
 
-          ipvt is an integer output array of length n. ipvt
-                defines a permutation matrix p such that jac*p = q*r,
-                where jac is the final calculated jacobian, q is
-                orthogonal (not stored), and r is upper triangular
-                with diagonal elements of nonincreasing magnitude.
-                column j of p is column ipvt(j) of the identity matrix.
+              ipvt is an integer output array of length n. ipvt
+                    defines a permutation matrix p such that jac*p = q*r,
+                    where jac is the final calculated jacobian, q is
+                    orthogonal (not stored), and r is upper triangular
+                    with diagonal elements of nonincreasing magnitude.
+                    column j of p is column ipvt(j) of the identity matrix.
 
-          qtf is an output array of length n which contains
-                the first n elements of the vector (q transpose)*fvec.
+              qtf is an output array of length n which contains
+                    the first n elements of the vector (q transpose)*fvec.
 
-          wa1, wa2, and wa3 are work arrays of length n.
+              wa1, wa2, and wa3 are work arrays of length n.
 
-          wa4 is a work array of length m.
+              wa4 is a work array of length m.
 
-        subprograms called
+            subprograms called
 
-          user-supplied ...... fcn
+              user-supplied ...... fcn
 
-          minpack-supplied ... dpmpar,enorm,fdjac2,,qrfac
+              minpack-supplied ... dpmpar,enorm,fdjac2,,qrfac
 
-          fortran-supplied ... dabs,dmax1,dmin1,dsqrt,mod
+              fortran-supplied ... dabs,dmax1,dmin1,dsqrt,mod
 
-        argonne national laboratory. minpack project. march 1980.
-        burton s. garbow, kenneth e. hillstrom, jorge j. more
+            argonne national laboratory. minpack project. march 1980.
+            burton s. garbow, kenneth e. hillstrom, jorge j. more
 
-        **********
-*/
-    lmfit.lmfit = function (fcn, xall, functkw, parinfo, ftol, xtol, gtol, damp, maxiter, factor, nprint, iterfunct, iterkw, nocovar, rescale, autoderivative, quiet, diag, epsfcn, debug) {
-        
-		/*
+            **********
+    */
+    lmfit.lmfit = function(fcn, xall, functkw, parinfo, ftol, xtol, gtol, damp, maxiter, factor, nprint, iterfunct, iterkw, nocovar, rescale, autoderivative, quiet, diag, epsfcn, debug) {
+
+        /*
 		Inputs:
         fcn:
            The function to be minimized.  The function should return the weighted
@@ -840,7 +839,7 @@ $(document).ready(function () {
                    # scaled uncertainties
                    pcerror = mpfit.perror * sqrt(mpfit.fnorm / dof)
 				   */
-		var machep=Math.pow(2, -52);
+        var machep = Math.pow(2, -52);
         if (lmfit.typeOf(functkw) == 'undefined') {
             functkw = {};
         }
@@ -902,20 +901,20 @@ $(document).ready(function () {
         if (iterfunct == 'default') {
             iterfunct = lmfit.defiter;
         }
-//        Parameter damping doesn't work when user is providing their own
-//         gradients.
+        //        Parameter damping doesn't work when user is providing their own
+        //         gradients.
         if (this.damp != 0 && autoderivative == 0) {
             this.errmsg = "error: keywords DAMP and autoderivative are mutually exclusive";
             return;
         }
-//        Parameters can either be stored in parinfo, or x. x takes precedence if it exists
+        //        Parameters can either be stored in parinfo, or x. x takes precedence if it exists
         if (lmfit.typeOf(xall) == 'undefined' && lmfit.typeOf(parinfo) == 'undefined') {
             this.errmsg = "error: must puass parameters in P or PARINFO";
             return;
         }
         //skip checking the type of PARINFO because we assume the user is somewhat smart and because js is nice
-//        If the parameters were not specified at the command line, then
-//         extract them from PARINFO
+        //        If the parameters were not specified at the command line, then
+        //         extract them from PARINFO
         if (lmfit.typeOf(xall) == 'undefined') {
             xall = lmfit.parinfo(parinfo, 'value');
             if (lmfit.typeOf(xall) == 'undefined') {
@@ -926,7 +925,7 @@ $(document).ready(function () {
         var npar = xall.length;
         this.fnorm = -1;
         var fnorm1 = -1;
-//        TIED parameters?
+        //        TIED parameters?
         var ptied = lmfit.parinfo(parinfo, 'tied', '', npar);
         this.qanytied = 0;
         for (var i = 0; i < npar; i++) {
@@ -935,27 +934,26 @@ $(document).ready(function () {
             }
         }
         this.ptied = ptied;
-//        FIXED parameters ?
+        //        FIXED parameters ?
 
         var pfixed = lmfit.parinfo(parinfo, 'fixed', 0, npar);
         for (i = 0; i < pfixed.length; i++) {
             if (pfixed[i] == 1) {
                 pfixed[i] = true;
-            }
-            else {
+            } else {
                 pfixed[i] = false;
             }
         }
         for (var i = 0; i < npar; i++) {
-            pfixed[i] = pfixed[i];//Tied parameters are also effectively fixed
+            pfixed[i] = pfixed[i]; //Tied parameters are also effectively fixed
 
         }
-//        Finite differencing step, absolute and relative, and sidedness of deriv.
+        //        Finite differencing step, absolute and relative, and sidedness of deriv.
         var step = lmfit.parinfo(parinfo, 'step', 0, npar);
         var dstep = lmfit.parinfo(parinfo, 'dstep', 0, npar);
         var dside = lmfit.parinfo(parinfo, 'dside', 0, npar);
 
-//        Maximum and minimum steps allowed to be taken in one iteration
+        //        Maximum and minimum steps allowed to be taken in one iteration
         var maxstep = lmfit.parinfo(parinfo, 'mpmaxstep', 0, npar);
         var minstep = lmfit.parinfo(parinfo, 'mpminstep', 0, npar);
         var qmin = [];
@@ -995,7 +993,7 @@ $(document).ready(function () {
                 qminmax++;
             }
         }
-//        Finish up the free parameters
+        //        Finish up the free parameters
         var ifree = [];
         for (var i = 0; i < pfixed.length; i++) {
             if (pfixed != 1) {
@@ -1008,7 +1006,7 @@ $(document).ready(function () {
             return;
         }
 
-//        Compose only VARYING parameters
+        //        Compose only VARYING parameters
         this.params = []; //this.params is the set of parameters to be returned
         for (i = 0; i < xall.length; i++) {
             this.params.push(xall[i]);
@@ -1018,14 +1016,18 @@ $(document).ready(function () {
             x.push(this.params[ifree[i]]);
         }
 
-//        Limited parameters ?
+        //        Limited parameters ?
         var limited = lmfit.parinfo(parinfo, 'limited', [0, 0], npar);
         var limits = lmfit.parinfo(parinfo, 'limits', [0, 0], npar);
-        var qulim = [], ulim = [], qllim = [], llim = [], qanylim = [];
+        var qulim = [],
+            ulim = [],
+            qllim = [],
+            llim = [],
+            qanylim = [];
         if (lmfit.typeOf(limited) == 'undefined' && lmfit.typeOf(limits) == 'undefined') {
-//            Error checking on limits in parinfo
+            //            Error checking on limits in parinfo
             for (var i = 0; i < xall.length; i++) {
-                if (xall[i] < limits[i][0] || xall[i] < limits[i][1])//may need to check that some of the limits are actually defined
+                if (xall[i] < limits[i][0] || xall[i] < limits[i][1]) //may need to check that some of the limits are actually defined
                 {
                     this.errmsg = 'error: parameters are not within PARINFO limits';
                     return;
@@ -1058,7 +1060,7 @@ $(document).ready(function () {
             }
 
         } else {
-//            Fill in local variables with dummy values
+            //            Fill in local variables with dummy values
             qulim = [];
             for (var i = 0; i < nfree; i++) {
                 qulim.push(0);
@@ -1073,7 +1075,7 @@ $(document).ready(function () {
             qanylim = 0;
         }
         n = x.length;
-//        Check input parameters for errors
+        //        Check input parameters for errors
         if ((n < 0) || (ftol <= 0) || (xtol <= 0) || (gtol <= 0) || (maxiter < 0) || (factor <= 0)) {
             this.errmsg = 'error: input keywords are inconsistent';
             return;
@@ -1105,7 +1107,7 @@ $(document).ready(function () {
         }
         this.dof = m - nfree;
         this.fnorm = lmfit.enorm(fvec);
-//        Initialize Levenberg-Marquardt parameter and iteration counter
+        //        Initialize Levenberg-Marquardt parameter and iteration counter
         var par = 0;
         this.niter = 1;
         var qtf = [];
@@ -1114,10 +1116,10 @@ $(document).ready(function () {
         }
         this.status = 0;
 
-//        Beginning of the outer loop
+        //        Beginning of the outer loop
 
         while (true) {
-//            If requested, call fcn to enable printing of iterates
+            //            If requested, call fcn to enable printing of iterates
             for (i = 0; i < ifree.length; i++) {
                 this.params[ifree[i]] = x[i];
             }
@@ -1137,12 +1139,12 @@ $(document).ready(function () {
                     if (lmfit.typeOf(status) != 'undefined') {
                         this.status = status;
                     }
-//                     Check for user termination
+                    //                     Check for user termination
                     if (this.status < 0) {
                         this.errmsg = 'WARNING: premature terminatoin by iterfunct';
                         return;
                     }
-//                    If parameters were changed (grrr..) then re-tie
+                    //                    If parameters were changed (grrr..) then re-tie
                     var a = 0;
                     for (var i = 0; i < xnew0.length; i++) {
                         a = Math.max(a, xnew0[i] - this.params[i]);
@@ -1160,7 +1162,7 @@ $(document).ready(function () {
                     }
                 }
             }
-//            Calculate the jacobian matrix
+            //            Calculate the jacobian matrix
             this.status = 2;
             var catch_msg = 'calling MPFIT_FDJAC2';
             var temp = lmfit.fdjac2(fcn, x, fvec, step, qulim, ulim, dside, epsfcn, autoderivative, functkw, this.params, ifree, dstep);
@@ -1169,26 +1171,26 @@ $(document).ready(function () {
                 this.errmsg = 'WARNING: premature termination by FDJAC2';
                 return;
             }
-//            Determine if any of the parameters are pegged at the limits
+            //            Determine if any of the parameters are pegged at the limits
             if (qanylim) {
                 catch_msg = 'zeroing derivatives of pegged parameters';
-                var whlpeg=[];
+                var whlpeg = [];
                 for (i = 0; i < qllim.length; i++) {
                     if (qllim[i] != 0 && x == llim[i]) {
                         whlpeg.push(i);
                     }
                 }
                 var nlpeg = whlpeg.length;
-                var whupeg=[];
+                var whupeg = [];
                 for (i = 0; i < qulim.length; i++) {
                     if (qulim[i] != 0 && x == ulim[i]) {
                         whupeg.push(i);
                     }
                 }
                 var nupeg = whupeg.length;
-//                See if any "pegged" values should keep their derivatives
+                //                See if any "pegged" values should keep their derivatives
                 if (nlpeg > 0) {
-//                    Total derivative of sum wrt lower pegged parameters
+                    //                    Total derivative of sum wrt lower pegged parameters
                     for (i = 0; i < nlpeg; i++) {
                         var sum0 = 0;
                         for (j = 0; j < fjac.lengh; j++) {
@@ -1206,7 +1208,7 @@ $(document).ready(function () {
                 if (nupeg > 0) {
                     for (i = 0; i < nupeg; i++) {
                         var sum0 = 0;
-//                        Total derivative of sum wrt upper pegged parameters
+                        //                        Total derivative of sum wrt upper pegged parameters
                         for (j = 0; j < fvec.length; j++) {
                             sum0 += fvec[j] * fjac[j][whupeg[i]];
                         }
@@ -1218,7 +1220,7 @@ $(document).ready(function () {
                     }
                 }
             }
-//            Compute the QR factorization of the jacobian
+            //            Compute the QR factorization of the jacobian
             var a = lmfit.qrfac(fjac, 1);
             fjac = a.a;
             var ipvt = a.ipvt;
@@ -1226,8 +1228,8 @@ $(document).ready(function () {
             var wa2 = a.acnorm;
             var wa3 = [];
 
-//            On the first iteration if "diag" is unspecificed, scale
-//            according to the norms of the columns of the initial jacobian
+            //            On the first iteration if "diag" is unspecificed, scale
+            //            according to the norms of the columns of the initial jacobian
             catch_msg = 'rescaling diagonal elements';
             if (this.niter == 1) {
                 if (rescale == 0 || diag.length < n) {
@@ -1241,8 +1243,8 @@ $(document).ready(function () {
                         }
                     }
                 }
-//                  On the first iteration, calculate the norm of the scaled x
-//                  and initialize the step bound delta
+                //                  On the first iteration, calculate the norm of the scaled x
+                //                  and initialize the step bound delta
                 for (i = 0; i < diag.length; i++) {
 
                     //DO IT: wa3 does not necessairly push the values
@@ -1264,7 +1266,9 @@ $(document).ready(function () {
                 var lj = ipvt[j];
                 var temp3 = fjac[j][lj];
                 if (temp3 != 0) {
-                    var fj = [], wj = [], sum = 0;
+                    var fj = [],
+                        wj = [],
+                        sum = 0;
                     for (i = j; i < fjac.length; i++) {
                         fj.push(fjac[i][lj]);
                         wj.push(wa4[i]);
@@ -1280,11 +1284,11 @@ $(document).ready(function () {
                 qtf[j] = wa4[j];
 
             }
-//             From this point on, only the square matrix, consisting of the
-//             triangle of R, is needed.
+            //             From this point on, only the square matrix, consisting of the
+            //             triangle of R, is needed.
             var tempMatrix = new Array(n);
             for (i = 0; i < n; i++) {
-                tempMatrix[i]=new Array(n);
+                tempMatrix[i] = new Array(n);
                 for (var z = 0; z < n; z++) {
                     tempMatrix[i][z] = 0;
                 }
@@ -1297,16 +1301,14 @@ $(document).ready(function () {
             fjac = tempMatrix;
             var temp = new Array(fjac.length);
             for (i = 0; i < fjac.length; i++) {
-                temp[i]=new Array(fjac[i].length);
+                temp[i] = new Array(fjac[i].length);
                 for (z = 0; z < temp[0].length; z++) {
                     temp[i][z] = fjac[i][z];
                 }
             }
-            for(i=0; i<n; i++)
-            {
-                for(var z=0; z<temp.length;z++ )
-                {
-                    temp[z][i]=fjac[z][ipvt[i]];
+            for (i = 0; i < n; i++) {
+                for (var z = 0; z < temp.length; z++) {
+                    temp[z][i] = fjac[z][ipvt[i]];
                 }
             }
 
@@ -1315,13 +1317,13 @@ $(document).ready(function () {
                 fjac[i] = temp[i];
             }
 
-//            Check for overflow.  This should be a cheap test here since FJAC
-//            has been reduced to a (small) square matrix, and the test is
-//            O(N^2).
-//            wh = where(finite(fjac) EQ 0, ct)
-//            if ct GT 0 then goto, FAIL_OVERFLOW
+            //            Check for overflow.  This should be a cheap test here since FJAC
+            //            has been reduced to a (small) square matrix, and the test is
+            //            O(N^2).
+            //            wh = where(finite(fjac) EQ 0, ct)
+            //            if ct GT 0 then goto, FAIL_OVERFLOW
 
-//            Compute the norm of the scaled gradient
+            //            Compute the norm of the scaled gradient
             catch_msg = 'computing the scaled gradient';
             var gnorm = 0;
             if (this.fnorm != 0) {
@@ -1329,18 +1331,18 @@ $(document).ready(function () {
                     var l = ipvt[j];
                     if (wa2[l] != 0) {
                         sum0 = 0;
-                        var sum=0;
+                        var sum = 0;
                         for (i = 0; i < j + 1; i++) {
 
                             sum += fjac[i][j] * qtf[i];
 
                         }
-                        sum0=sum/this.fnorm;
+                        sum0 = sum / this.fnorm;
                         gnorm = Math.max(gnorm, Math.abs(sum0 / wa2[l]));
                     }
                 }
             }
-//            Test for convergence of the gradient norm
+            //            Test for convergence of the gradient norm
             if (gnorm <= gtol) {
                 this.status = 4;
                 break;
@@ -1351,69 +1353,62 @@ $(document).ready(function () {
                 break;
 
             }
-//            Rescale if necessary
+            //            Rescale if necessary
 
             if (rescale == 0) {
                 //cheap way of doing numpy.choose(diag>wa2 ,(wa2,diag);
-                var temp=new Array(2);
-                temp[0]=[];
-                for(i=0; i<wa2.length; i++)
-                {
+                var temp = new Array(2);
+                temp[0] = [];
+                for (i = 0; i < wa2.length; i++) {
                     temp[0].push(wa2[i]);
                 }
-                temp[1]=[];
-                for(i=0; i<diag.length; i++)
-                {
+                temp[1] = [];
+                for (i = 0; i < diag.length; i++) {
                     temp[1].push(diag[i]);
                 }
-                var boolean=[];
-                for(i=0; i<diag.length; i++)
-                {
-                    if(diag[i]>wa2[i])
-                    {
+                var boolean = [];
+                for (i = 0; i < diag.length; i++) {
+                    if (diag[i] > wa2[i]) {
                         boolean.push(1);
-                    } else{
+                    } else {
                         boolean.push(0);
                     }
                 }
 
-                for(i=0; i< boolean.length; i++)
-                {
-                    diag[i]=temp[boolean[i]][i];
+                for (i = 0; i < boolean.length; i++) {
+                    diag[i] = temp[boolean[i]][i];
                 }
             }
 
-//            Beginning of the inner loop
+            //            Beginning of the inner loop
             while (true) {
                 var alpha;
-//                Determine the levenberg-marquardt parameter
+                //                Determine the levenberg-marquardt parameter
                 catch_msg = 'calculating LM parameteR(MPFIT_)';
                 var a = lmfit.lmpar(fjac, ipvt, diag, qtf, delta, wa1, wa2, par);
                 fjac = a.r;
                 par = a.par;
                 wa1 = a.x;
                 wa2 = a.sdiag;
-//                Store the direction p and x+p. Calculate the norm of p
+                //                Store the direction p and x+p. Calculate the norm of p
 
-                for(i=0; i<wa1.length; i++)
-                {
-                    wa1[i]=-wa1[i];
+                for (i = 0; i < wa1.length; i++) {
+                    wa1[i] = -wa1[i];
                 }
                 if (qanylim == 0 && qminmax == 0) {
-//                    No parameter limits, so just move to new position WA2
+                    //                    No parameter limits, so just move to new position WA2
                     alpha = 1;
                     for (i = 0; i < wa2.length; i++) {
                         wa2[i] = x[i] + wa1[i];
                     }
 
-                }
-                else {
-//                    Respect the limits.  If a step were to go out of bounds, then
-//                    we should take a step in the same direction but shorter distance.
-//                    The step should take us right to the limit in that case.
+                } else {
+                    //                    Respect the limits.  If a step were to go out of bounds, then
+                    //                    we should take a step in the same direction but shorter distance.
+                    //                    The step should take us right to the limit in that case.
                     alpha = 1;
                     if (qanylim) {
-//                        Do not allow any steps out of bounds
+                        //                        Do not allow any steps out of bounds
                         catch_msg = 'checking for a step out of bounds';
                         if (nlpeg > 0) //very questionable
                         {
@@ -1435,27 +1430,27 @@ $(document).ready(function () {
                             }
                         }
                         var dwa1 = true;
-                        var whl=[];
+                        var whl = [];
                         for (i = 0; i < wa1.length; i++) {
                             if (qllim[i] && (x[i] + wa1[i]) < llim[i]) {
                                 wh1.push(i);
                             }
                         }
                         if (whl.length > 0) {
-                            var t=[];
+                            var t = [];
                             for (i = 0; i < whl.length; i++) {
                                 t.push((llim[whl[i]] - x[whl[i]]) / wa1[whl[i]]);
                                 alpha = Math.min(alpha, t);
                             }
                         }
-                        var whu=[];
+                        var whu = [];
                         for (i = 0; i < wa1.length; i++) {
                             if (qulim[i] && (x[i] + wa1[i]) > ulim[i]) {
                                 whu.push(i);
                             }
                         }
                         if (whu.length > 0) {
-                            var t=[];
+                            var t = [];
                             for (i = 0; i < whl.length; i++) {
                                 t.push((ulim[whu[i]] - x[whu[i]]) / wa1[whu[i]]);
                                 alpha = Math.min(alpha, t);
@@ -1464,25 +1459,25 @@ $(document).ready(function () {
 
                     }
 
-//                    Obey any max step values
+                    //                    Obey any max step values
 
                     if (qminmax) {
-                        var nwa1=[];
+                        var nwa1 = [];
                         for (i = 0; i < wa1.length; i++) {
                             nwa1.push(wa1[i] * alpha);
                         }
-                        var whmax=[];
+                        var whmax = [];
                         for (i = 0; i < qmax.length; i++) {
                             if (qmax[i] != 0 && maxstep[i] > 0) {
                                 whmax.push(i);
                             }
                         }
                         if (whmax.length > 0) {
-                            var mrat=[];
+                            var mrat = [];
                             for (i = 0; i < whmax.length; i++) {
                                 mrat.push(Math.max(Math.abs(nwa1[whmax[i]]), Math, abs(maxstep[ifree[whmax[i]]])));
                             }
-                            if (mrat.length > 1)//questionable move from array to scalar
+                            if (mrat.length > 1) //questionable move from array to scalar
                             {
                                 alpha = alpha / mrat;
                             }
@@ -1490,7 +1485,7 @@ $(document).ready(function () {
 
                     }
 
-//                    Scale the resulting vector
+                    //                    Scale the resulting vector
 
                     for (i = 0; i < wa1.length; i++) {
                         wa1[i] = wa1[i] * alpha;
@@ -1500,9 +1495,9 @@ $(document).ready(function () {
                         wa2[i] = x[i] + wa1[i];
                     }
 
-//                    Adjust the final output values.  If the step put us exactly
-//                    on a boundary, make sure it is exact.
-                    var sgnu=[];
+                    //                    Adjust the final output values.  If the step put us exactly
+                    //                    on a boundary, make sure it is exact.
+                    var sgnu = [];
                     for (i = 0; i < ulim.length; i++) {
                         if (ulim[i] >= 0) {
                             sgnu.push(1);
@@ -1511,7 +1506,7 @@ $(document).ready(function () {
                         }
 
                     }
-                    var sgnl=[];
+                    var sgnl = [];
                     for (i = 0; i < llim.length; i++) {
                         if (llim[i] >= 0) {
                             sgnl.push(1);
@@ -1521,19 +1516,19 @@ $(document).ready(function () {
 
                     }
 
-//                      Handles case of
-//                            ... nonzero *LIM ... ...zero * LIM
+                    //                      Handles case of
+                    //                            ... nonzero *LIM ... ...zero * LIM
 
                     //skip some rounding
-                    var ulim1=[];
-                    for(var i=0; i<ulim.length; i++){
+                    var ulim1 = [];
+                    for (var i = 0; i < ulim.length; i++) {
                         ulim1.push(ulim[i]);
                     }
                     var llim1 = [];
-                    for(var i=0; i<llim.length; i++){
+                    for (var i = 0; i < llim.length; i++) {
                         llim1.push(llim[i]);
                     }
-                    var wh=[];
+                    var wh = [];
                     for (i = 0; i < qulim; i++) {
                         if (qulim[i] != 0 && wa2[i] >= ulim1[i]) {
                             wh.push(i);
@@ -1544,7 +1539,7 @@ $(document).ready(function () {
                             wa2[wh[i]] = ulim[wh[i]];
                         }
                     }
-                    var wh=[];
+                    var wh = [];
                     for (i = 0; i < qllim; i++) {
                         if (qllim[i] != 0 && wa2[i] >= llim1[i]) {
                             wh.push(i);
@@ -1556,14 +1551,14 @@ $(document).ready(function () {
                         }
                     }
 
-                }//endelse
-                var wa3=[];
+                } //endelse
+                var wa3 = [];
                 for (i = 0; i < wa1.length; i++) {
                     wa3.push(diag[i] * wa1[i]);
                 }
                 var pnorm = lmfit.enorm(wa3);
 
-//                On the first iteration, adjust the initial step bound
+                //                On the first iteration, adjust the initial step bound
                 if (this.niter == 1) {
                     delta = Math.min(delta, pnorm);
                 }
@@ -1571,7 +1566,7 @@ $(document).ready(function () {
                     this.params[ifree[i]] = wa2[i];
                 }
 
-//                Evaluate the function at x+p and calculate its norm
+                //                Evaluate the function at x+p and calculate its norm
                 mperr = 0;
                 catch_msg = 'calling fcn';
                 var a = lmfit.call(fcn, this.params, functkw);
@@ -1583,7 +1578,7 @@ $(document).ready(function () {
                 }
                 fnorm1 = lmfit.enorm(wa4);
 
-//                Compute the scaled actual reduction
+                //                Compute the scaled actual reduction
                 catch_msg = 'computing convergence criteria';
                 var actred = -1;
                 if (.1 * fnorm1 < this.fnorm) {
@@ -1591,8 +1586,8 @@ $(document).ready(function () {
 
                 }
 
-//                Compute the scaled predicted reduction and the scaled directional
-//                derivative
+                //                Compute the scaled predicted reduction and the scaled directional
+                //                derivative
                 for (j = 0; j < n; j++) {
                     wa3[j] = 0;
                     for (i = 0; i < j + 1; i++) {
@@ -1600,30 +1595,28 @@ $(document).ready(function () {
                     }
                 }
 
-//                Remember, alpha is the fraction of the full LM step actually
-//                taken
-                var j=[];
-                for(i=0; i<wa3.length; i++)
-                {
-                    j.push(alpha*wa3[i]);
+                //                Remember, alpha is the fraction of the full LM step actually
+                //                taken
+                var j = [];
+                for (i = 0; i < wa3.length; i++) {
+                    j.push(alpha * wa3[i]);
                 }
                 var temp1 = lmfit.enorm(j) / this.fnorm;
                 var temp2 = (Math.sqrt(alpha * par) * pnorm) / this.fnorm;
                 var prered = temp1 * temp1 + (temp2 * temp2) / 0.5;
                 var dirder = -(temp1 * temp1 + temp2 * temp2);
 
-//                Compute the ratio of the actual to the predicted reduction.
+                //                Compute the ratio of the actual to the predicted reduction.
                 var ratio = 0;
                 if (prered != 0) {
                     ratio = actred / prered;
                 }
 
-//                Update the step bound
+                //                Update the step bound
                 if (ratio <= .25) {
                     if (actred >= 0) {
                         temp = .5;
-                    }
-                    else {
+                    } else {
                         temp = .5 * dirder / (dirder + .5 * actred);
                     }
                     if ((0.1 * fnorm1) >= this.fnorm || (temp < 0.1)) {
@@ -1631,16 +1624,15 @@ $(document).ready(function () {
                     }
                     delta = temp * Math.min(delta, pnorm / .1);
                     par = par / temp;
-                }
-                else {
+                } else {
                     if (par == 0 || ratio >= .75) {
                         delta = pnorm / .5;
                         par = .5 * par;
                     }
                 }
-//                Test for successful iteration
+                //                Test for successful iteration
                 if (ratio >= .0001) {
-//                    Successful iteration.  Update x, fvec, and their norms
+                    //                    Successful iteration.  Update x, fvec, and their norms
                     for (i = 0; i < wa2.length; i++) {
                         x[i] = wa2[i];
 
@@ -1656,7 +1648,7 @@ $(document).ready(function () {
 
                 }
 
-//                Tests for convergence
+                //                Tests for convergence
                 if (Math.abs(actred) <= ftol && (prered <= ftol) && (0.5 * ratio <= 1)) {
                     this.status = 1;
                 }
@@ -1670,7 +1662,7 @@ $(document).ready(function () {
                     break;
                 }
 
-//                Tests for termination and stringent tolerances
+                //                Tests for termination and stringent tolerances
                 if (this.niter >= maxiter) {
                     this.status = 5;
                 }
@@ -1687,41 +1679,39 @@ $(document).ready(function () {
                 if (this.status != 0) {
                     break;
                 }
-//                End of inner loop. Repeat if iteration unsuccessful
+                //                End of inner loop. Repeat if iteration unsuccessful
                 if (ratio >= .0001) {
                     break;
                 }
                 //DO THIS overflow check skipped
-//                Check for over/underflow
-//                if ~numpy.all(numpy.isfinite(wa1) & numpy.isfinite(wa2) & \
-//                numpy.isfinite(x)) or ~numpy.isfinite(ratio):
-//                errmsg = ('''ERROR: parameter or function value(s) have become
-//                'infinite; check model function for over- 'and underflow''')
-//                self.status = -16
-//                break
+                //                Check for over/underflow
+                //                if ~numpy.all(numpy.isfinite(wa1) & numpy.isfinite(wa2) & \
+                //                numpy.isfinite(x)) or ~numpy.isfinite(ratio):
+                //                errmsg = ('''ERROR: parameter or function value(s) have become
+                //                'infinite; check model function for over- 'and underflow''')
+                //                self.status = -16
+                //                break
 
-//                wh = where(finite(wa1) EQ 0 OR finite(wa2) EQ 0 OR finite(x) EQ 0, ct)
-//                if ct GT 0 OR finite(ratio) EQ 0 then begin
+                //                wh = where(finite(wa1) EQ 0 OR finite(wa2) EQ 0 OR finite(x) EQ 0, ct)
+                //                if ct GT 0 OR finite(ratio) EQ 0 then begin
 
             }
             if (this.status != 0) {
                 break;
             }
 
-        }//end of outer loop
+        } //end of outer loop
         catch_msg = 'in the termination phase';
-//        Termination, either normal or user imposed.
+        //        Termination, either normal or user imposed.
         if (this.params.length == 0) {
             return;
         }
         if (nfree == 0) {
-            this.params=[];
-            for(i=0; i<xall.length; i++)
-            {
+            this.params = [];
+            for (i = 0; i < xall.length; i++) {
                 this.params.push(xall[i]);
             }
-        }
-        else {
+        } else {
             for (i = 0; i < ifree.length; i++) {
                 this.params[ifree[i]] = x[i];
             }
@@ -1740,14 +1730,15 @@ $(document).ready(function () {
         }
         this.covar = undefined;
         this.perror = undefined;
-//        (very carefully) set the covariance matrix COVAR
+        //        (very carefully) set the covariance matrix COVAR
         if (this.status > 0 && nocovar == 0 && lmfit.typeOf(n) != 'undefined' && lmfit.typeOf(fjac) != 'undefined' && lmfit.typeOf(ipvt) != 'undefined') {
             var sz = [fjac.length, fjac[0].length];
             if (n > 0 && sz[0] >= n && sz[1] >= n && ipvt.length >= n) {
                 catch_msg = 'computing the covariance matrix';
-                var tempfjac=new Array(n), tempipvt=new Array(n);
+                var tempfjac = new Array(n),
+                    tempipvt = new Array(n);
                 for (i = 0; i < n; i++) {
-                    tempfjac[i]=new Array(n);
+                    tempfjac[i] = new Array(n);
                     for (j = 0; j < n; j++) {
                         tempfjac[i][j] = fjac[i][j];
                     }
@@ -1755,26 +1746,26 @@ $(document).ready(function () {
                 }
                 var cv = lmfit.calc_covar(tempfjac, tempipvt);
 
-//                var tempcv = [];
-//                for(i=0; i<cv.length; i++){
-//                    tempcv[i]=cv[i];
-//                }
-//                cv = new Array(n);
-//                var counter = 0;
-//                for (i = 0; i < n; i++) {
-//                    cv[i]=new Array(n);
-//                    for (j = 0; j < n; j++) {
-//                        cv[i][j] = tempcv[counter];
-//                        counter++;
-//                    }
-//                }
+                //                var tempcv = [];
+                //                for(i=0; i<cv.length; i++){
+                //                    tempcv[i]=cv[i];
+                //                }
+                //                cv = new Array(n);
+                //                var counter = 0;
+                //                for (i = 0; i < n; i++) {
+                //                    cv[i]=new Array(n);
+                //                    for (j = 0; j < n; j++) {
+                //                        cv[i][j] = tempcv[counter];
+                //                        counter++;
+                //                    }
+                //                }
                 var nn = xall.length;
 
-//                Fill in actual covariance matrix, accounting for fixed
-//                parameters.
-                this.covar=new Array(nn);
+                //                Fill in actual covariance matrix, accounting for fixed
+                //                parameters.
+                this.covar = new Array(nn);
                 for (i = 0; i < nn; i++) {
-                    this.covar[i]=[];
+                    this.covar[i] = [];
                     for (j = 0; j < nn; j++) {
                         this.covar[i].push(0);
                     }
@@ -1785,9 +1776,9 @@ $(document).ready(function () {
                     }
                 }
 
-//                Compute errors in parameters
+                //                Compute errors in parameters
                 catch_msg = 'computing parameter errors';
-                this.perror=[];
+                this.perror = [];
                 for (i = 0; i < nn; i++) {
                     this.perror.push(0);
                 }
@@ -1804,17 +1795,23 @@ $(document).ready(function () {
                         this.perror[wh[i]] = Math.sqrt(d[wh[i]]);
                     }
                 }
-		console.log(this.covar);
+                console.log(this.covar);
             }
         }
-        return {p:x, covar: this.covar, error: this.perror, chisq: this.fnorm};
+        return {
+            p: x,
+	    dof:this.dof,
+            covar: this.covar,
+            error: this.perror,
+            chisq: this.fnorm
+        };
     };
 
     /*
      Procedure to parse the parameter values in PARINFO, which is a list of dictionaries
      */
-    lmfit.parinfo = function (parinfo, key, def, n) {
-        if(this.debug) {
+    lmfit.parinfo = function(parinfo, key, def, n) {
+        if (this.debug) {
             console.log('entering parinfo');
         }
         var values;
@@ -1829,7 +1826,9 @@ $(document).ready(function () {
         }
         if (n == 0) {
             values = def;
-            return {values: values};
+            return {
+                values: values
+            };
         }
         values = [];
         for (i = 0; i < n; i++) {
@@ -1842,7 +1841,7 @@ $(document).ready(function () {
 
         }
 
-//        Convert to numeric arrays if possible
+        //        Convert to numeric arrays if possible
         return values;
     };
 
@@ -1850,29 +1849,34 @@ $(document).ready(function () {
      Call user function or procedure, with _EXTRA or not, with
      derivatives or not.
      */
-    lmfit.call = function (fcn, x, functkw, fjac) {
-        if(this.debug) {
+    lmfit.call = function(fcn, x, functkw, fjac) {
+        if (this.debug) {
             console.log('entering call...');
         }
         if (this.qantied) {
             x = lmfit.tie(x, this.ptied);
         }
         this.nfev = this.nfev + 1;
-        var x1 = [], y = [], err = [];
+        var x1 = [],
+            y = [],
+            err = [];
         x1 = functkw['x'];
         y = functkw['y'];
-	err=functkw['err'];
+        err = functkw['err'];
         if (lmfit.typeOf(fjac) == 'undefined') {
             var a = fcn(x, fjac, x1, y, err); //some funk with double astericks
             var status = a.status;
             var f = a.f;
             if (this.damp > 0) {
-//                  Apply the damping if requested.  This replaces the residuals
-//                  with their hyperbolic tangent.  Thus residuals larger than
-//                  DAMP are essentially clipped.
+                //                  Apply the damping if requested.  This replaces the residuals
+                //                  with their hyperbolic tangent.  Thus residuals larger than
+                //                  DAMP are essentially clipped.
                 f = Math.tanh(f / this.damp);
             }
-            return {status: status, f: f};
+            return {
+                status: status,
+                f: f
+            };
         } else {
             var a = fcn(x, fjac, functkw);
             return {
@@ -1887,8 +1891,8 @@ $(document).ready(function () {
      Call user function or procedure, with _EXTRA or not, with
      derivatives or not.
      */
-    lmfit.fdjac2 = function (fcn, x, fvec, step, ulimited, ulimit, dside, epsfcn, autoderivative, functkw, xall, ifree, dstep) { //no clue what types any of these are
-        if(this.debug) {
+    lmfit.fdjac2 = function(fcn, x, fvec, step, ulimited, ulimit, dside, epsfcn, autoderivative, functkw, xall, ifree, dstep) { //no clue what types any of these are
+        if (this.debug) {
             console.log('entering fdjac2...');
         }
         if (lmfit.typeOf(autoderivative) == 'undefined') {
@@ -1902,7 +1906,7 @@ $(document).ready(function () {
             xall = x;
         }
         if (lmfit.typeOf(ifree) == 'undefined') {
-            ifree=[];
+            ifree = [];
             for (i = 0; i < xall.length; i++) {
                 ifree.push(i);
             }
@@ -1917,7 +1921,7 @@ $(document).ready(function () {
         var n = x.length;
         var mperr = 0;
         var fjac = [];
-//        Compute analytical derivative if requested
+        //        Compute analytical derivative if requested
         if (autoderivative == 0) {
 
 
@@ -1925,19 +1929,18 @@ $(document).ready(function () {
                 fjac.push(0);
             }
             fjac[ifree] = 1;
-            var a = lmfit.call(fcn, xall, functkw, fjac);//questionable call
-            var status = a.status;
-            ;
+            var a = lmfit.call(fcn, xall, functkw, fjac); //questionable call
+            var status = a.status;;
             var fp = a.f;
             if (fjac.length != m * nall) {
                 console.log('error: derivative matrix was not computed properly');
                 return;
             }
-//             This definition is consistent with CURVEFIT
-//             Sign error found (thanks Jesus Fernandez <fernande@irm.chu-caen.fr>)
+            //             This definition is consistent with CURVEFIT
+            //             Sign error found (thanks Jesus Fernandez <fernande@irm.chu-caen.fr>)
             var counter;
-            var temp=[];
-            for(var i=0; i<fjac.length; i++){
+            var temp = [];
+            for (var i = 0; i < fjac.length; i++) {
                 temp.push(fjac[i]);
             }
             while (fjac.length > 0) {
@@ -1956,8 +1959,8 @@ $(document).ready(function () {
                     fjac[i][j] = -f[i][j];
                 }
             }
-            temp=[];
-            for(var i=0; i<fjac.length; i++){
+            temp = [];
+            for (var i = 0; i < fjac.length; i++) {
                 temp.push(fjac[i]);
             }
             if (ifree.length < nall) {
@@ -1967,8 +1970,8 @@ $(document).ready(function () {
                 for (i = 0; i < fjac.length; i++) {
                     fjac.push(temp[i][ifree]);
                 }
-                temp=[];
-                for(var i=0; i<fjac.length; i++){
+                temp = [];
+                for (var i = 0; i < fjac.length; i++) {
                     temp.push(fjac[i]);
                 }
                 counter = 0;
@@ -1991,8 +1994,8 @@ $(document).ready(function () {
         for (i = 0; i < x.length; i++) {
             h.push(eps * x[i]);
         }
-//         if STEP is given, use that
-//         STEP includes the fixed parameters
+        //         if STEP is given, use that
+        //         STEP includes the fixed parameters
         if (lmfit.typeOf(step) != 'undefined') {
             var stepi = [];
             for (i = 0; i < ifree.length; i++) {
@@ -2010,8 +2013,8 @@ $(document).ready(function () {
                 }
             }
         }
-//         if relative step is given, use that
-//         DSTEP includes the fixed parameters
+        //         if relative step is given, use that
+        //         DSTEP includes the fixed parameters
         if (dstep.length > 0) {
             var dstepi = [];
             for (i = 0; i < ifree.length; i++) {
@@ -2029,16 +2032,16 @@ $(document).ready(function () {
             }
 
         }
-//        In case any of the step values are zero
+        //        In case any of the step values are zero
         for (i = 0; i < h.length; i++) {
             if (h[i] == 0) {
                 h[i] = eps;
             }
-        }//questionable whether this is even needed
-//         Reverse the sign of the step if we are up against the parameter
-//         limit, or if the user requested it.
-//         DSIDE includes the fixed parameters (ULIMITED/ULIMIT have only
-//         varying ones)
+        } //questionable whether this is even needed
+        //         Reverse the sign of the step if we are up against the parameter
+        //         limit, or if the user requested it.
+        //         DSIDE includes the fixed parameters (ULIMITED/ULIMIT have only
+        //         varying ones)
         var check = [];
         for (i = 0; i < ifree.length; i++) {
             if (dside[ifree[i]] == -1) {
@@ -2052,7 +2055,7 @@ $(document).ready(function () {
             for (i = 0; i < ulimited.length; i++) {
                 mask[i] = (mask[i] || (ulimited[i] != 0 && x > ulimit[i] - h[i]));
             }
-            var wh=[];
+            var wh = [];
             for (i = 0; i < mask.length; i++) {
                 if (mask[i] != 0) {
                     wh.push(i);
@@ -2064,7 +2067,7 @@ $(document).ready(function () {
                 }
             }
         }
-//        Loop through parameters, computing the derivative for each
+        //        Loop through parameters, computing the derivative for each
 
         for (var z = 0; z < n; z++) {
             var xp = [];
@@ -2079,14 +2082,14 @@ $(document).ready(function () {
                 return;
             }
             if (Math.abs(dside[ifree[z]]) <= 1) {
-//            # COMPUTE THE ONE-SIDED DERIVATIVE
-//             Note optimization fjac(0:*,j)
+                //            # COMPUTE THE ONE-SIDED DERIVATIVE
+                //             Note optimization fjac(0:*,j)
                 for (var i = 0; i < fjac.length; i++) {
                     fjac[i][z] = (fp[i] - fvec[i]) / h[z];
                 }
             } else {
 
-//             COMPUTE THE TWO-SIDED DERIVATIVE
+                //             COMPUTE THE TWO-SIDED DERIVATIVE
                 xp[ifree[z]] = xall[ifree[z]] - h[z]
                 mperr = 0;
                 var a = lmfit.call(fcn, xp, functkw);
@@ -2095,13 +2098,15 @@ $(document).ready(function () {
                 if (status < 0) {
                     return;
                 }
-//                 Note optimization fjac(0:*,j)
+                //                 Note optimization fjac(0:*,j)
                 for (i = 0; i < fjac; i++) {
                     fjac[i][z] = (fp - fm) / (2 * h[z]);
                 }
             }
         }
-        return {fjac: fjac};
+        return {
+            fjac: fjac
+        };
 
 
     };
@@ -2236,8 +2241,8 @@ $(document).ready(function () {
 
      Note that it is usually never necessary to form the Q matrix
      explicitly, and MPFIT does not.*/
-    lmfit.qrfac = function (b, pivot) {
-        if(this.debug) {
+    lmfit.qrfac = function(b, pivot) {
+        if (this.debug) {
             console.log("entering qrfac...");
         }
         if (lmfit.typeOf(pivot) == 'undefined') {
@@ -2250,7 +2255,7 @@ $(document).ready(function () {
         var m = sz[0];
         var n = sz[1];
 
-//        Compute the initial column norms and initialize arrays
+        //        Compute the initial column norms and initialize arrays
         var acnorm = [];
         for (i = 0; i < n; i++) {
             acnorm.push(0);
@@ -2270,11 +2275,11 @@ $(document).ready(function () {
         for (i = 0; i < n; i++) {
             ipvt.push(i);
         }
-//        Reduce a to r with householder transformations
+        //        Reduce a to r with householder transformations
         var minmn = Math.min(m, n);
         for (j = 0; j < minmn; j++) {
             if (pivot != 0) {
-//            Bring the column of largest norm into the pivot position
+                //            Bring the column of largest norm into the pivot position
                 var rmax = -100;
                 for (i = j; i < rdiag.length; i++) {
                     rmax = Math.max(rmax, rdiag[i]);
@@ -2291,10 +2296,10 @@ $(document).ready(function () {
                 }
                 if (ct > 0) {
                     kmax = kmax[0];
-//                      Exchange rows via the pivot only.  Avoid actually exchanging
-//                      the rows, in case there is lots of memory transfer.  The
-//                      exchange occurs later, within the body of MPFIT, after the
-//                      extraneous columns of the matrix have been shed.
+                    //                      Exchange rows via the pivot only.  Avoid actually exchanging
+                    //                      the rows, in case there is lots of memory transfer.  The
+                    //                      exchange occurs later, within the body of MPFIT, after the
+                    //                      extraneous columns of the matrix have been shed.
                     if (kmax != j) {
                         var temp = ipvt[j];
                         ipvt[j] = ipvt[kmax];
@@ -2320,17 +2325,17 @@ $(document).ready(function () {
                 ajj[i] = ajj[i] / ajnorm;
             }
             ajj[0] = ajj[0] + 1;
-//             *** Note optimization a(j:*,j)
+            //             *** Note optimization a(j:*,j)
             for (i = j; i < a.elements.length; i++) {
                 a.elements[i][lj] = ajj[i - j];
             }
 
-//            Apply the transformation to the remaining columns
-//            and update the norms
-//
-//            NOTE to SELF: tried to optimize this by removing the loop,
-//            but it actually got slower.  Reverted to "for" loop to keep
-//            it simple.
+            //            Apply the transformation to the remaining columns
+            //            and update the norms
+            //
+            //            NOTE to SELF: tried to optimize this by removing the loop,
+            //            but it actually got slower.  Reverted to "for" loop to keep
+            //            it simple.
             var lk;
             var ajk = [];
             if (j + 1 < n) {
@@ -2341,8 +2346,8 @@ $(document).ready(function () {
                         ajk.push(a.elements[i][lk]);
 
                     }
-//                    *** Note optimization a(j:*,lk)
-//                    (corrected 20 Jul 2000)
+                    //                    *** Note optimization a(j:*,lk)
+                    //                    (corrected 20 Jul 2000)
                     if (a.elements[j][lj] != 0) {
 
                         var sum = 0;
@@ -2372,13 +2377,18 @@ $(document).ready(function () {
             }
             rdiag[j] = -ajnorm;
         }
-        return {a: a.elements, ipvt: ipvt, rdiag: rdiag, acnorm: acnorm};
+        return {
+            a: a.elements,
+            ipvt: ipvt,
+            rdiag: rdiag,
+            acnorm: acnorm
+        };
 
 
     };
 
     /* for debug purposes*/
-    lmfit.__str__ = function () {
+    lmfit.__str__ = function() {
         return {
             params: this.params,
             niter: this.niter,
@@ -2396,8 +2406,8 @@ $(document).ready(function () {
      Default procedure to be called every iteration.  It simply prints
      the parameter values.
      */
-    lmfit.defiter = function (fcn, x, iter, fnorm, functkw, quiet, iterstop, parinfo, format, pformat, dof) {
-        if(this.debug) {
+    lmfit.defiter = function(fcn, x, iter, fnorm, functkw, quiet, iterstop, parinfo, format, pformat, dof) {
+        if (this.debug) {
             console.log('entering defiter...');
         }
         if (lmfit.typeOf(quiet) == 'undefined') {
@@ -2418,7 +2428,7 @@ $(document).ready(function () {
             var fvec = a.f;
             fnorm = Math.pow(lmfit.enorm(fvec), 2);
         }
-//        Determine which parameters to print
+        //        Determine which parameters to print
         var nprint = x.length;
         console.log("Iter:" + iter + " Chi-sq:" + fnorm + " DOF:" + dof);
         /*for(var key in parinfo)
@@ -2529,16 +2539,16 @@ $(document).ready(function () {
      fortran-supplied ... dabs,dsqrt
      argonne national laboratory. minpack project. march 1980.
      burton s. garbow, kenneth e. hillstrom, jorge j. more*/
-    lmfit.qrsolv = function (r, ipvt, diag, qtb, sdiag) {
-        if(this.debug) {
-        console.log("entering qrsolv");
+    lmfit.qrsolv = function(r, ipvt, diag, qtb, sdiag) {
+        if (this.debug) {
+            console.log("entering qrsolv");
         }
         var sz = r.dimensions();
         var m = sz.rows;
         var n = sz.cols;
 
-//         copy r and (q transpose)*b to preserve input and initialize s.
-//         in particular, save the diagonal elements of r in x.
+        //         copy r and (q transpose)*b to preserve input and initialize s.
+        //         in particular, save the diagonal elements of r in x.
 
         for (var j = 0; j < n; j++) {
             for (var i = 0; i < n; i++) {
@@ -2546,13 +2556,12 @@ $(document).ready(function () {
             }
         }
         var x = r.diagonal().elements;
-        var wa =[];
-            for(i=0; i<qtb.length; i++)
-            {
-             wa[i]=qtb[i];
-            }
+        var wa = [];
+        for (i = 0; i < qtb.length; i++) {
+            wa[i] = qtb[i];
+        }
 
-//       Eliminate the diagonal matrix d using a givens rotation
+        //       Eliminate the diagonal matrix d using a givens rotation
 
         for (j = 0; j < n; j++) {
             var l = ipvt[j];
@@ -2564,9 +2573,9 @@ $(document).ready(function () {
             }
             sdiag[j] = diag[l];
 
-//            The transformations to eliminate the row of d modify only a
-//            single element of (q transpose)*b beyond the first n, which
-//            is initially zero.
+            //            The transformations to eliminate the row of d modify only a
+            //            single element of (q transpose)*b beyond the first n, which
+            //            is initially zero.
 
             var qtbpj = 0;
             for (var k = j; k < n; k++) {
@@ -2584,26 +2593,26 @@ $(document).ready(function () {
                     sine = cosine * tang;
                 }
 
-//                Compute the modified diagonal element of r and the
-//                modified element of ((q transpose)*b,0).
+                //                Compute the modified diagonal element of r and the
+                //                modified element of ((q transpose)*b,0).
 
                 r.elements[k][k] = cosine * r.elements[k][k] + sine * sdiag[k];
                 var temp = cosine * wa[k] + sine * qtbpj;
                 qtbpj = -sine * wa[k] + cosine * qtbpj;
                 wa[k] = temp;
 
-//                Accumulate the transformation in the row of s
+                //                Accumulate the transformation in the row of s
 
                 if (n > k + 1) {
-                    temp=[];
+                    temp = [];
                     for (i = k + 1; i < n; i++) {
                         temp.push(cosine * r.elements[i][k] + sine * sdiag[i]);
                     }
-                    for(i=k+1; i<n; i++) {
+                    for (i = k + 1; i < n; i++) {
                         sdiag[i] = -sine * r.elements[i][k] + cosine * sdiag[i];
                     }
-                    for(i=k+1; i<n; i++){
-                        r.elements[i][k] = temp[i-k-1];
+                    for (i = k + 1; i < n; i++) {
+                        r.elements[i][k] = temp[i - k - 1];
                     }
                 }
             }
@@ -2612,10 +2621,10 @@ $(document).ready(function () {
 
 
         }
-//          Solve the triangular system for z.  If the system is singular
-//          then obtain a least squares solution
+        //          Solve the triangular system for z.  If the system is singular
+        //          then obtain a least squares solution
         var nsing = n;
-        var wh=[];
+        var wh = [];
         for (i = 0; i < sdiag.length; i++) {
             if (sdiag[i] == 0) {
                 wh.push(i);
@@ -2631,7 +2640,7 @@ $(document).ready(function () {
         if (nsing >= 1) {
             wa[nsing - 1] = wa[nsing - 1] / sdiag[nsing - 1];
             for (j = nsing - 2; j > -1; j--) {
-                var sum0=0;
+                var sum0 = 0;
 
                 for (k = j + 1; k < nsing; k++) {
                     sum0 += r.elements[k][j] * wa[k];
@@ -2640,12 +2649,16 @@ $(document).ready(function () {
             }
         }
 
-//        Permute the components of z back to components of x
+        //        Permute the components of z back to components of x
 
-        for(i=0; i<ipvt.length; i++) {
-            x[ipvt[i]] = wa[i];  //questionable; ipvt is a 1d array, x is a 1d array
+        for (i = 0; i < ipvt.length; i++) {
+            x[ipvt[i]] = wa[i]; //questionable; ipvt is a 1d array, x is a 1d array
         }
-        return {r: r, x: x, sdiag: sdiag};      //questionable return
+        return {
+            r: r,
+            x: x,
+            sdiag: sdiag
+        }; //questionable return
 
 
     };
@@ -2743,23 +2756,23 @@ $(document).ready(function () {
      argonne national laboratory. minpack project. march 1980.
      burton s. garbow, kenneth e. hillstrom, jorge j. more
      */
-    lmfit.lmpar = function (y, ipvt, diag, qtb, delta, x, sdiag, par) {  //must check the typeOf r array/matrix
-        if(this.debug) {
+    lmfit.lmpar = function(y, ipvt, diag, qtb, delta, x, sdiag, par) { //must check the typeOf r array/matrix
+        if (this.debug) {
             console.log('entering lmpar...');
         }
-        r=Matrix.create(y);
+        r = Matrix.create(y);
         var sz = [y.length, y[0].length];
         var m = sz[0];
         var n = sz[1];
 
-//         Compute and store in x the gauss-newton direction.  If the
-//         jacobian is rank-deficient, obtain a least-squares solution
+        //         Compute and store in x the gauss-newton direction.  If the
+        //         jacobian is rank-deficient, obtain a least-squares solution
 
         var nsing = n;
 
         var wa1 = [];
-        for(i=0; i<qtb.length; i++){
-            wa1[i]=qtb[i];
+        for (i = 0; i < qtb.length; i++) {
+            wa1[i] = qtb[i];
         }
         //skipping some rounding stuffs
         if (nsing >= 1) {
@@ -2772,35 +2785,39 @@ $(document).ready(function () {
                 }
             }
         }
-//      Note: ipvt here is a permutaiton array
-        for(i=0; i<ipvt.length; i++)
-        {
-            x[ipvt[i]]=wa1[i];
+        //      Note: ipvt here is a permutaiton array
+        for (i = 0; i < ipvt.length; i++) {
+            x[ipvt[i]] = wa1[i];
         }
         //x[ipvt] = wa1; //questionble "permutation array"
 
         var iter = 0;
-        var wa2=[];
-        for(i=0; i<diag.length; i++) {
-            wa2.push(diag[i] * x[i]);//may have to change this because javascript doesn't support array * array operatoins
+        var wa2 = [];
+        for (i = 0; i < diag.length; i++) {
+            wa2.push(diag[i] * x[i]); //may have to change this because javascript doesn't support array * array operatoins
         }
         var dxnorm = lmfit.enorm(wa2);
         var fp = dxnorm - delta;
         if (fp <= 0.1 * delta) {
-            return {r: r.elements, par:0, x:x, sdiag:sdiag};
+            return {
+                r: r.elements,
+                par: 0,
+                x: x,
+                sdiag: sdiag
+            };
         }
-//         If the jacobian is not rank deficient, the newton step provides a
-//         lower bound, parl, for the zero of the function.  Otherwise set
-//         this bound to zero.
+        //         If the jacobian is not rank deficient, the newton step provides a
+        //         lower bound, parl, for the zero of the function.  Otherwise set
+        //         this bound to zero.
 
         var parl = 0;
         if (nsing >= n) {
-            for(i=0; i<ipvt.length; i++) {
-                wa1[i] = diag[ipvt[i]] * wa2[ipvt[i]] / dxnorm;//again the permutation array questionability
+            for (i = 0; i < ipvt.length; i++) {
+                wa1[i] = diag[ipvt[i]] * wa2[ipvt[i]] / dxnorm; //again the permutation array questionability
             }
             wa1[0] = wa1[0] / r.elements[0][0];
             for (j = 1; j < n; j++) {
-                var sum0=0;
+                var sum0 = 0;
                 for (i = 0; i < j; i++) {
                     sum0 += r.elements[i][j] * wa1[i];
 
@@ -2813,9 +2830,9 @@ $(document).ready(function () {
 
 
         }
-//             Calculate an upper bound, paru, for the zero of the function
+        //             Calculate an upper bound, paru, for the zero of the function
         for (j = 0; j < n; j++) {
-            var sum0=0;
+            var sum0 = 0;
             for (i = 0; i < j + 1; i++) {
                 sum0 += r.elements[i][j] * qtb[i];
 
@@ -2825,8 +2842,8 @@ $(document).ready(function () {
         var gnorm = lmfit.enorm(wa1);
         var paru = gnorm / delta;
         //skip some rounding checks
-//         If the input par lies outside of the interval (parl,paru), set
-//         par to the closer endpoint
+        //         If the input par lies outside of the interval (parl,paru), set
+        //         par to the closer endpoint
         if (lmfit.typeOf(par) == 'undefined') {
             par = parl;
             par = Math.min(par, paru);
@@ -2837,21 +2854,21 @@ $(document).ready(function () {
         if (par == 0) {
             par = gnorm / dxnorm;
         }
-//        Beginning of an interation
-        while (true)  //unsure whether it will throw an exception
+        //        Beginning of an interation
+        while (true) //unsure whether it will throw an exception
         {
             iter++;
-//            Evaluate the function at the current value of par
+            //            Evaluate the function at the current value of par
             var temp = Math.sqrt(par);
-            wa1=[];
-            for(var i=0; i<diag.length; i++) {
+            wa1 = [];
+            for (var i = 0; i < diag.length; i++) {
                 wa1[i] = temp * diag[i]; //unsure whether will throw error due to scalar*array
             }
             var a = lmfit.qrsolv(r, ipvt, wa1, qtb, sdiag);
             r = a.r;
             x = a.x;
             sdiag = a.sdiag;
-            for(i=0; i<diag.length; i++) {
+            for (i = 0; i < diag.length; i++) {
                 wa2[i] = diag[i] * x[i];
             }
             dxnorm = lmfit.enorm(wa2);
@@ -2861,8 +2878,8 @@ $(document).ready(function () {
             if ((Math.abs(fp) <= 0.1 * delta) || ((parl == 0) && (fp <= temp) && (temp < 0)) || (iter == 10)) {
                 break;
             }
-//            Compute the newton correction
-            for(i=0; i<ipvt.length; i++) {
+            //            Compute the newton correction
+            for (i = 0; i < ipvt.length; i++) {
                 wa1[i] = diag[ipvt[i]] * wa2[ipvt[i]] / dxnorm;
             }
             for (j = 0; j < n - 1; j++) {
@@ -2875,27 +2892,32 @@ $(document).ready(function () {
             wa1[n - 1] = wa1[n - 1] / sdiag[n - 1];
             temp = lmfit.enorm(wa1);
             var parc = ((fp / delta) / temp) / temp;
-//            Depending on the sign of the function, update parl or paru
+            //            Depending on the sign of the function, update parl or paru
             if (fp > 0) {
                 par = Math.max(parl, par);
             }
             if (fp < 0) {
                 paru = Math.min(paru, par);
             }
-//            Compute an improved estimate for par
+            //            Compute an improved estimate for par
             par = Math.max(parl, par + parc);
-//            End of an iteration
+            //            End of an iteration
         }
-//        Termination
-        return {r: r.elements, par: par, x: x, sdiag: sdiag};
+        //        Termination
+        return {
+            r: r.elements,
+            par: par,
+            x: x,
+            sdiag: sdiag
+        };
     };
 
 
     /*
      Procedure to tie one parameter to another
      */
-    lmfit.tie = function (p, ptied) {
-        if(this.debug) {
+    lmfit.tie = function(p, ptied) {
+        if (this.debug) {
             console.log('entering tie...');
         }
         if (lmfit.typeOf(ptied) == 'undefined') {
@@ -2973,8 +2995,8 @@ $(document).ready(function () {
      burton s. garbow, kenneth e. hillstrom, jorge j. more
 
      **********/
-    lmfit.calc_covar = function (rr, ipvt, tol) {
-        if(this.debug) {
+    lmfit.calc_covar = function(rr, ipvt, tol) {
+        if (this.debug) {
             console.log("entering calc_covar...");
         }
         if (lmfit.typeOf(rr.length) == 'undefined' || lmfit.typeOf(rr[0].length) == 'undefined') {
@@ -2988,19 +3010,19 @@ $(document).ready(function () {
             console.log("r must be square matrix");
             return -1;
         }
-        if (ipvt == lmfit.typeOf('undefined')) {//unsure whether this actually catches a null imput
-            ipvt=[];
+        if (ipvt == lmfit.typeOf('undefined')) { //unsure whether this actually catches a null imput
+            ipvt = [];
             for (i = 0; i < n; i++) {
                 ipvt.push(i);
             }
         }
         var r = [];
-        for(i=0; i<rr.length; i++){
-            r[i]=rr[i];
+        for (i = 0; i < rr.length; i++) {
+            r[i] = rr[i];
         }
         r.shape = [n, n]; //unsure whether this will actually do anything
 
-//        For the inverse of r in the full upper triangle of r
+        //        For the inverse of r in the full upper triangle of r
         var l = -1;
         if (lmfit.typeOf(tol) == 'undefined') {
             tol = 1 * Math.pow(10, -14);
@@ -3018,14 +3040,14 @@ $(document).ready(function () {
                 for (i = 0; i < j + 1; i++) {
                     r[i][k] = r[i][k] - temp * r[i][j];
                 }
-                
+
             }
             l = k;
 
         }
 
-//          Form the full upper triangle of the inverse of (r transpose)*r
-//          in the full upper triangle of r
+        //          Form the full upper triangle of the inverse of (r transpose)*r
+        //          in the full upper triangle of r
         if (l >= 0) {
             for (k = 0; k < l + 1; k++) {
                 for (j = 0; j < k; j++) {
@@ -3033,17 +3055,17 @@ $(document).ready(function () {
                     for (i = 0; i < j + 1; i++) {
                         r[i][j] = r[i][j] + temp * r[i][k];
                     }
-                    
+
                 }
-				temp = r[k][k];
+                temp = r[k][k];
                 for (i = 0; i < k + 1; i++) {
                     r[i][k] = temp * r[i][k];
-                    }
+                }
             }
         }
-//         For the full lower triangle of the covariance matrix
-//         in the strict lower triangle or and in wa
-        var wa=[];
+        //         For the full lower triangle of the covariance matrix
+        //         in the strict lower triangle or and in wa
+        var wa = [];
         for (i = 0; i < n; i++) {
             wa.push(r[0][0]);
         }
@@ -3065,7 +3087,7 @@ $(document).ready(function () {
             wa[jj] = r[j][j];
 
         }
-//        Symmetrize the covariance matrix in r
+        //        Symmetrize the covariance matrix in r
         for (j = 0; j < n; j++) {
             for (i = 0; i < j + 1; i++) {
                 r[i][j] = r[j][i];
@@ -3074,7 +3096,7 @@ $(document).ready(function () {
         }
         return r;
     };
-    lmfit.enorm = function (x) {
+    lmfit.enorm = function(x) {
         var sq = 0;
         for (var i = 0; i < x.length; i++) {
             sq += x[i] * x[i];
@@ -3084,10 +3106,10 @@ $(document).ready(function () {
 
     };
 
-    lmfit.typeOf = function (x) {
+    lmfit.typeOf = function(x) {
         return typeof x;
     };
-//numerical constants for rounding and stuff
+    //numerical constants for rounding and stuff
     this.machep = Math.pow(2, -53);
     this.maxnum = Math.pow(2, 53);
     this.minnum = 0 - Math.pow(2, 53);
@@ -3095,14 +3117,14 @@ $(document).ready(function () {
     this.minlog = Math.log(this.minnum);
     this.rdwarf = Math.sqrt(this.minnum * 1.5) * 10;
     this.rgiant = Math.sqrt(this.maxnum) * .01;
-    this.amin = function (x) {
+    this.amin = function(x) {
         var min = 99999;
         for (a = 0; a < x.length; a++) {
             min = Math.min(min, x[a]);
         }
         return min;
     };
-    this.amax = function (x) {
+    this.amax = function(x) {
         var max = -99999;
         for (a = 0; a < x.length; a++) {
             max = Math.max(max, x[a]);
