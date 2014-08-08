@@ -1680,7 +1680,7 @@ Ext.onReady(function() {
                 var sinPoints = [];
                 var linPoints = [];
 
-                for (var i = 0; i < 2 * Math.PI; i += 0.4) {
+                for (var i = 0; i < 2 * Math.PI; i += 0.3) {
                     var yVal = 2 * Math.sin(i - .8);
                     //var yVal=5.5*i +2.2;
                     sinPoints.push([i, yVal, {
