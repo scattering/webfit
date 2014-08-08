@@ -1684,14 +1684,18 @@ Ext.onReady(function() {
                     var yVal = 2 * Math.sin(i - .8);
                     //var yVal=5.5*i +2.2;
                     sinPoints.push([i, yVal, {
-                        "yerr": Math.sqrt(Math.abs(yVal)),
-                        "xerr": 0
+                        //yerr: Math.sqrt(Math.abs(yVal)),
+						yupper: Math.sqrt(Math.abs(yVal))+yVal,
+						ylower: -Math.sqrt(Math.abs(yVal))+yVal,
+                        xerr: 0
                     }]);
                     dataP.store.add({
                         x: i,
                         y: yVal,
                         xerr: 0,
-                        yerr: Math.sqrt(Math.abs(yVal)),
+                        //yerr: Math.sqrt(Math.abs(yVal)),
+												yupper: Math.sqrt(Math.abs(yVal))+yVal,
+						ylower: Math.sqrt(Math.abs(yVal))-yVal,
 
 
                     });
