@@ -99,7 +99,12 @@ Ext.onReady(function() {
                 data = $.csv.toArrays(inData);
 				}
                 //var html = '';
+				var xMin=9999,xMax=-9999,yMin=9999,yMax=-9999;
                 for (var row in data) {
+					xMin=Math.min(xMin, parseFloat(data[row][0]));
+					xMax=Math.max(xMax, parseFloat(data[row][0]));
+					yMin=Math.min(yMin, parseFloat(data[row][1]));
+					yMax=Math.max(yMax, parseFloat(data[row][1]));
                     if (typeof data[row][2] == 'undefined') {
                         webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
@@ -165,6 +170,19 @@ Ext.onReady(function() {
                     //}
                     //html += '</tr>\r\n';
                 }
+                webfit.plot.axes.xaxis.min = xMin;
+                webfit.plot.axes.xaxis.max = xMax;
+                webfit.plot.axes.yaxis.min = yMin;
+                webfit.plot.axes.yaxis.max = yMax;
+                webfit.ResidualPlot.axes.xaxis.min = xMin;
+                webfit.ResidualPlot.axes.xaxis.max = xMax;
+                webfit.ResidualPlot.axes.yaxis.min = yMin;
+                webfit.ResidualPlot.axes.yaxis.max = yMax;
+                webfit.plot.replot();
+                webfit.ResidualPlot.replot();
+				
+				
+				
                 dataPanel.getView().refresh();
                 //$('#contents').html(html);
                 webfit.plot.redraw();
@@ -306,7 +324,7 @@ Ext.onReady(function() {
         }, {
             xtype: 'tbspacer',
             width: 45
-        }, {
+        },*/ {
             xtype: 'splitbutton',
             text: 'Fit Controls',
             menu: new Ext.menu.Menu({
@@ -322,7 +340,7 @@ Ext.onReady(function() {
         }, {
             xtype: 'tbspacer',
             width: 45
-        },*/ ]
+        }, ]
     });
 
     /*functionSelector.chooserStore = Ext.create('Ext.data.Store', {
@@ -390,7 +408,7 @@ Ext.onReady(function() {
         //UPDATE RESIDUALS
         webfit.ResidualPlot.series[0].data = residualUpdate();
         webfit.ResidualPlot.replot();
-        console.log('UPDATED RESIDUALS');
+ //       console.log('UPDATED RESIDUALS');
 
         return tcursor.name;
     }
@@ -907,7 +925,7 @@ Ext.onReady(function() {
             webfit.plot.replot();
             webfit.ResidualPlot.replot();
 
-            console.log('UPDATING RESIDUALS');
+//            console.log('UPDATING RESIDUALS');
             //fit the function
         },
         x: 100,
@@ -1077,7 +1095,7 @@ Ext.onReady(function() {
                 scope: this,
                 handler: function(grid, rowIndex) {
                     console.log(grid);
-                    console.log(rowIndex);
+ //                   console.log(rowIndex);
                     var removed = functionSelector.addedFunctions.getStore().data.removeAt(rowIndex);
                     functionSelector.addedFunctions.getStore().sync();
                     var removedInteractor = webfit.plot.plugins.interactors.fcursor.unregister(removed.data.name);
@@ -1106,13 +1124,13 @@ Ext.onReady(function() {
                     var indexOptions = -1;
                     functionSelector.addedFunctions.getStore().sync();
                     for (var i = 0; i < webfit.plot.options.interactors.length; i++) {
-                        console.log(webfit.plot.options.interactors[i].name);
+//                        console.log(webfit.plot.options.interactors[i].name);
                         if (webfit.plot.options.interactors[i].name === removed.data.name) {
                             indexOptions = i;
                         }
                     }
                     if (indexOptions === webfit.plot.options.interactors.length - 1) {
-                        console.log('last complete');
+ //                       console.log('last complete');
                         webfit.plot.options.interactors.pop();
                     } else if (indexOptions !== -1) {
                         for (var i = indexOptions; i < webfit.plot.options.interactors.length - 1; i++) {
@@ -1120,7 +1138,7 @@ Ext.onReady(function() {
                         }
                         webfit.plot.options.interactors.pop();
                     }
-                    console.log('Deleted');
+//                    console.log('Deleted');
                     if (typeof webfit.plot.plugins._interactor.grobs[0].parent.interactors[webfit.plot.plugins._interactor.grobs[0].parent.interactors.length - 1] == 'undefined') {
                         webfit.plot.plugins._interactor.grobs[0].parent.interactors.pop();
                     }
@@ -1610,7 +1628,7 @@ Ext.onReady(function() {
     });
 
     dataP.updatePlot = function(store, record, operation, modifiedFieldNames, eOpts) {
-        console.log("updating");
+ //       console.log("updating");
         switch (operation) {
             case Ext.data.Model.EDIT:
                 console.log('INFO', 'Updating record...');
