@@ -1955,6 +1955,8 @@ Ext.onReady(function() {
         width: 1200,
         //id: 13,
         height: 727,
+		
+		layout: 'fit',
         renderTo: Ext.getBody(),
         items: [{
             title: 'Workspace',
@@ -1968,10 +1970,11 @@ Ext.onReady(function() {
             title: 'Data',
             items: [dataPanel],
         }, {
+		autoScroll:true,
             title: 'Help Manual',
             id: 'helpmanualtab',
             //iconCls: '/static/img/silk/help.png',
-            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="/static/lib/scattering.png" border="0">'
+            html: '<font face="Verdana"><font size="5"><h1>WebFit - Sponsored by the NCNR</h1> Map of Features: <br><img src="img/Step1.png" border="0"><br><img src="img/Step2.png" border="0"><br><img src="img/Step3.png" border="0"><br><img src="img/Step4.png" border="0"><br><img src="img/Step5.png" border="0"><br><img src="img/Step6.png" border="0"><br>'
         }, {
             title: 'Fit Results',
             items: [fitPanel],
