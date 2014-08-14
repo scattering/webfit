@@ -35,7 +35,7 @@ Ext.require([
             });
         }*/
 });
-
+    var params = [];
 Ext.onReady(function() {
 
     Ext.namespace("webfit");
@@ -71,93 +71,96 @@ Ext.onReady(function() {
                 if (dataP.store.data.items.length !== 0) {
                     dataP.store.removeAll();
                 }
-				
-				var a = file.name.split("."); //ICP reader
-				var data=[];
-				if(a[a.length-1]=="bt4") {
-					ICP= new ICPParser();
-					ICP.read(inData);
-					var name="";
-					var maxRange=-9999;
-					for(var d=0; d<ICP.columnnames.length; d++) {
-						if(ICP.columnnames[d]!="counts" && ICP.columnnames[d]!="points") {
-							if(maxRange<scaledRange(ICP.column[ICP.columnnames[d]])) {
-								name=ICP.columnnames[d];
-								maxRange=scaledRange(ICP.column[ICP.columnnames[d]]);
-							}
-						}
-					}
-					if(maxRange==-9999) {
-						name="points";
-					}				
-					for(var z=0; z<ICP.column["counts"].length; z++){
-						data.push([ICP.column[name][z],ICP.column["counts"][z], Math.sqrt(ICP.column["counts"][z])]);
-					}
-				
-				} else {
-                //webfit.plot.redraw();
-                data = $.csv.toArrays(inData);
-				}
+
+                var a = file.name.split("."); //ICP reader
+                var data = [];
+                if (a[a.length - 1] == "bt4") {
+                    ICP = new ICPParser();
+                    ICP.read(inData);
+                    var name = "";
+                    var maxRange = -9999;
+                    for (var d = 0; d < ICP.columnnames.length; d++) {
+                        if (ICP.columnnames[d] != "counts" && ICP.columnnames[d] != "points") {
+                            if (maxRange < scaledRange(ICP.column[ICP.columnnames[d]])) {
+                                name = ICP.columnnames[d];
+                                maxRange = scaledRange(ICP.column[ICP.columnnames[d]]);
+                            }
+                        }
+                    }
+                    if (maxRange == -9999) {
+                        name = "points";
+                    }
+                    for (var z = 0; z < ICP.column["counts"].length; z++) {
+                        data.push([ICP.column[name][z], ICP.column["counts"][z], Math.sqrt(ICP.column["counts"][z])]);
+                    }
+
+                } else {
+                    //webfit.plot.redraw();
+                    data = $.csv.toArrays(inData);
+                }
                 //var html = '';
-				var xMin=9999,xMax=-9999,yMin=9999,yMax=-9999;
+                var xMin = 9999,
+                    xMax = -9999,
+                    yMin = 9999,
+                    yMax = -9999;
                 for (var row in data) {
-					xMin=Math.min(xMin, parseFloat(data[row][0]));
-					xMax=Math.max(xMax, parseFloat(data[row][0]));
-					yMin=Math.min(yMin, parseFloat(data[row][1]));
-					yMax=Math.max(yMax, parseFloat(data[row][1]));
+                    xMin = Math.min(xMin, parseFloat(data[row][0]));
+                    xMax = Math.max(xMax, parseFloat(data[row][0]));
+                    yMin = Math.min(yMin, parseFloat(data[row][1]));
+                    yMax = Math.max(yMax, parseFloat(data[row][1]));
                     if (typeof data[row][2] == 'undefined') {
                         webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-                            yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
-							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
-							xerr: 0
+                            yupper: parseFloat(data[row][1]) + Math.sqrt(parseFloat(data[row][1])),
+                            ylower: parseFloat(data[row][1]) - Math.sqrt(parseFloat(data[row][1])),
+                            xerr: 0
                         }]);
                         residualData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-                            yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
-							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
-							xerr: 0
+                            yupper: parseFloat(data[row][1]) + Math.sqrt(parseFloat(data[row][1])),
+                            ylower: parseFloat(data[row][1]) - Math.sqrt(parseFloat(data[row][1])),
+                            xerr: 0
                         }]);
                         webfit.plot.data[0].push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-							yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
-							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
+                            yupper: parseFloat(data[row][1]) + Math.sqrt(parseFloat(data[row][1])),
+                            ylower: parseFloat(data[row][1]) - Math.sqrt(parseFloat(data[row][1])),
                             xerr: 0
                         }]);
                         dataP.store.add({
                             x: parseFloat(parseFloat(data[row][0])),
                             y: parseFloat(parseFloat(data[row][1])),
                             yerr: Math.sqrt(parseFloat(data[row][1])),
-							yupper: parseFloat(data[row][1])+Math.sqrt(parseFloat(data[row][1])),
-							ylower: parseFloat(data[row][1])-Math.sqrt(parseFloat(data[row][1])),
+                            yupper: parseFloat(data[row][1]) + Math.sqrt(parseFloat(data[row][1])),
+                            ylower: parseFloat(data[row][1]) - Math.sqrt(parseFloat(data[row][1])),
                             xerr: 0
                         });
                     } else {
                         webfitData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             yerr: parseFloat(data[row][2]),
                             xerr: 0,
-                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
-                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1]) + parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1]) - parseFloat(data[row][2]),
                         }]);
                         residualData.push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             xerr: 0,
                             yerr: parseFloat(data[row][2]),
-                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
-                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1]) + parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1]) - parseFloat(data[row][2]),
                         }]);
                         webfit.plot.data[0].push([parseFloat(data[row][0]), parseFloat(data[row][1]), {
                             xerr: 0,
                             yerr: parseFloat(data[row][2]),
-                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
-                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1]) + parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1]) - parseFloat(data[row][2]),
                         }]);
                         dataP.store.add({
                             x: parseFloat(data[row][0]),
                             y: parseFloat(data[row][1]),
                             xerr: 0,
                             yerr: parseFloat(data[row][2]),
-                            yupper: parseFloat(data[row][1])+parseFloat(data[row][2]),
-                            ylower: parseFloat(data[row][1])-parseFloat(data[row][2]),
+                            yupper: parseFloat(data[row][1]) + parseFloat(data[row][2]),
+                            ylower: parseFloat(data[row][1]) - parseFloat(data[row][2]),
 
                         });
                     }
@@ -180,9 +183,9 @@ Ext.onReady(function() {
                 webfit.ResidualPlot.axes.yaxis.max = yMax;
                 webfit.plot.replot();
                 webfit.ResidualPlot.replot();
-				
-				
-				
+
+
+
                 dataPanel.getView().refresh();
                 //$('#contents').html(html);
                 webfit.plot.redraw();
@@ -237,7 +240,7 @@ Ext.onReady(function() {
                 var files = this.fileInputEl.dom.files;
                 if (files) {
                     this.fireEvent('fileselected', this, files);
-					webfit.updatePlotData(files);
+                    webfit.updatePlotData(files);
                 }
             }, this);
             this.callParent(arguments);
@@ -251,15 +254,15 @@ Ext.onReady(function() {
         },
 
     });
-	var scaledRange= function(x) {
-		var min=9999;
-		var max=-9999;
-		for(var a=0; a<x; a++) {
-			min=Math.min(x[a], min);
-			max=Math.max(x[a],max);
-		}
-		return(max-min)*max;
-	};
+    var scaledRange = function(x) {
+        var min = 9999;
+        var max = -9999;
+        for (var a = 0; a < x; a++) {
+            min = Math.min(x[a], min);
+            max = Math.max(x[a], max);
+        }
+        return (max - min) * max;
+    };
 
     //THE START OF REDISPLAYING
     var toolbar = Ext.create('Ext.toolbar.Toolbar', {
@@ -267,80 +270,83 @@ Ext.onReady(function() {
         //id: 1,
         width: 1200,
         items: [{
-            xtype: 'splitbutton',
-            text: 'File',
-            menu: new Ext.menu.Menu({
-                items: [Ext.create('Ext.ux.upload.BrowseButton', {}), {
-                        text: 'Export Graph',
-                        handler: function() {}
-                    },
-                    //{text: 'Save', handler: function(){  }},
-                    //{text: 'Save As', handler: function(){  }},
-                ]
-            })
-        }, {
-            xtype: 'tbspacer',
-            width: 45
-        }, /*{
-            xtype: 'splitbutton',
-            text: 'Edit',
-            menu: new Ext.menu.Menu({
-                items: [{
-                    text: 'Undo',
-                    handler: function() {}
-                }, {
-                    text: 'Redo',
-                    handler: function() {}
-                }, ]
-            })
-        }, {
-            xtype: 'tbspacer',
-            width: 45
-        }, {
-            xtype: 'splitbutton',
-            text: 'View',
-            menu: new Ext.menu.Menu({
-                items: [{
-                        text: 'Show',
-                        handler: function() {},
+                xtype: 'splitbutton',
+                text: 'File',
+                menu: new Ext.menu.Menu({
+                    items: [Ext.create('Ext.ux.upload.BrowseButton', {}), {
+                            text: 'Export Graph',
+                            handler: function() {}
+                        },
+                        //{text: 'Save', handler: function(){  }},
+                        //{text: 'Save As', handler: function(){  }},
+                    ]
+                })
+            }, {
+                xtype: 'tbspacer',
+                width: 45
+            },
+            /*{
+                        xtype: 'splitbutton',
+                        text: 'Edit',
                         menu: new Ext.menu.Menu({
                             items: [{
-                                xtype: 'menucheckitem',
-                                text: 'Fit Results',
-                                checked: true,
+                                text: 'Undo',
+                                handler: function() {}
                             }, {
-                                xtype: 'menucheckitem',
-                                text: 'Residuals',
-                                checked: true,
-                            }, {
-                                xtype: 'menucheckitem',
-                                text: 'Limits',
-                                checked: true,
+                                text: 'Redo',
+                                handler: function() {}
                             }, ]
                         })
-                    }, //show list
-                ]
-            })
-        }, {
-            xtype: 'tbspacer',
-            width: 45
-        },*/ {
-            xtype: 'splitbutton',
-            text: 'Fit Controls',
-            menu: new Ext.menu.Menu({
-                items: [{
-                        text: 'Specifications',
-                        handler: function() {
-                            functionSelector.specs.setVisible(true);
-                        }
-                    },
-                    //{text: 'Remove Function Options', handler: function(){  }},
-                ]
-            })
-        }, {
-            xtype: 'tbspacer',
-            width: 45
-        }, ]
+                    }, {
+                        xtype: 'tbspacer',
+                        width: 45
+                    }, {
+                        xtype: 'splitbutton',
+                        text: 'View',
+                        menu: new Ext.menu.Menu({
+                            items: [{
+                                    text: 'Show',
+                                    handler: function() {},
+                                    menu: new Ext.menu.Menu({
+                                        items: [{
+                                            xtype: 'menucheckitem',
+                                            text: 'Fit Results',
+                                            checked: true,
+                                        }, {
+                                            xtype: 'menucheckitem',
+                                            text: 'Residuals',
+                                            checked: true,
+                                        }, {
+                                            xtype: 'menucheckitem',
+                                            text: 'Limits',
+                                            checked: true,
+                                        }, ]
+                                    })
+                                }, //show list
+                            ]
+                        })
+                    }, {
+                        xtype: 'tbspacer',
+                        width: 45
+                    },*/
+            {
+                xtype: 'splitbutton',
+                text: 'Fit Controls',
+                menu: new Ext.menu.Menu({
+                    items: [{
+                            text: 'Specifications',
+                            handler: function() {
+                                functionSelector.specs.setVisible(true);
+                            }
+                        },
+                        //{text: 'Remove Function Options', handler: function(){  }},
+                    ]
+                })
+            }, {
+                xtype: 'tbspacer',
+                width: 45
+            },
+        ]
     });
 
     /*functionSelector.chooserStore = Ext.create('Ext.data.Store', {
@@ -408,12 +414,13 @@ Ext.onReady(function() {
         //UPDATE RESIDUALS
         webfit.ResidualPlot.series[0].data = residualUpdate();
         webfit.ResidualPlot.replot();
- //       console.log('UPDATED RESIDUALS');
+        //       console.log('UPDATED RESIDUALS');
 
         return tcursor.name;
     }
 
     functionSelector.params = function(functionName) {
+		var singleParams=[];
         var store = Ext.create('Ext.data.Store', {
             fields: [{
                 name: 'name',
@@ -472,7 +479,27 @@ Ext.onReady(function() {
         return store;
     }
 
-    functionSelector.specsLayout = function(functionName) {
+    Layout = function(functionName) {
+		var allCols=[];
+		allCols.push({
+                            //header: '',
+                            dataIndex: 'name',
+                            width: 70,
+                            editable: false,
+                            /*editor: {
+                                allowBlank: false
+                                }*/
+                        });
+		allCols.push({
+                            xtype: 'checkcolumn',
+                            header: 'Fixed',
+                            dataIndex: 'fixed',
+                            width: 40,
+                            stopSelection: false,
+                        });
+		for(var a = 0; a< params.length; a++) {
+			allCols.push(params[a]);
+		}
         var panel = Ext.create('Ext.panel.Panel', {
             height: 101,
             width: 480,
@@ -504,52 +531,8 @@ Ext.onReady(function() {
                     })],
                     //autoScroll: true,
                     store: functionSelector.params(functionName),
-                    columns: [{
-                        //header: '',
-                        dataIndex: 'name',
-                        width: 70,
-                        editable: false,
-                        /*editor: {
-                            allowBlank: false
-                            }*/
-                    }, {
-                        xtype: 'checkcolumn',
-                        header: 'Fixed',
-                        dataIndex: 'fixed',
-                        width: 40,
-                        stopSelection: false,
-                    }, {
-                        header: 'Value',
-                        dataIndex: 'val',
-                        width: 40,
-                        editor: {}
-                    }, {
-                        xtype: 'checkcolumn',
-                        header: 'Bounded',
-                        dataIndex: 'bounded',
-                        width: 60,
-                        stopSelection: false,
-                    }, {
-                        header: 'Upper',
-                        dataIndex: 'up',
-                        width: 40,
-                        editor: {}
-                    }, {
-                        header: 'Lower',
-                        dataIndex: 'low',
-                        width: 40,
-                        editor: {}
-                    }, {
-                        xtype: 'checkcolumn',
-                        header: 'Tied To',
-                        dataIndex: 'tied',
-                        width: 50,
-                        stopSelection: false,
-                    }, {
-                        dataIndex: 'relationship',
-                        flex: 1,
-                        editor: {}
-                    }, ],
+                    columns: allCols
+                    ,
                     height: 398,
                     width: 496,
                 },
@@ -595,7 +578,30 @@ Ext.onReady(function() {
                         show: true,
                     });
                 }
-                functionSelector.specs.items.add(functionSelector.specsLayout(theName));
+                    params.push({
+                        xtype: 'checkcolumn',
+                        header: webfit.plot.plugins._interactor.interactors[webfit.plot.plugins._interactor.interactors.length-1].name + "a",
+                        dataIndex: 'fixed',
+                        width: 60,
+                        stopSelection: false,
+                    });
+                    params.push({
+                        xtype: 'checkcolumn',
+                        header: webfit.plot.plugins._interactor.interactors[webfit.plot.plugins._interactor.interactors.length-1].name + "b",
+                        dataIndex: 'fixed',
+                        width: 60,
+                        stopSelection: false,
+                    });
+                    if (webfit.plot.plugins._interactor.interactors[webfit.plot.plugins._interactor.interactors.length-1].type == "Gaussian") {
+                        params.push({
+                            xtype: 'checkcolumn',
+                            header: webfit.plot.plugins._interactor.interactors[webfit.plot.plugins._interactor.interactors.length-1].name + "c",
+                            dataIndex: 'fixed',
+                            width: 60,
+                            stopSelection: false,
+                        });
+                    }
+                functionSelector.specs.items.add(Layout(theName));
             }
         },
         x: 292,
@@ -667,7 +673,7 @@ Ext.onReady(function() {
                 if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                     xDat.push(webfit.plot.data[0][i][0]);
                     yDat.push(webfit.plot.data[0][i][1]);
-                    err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
+                    err.push(webfit.plot.data[0][i][2].yupper - webfit.plot.data[0][i][1]);
                 }
             }
             var sqResid = function(x) {
@@ -757,7 +763,7 @@ Ext.onReady(function() {
             var sqRes = 0;
             for (i = 0; i < webfit.plot.data[0].length; i++) {
                 if (xDat[i] > fitMin && xDat[i] < fitMax) {
-                    sqRes += Math.pow((z(xDat[i]) - yDat[i])/err[i], 2); //fix this
+                    sqRes += Math.pow((z(xDat[i]) - yDat[i]) / err[i], 2); //fix this
                 }
             }
             functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + sqRes);
@@ -800,7 +806,7 @@ Ext.onReady(function() {
                 if (webfit.plot.data[0][i][0] > fitMin && webfit.plot.data[0][i][0] < fitMax) {
                     xDat.push(webfit.plot.data[0][i][0]);
                     yDat.push(webfit.plot.data[0][i][1]);
-                    err.push(webfit.plot.data[0][i][2].yupper-webfit.plot.data[0][i][1]);
+                    err.push(webfit.plot.data[0][i][2].yupper - webfit.plot.data[0][i][1]);
                 }
             }
             var linF = function(p, x) {
@@ -858,7 +864,7 @@ Ext.onReady(function() {
                 }
                 var sqRes = [];
                 for (var i = 0; i < xDat.length; i++) {
-                    sqRes.push((z(xDat[i]) - yDat[i])/ (err[i])); //fix this   
+                    sqRes.push((z(xDat[i]) - yDat[i]) / (err[i])); //fix this   
 
                 }
                 var status = 0;
@@ -921,11 +927,11 @@ Ext.onReady(function() {
 
                 counter++;
             }
-            functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + x.chisq/x.dof);
+            functionSelector.fitResults.items.items[0].update(retStr + 'Chisq: ' + x.chisq / x.dof);
             webfit.plot.replot();
             webfit.ResidualPlot.replot();
 
-//            console.log('UPDATING RESIDUALS');
+            //            console.log('UPDATING RESIDUALS');
             //fit the function
         },
         x: 100,
@@ -1095,7 +1101,7 @@ Ext.onReady(function() {
                 scope: this,
                 handler: function(grid, rowIndex) {
                     console.log(grid);
- //                   console.log(rowIndex);
+                    //                   console.log(rowIndex);
                     var removed = functionSelector.addedFunctions.getStore().data.removeAt(rowIndex);
                     functionSelector.addedFunctions.getStore().sync();
                     var removedInteractor = webfit.plot.plugins.interactors.fcursor.unregister(removed.data.name);
@@ -1124,13 +1130,13 @@ Ext.onReady(function() {
                     var indexOptions = -1;
                     functionSelector.addedFunctions.getStore().sync();
                     for (var i = 0; i < webfit.plot.options.interactors.length; i++) {
-//                        console.log(webfit.plot.options.interactors[i].name);
+                        //                        console.log(webfit.plot.options.interactors[i].name);
                         if (webfit.plot.options.interactors[i].name === removed.data.name) {
                             indexOptions = i;
                         }
                     }
                     if (indexOptions === webfit.plot.options.interactors.length - 1) {
- //                       console.log('last complete');
+                        //                       console.log('last complete');
                         webfit.plot.options.interactors.pop();
                     } else if (indexOptions !== -1) {
                         for (var i = indexOptions; i < webfit.plot.options.interactors.length - 1; i++) {
@@ -1138,7 +1144,7 @@ Ext.onReady(function() {
                         }
                         webfit.plot.options.interactors.pop();
                     }
-//                    console.log('Deleted');
+                    //                    console.log('Deleted');
                     if (typeof webfit.plot.plugins._interactor.grobs[0].parent.interactors[webfit.plot.plugins._interactor.grobs[0].parent.interactors.length - 1] == 'undefined') {
                         webfit.plot.plugins._interactor.grobs[0].parent.interactors.pop();
                     }
@@ -1628,7 +1634,7 @@ Ext.onReady(function() {
     });
 
     dataP.updatePlot = function(store, record, operation, modifiedFieldNames, eOpts) {
- //       console.log("updating");
+        //       console.log("updating");
         switch (operation) {
             case Ext.data.Model.EDIT:
                 console.log('INFO', 'Updating record...');
@@ -1641,17 +1647,17 @@ Ext.onReady(function() {
                 webfit.plot.series[0].data[row][0] = (record.data.x);
                 webfit.plot.series[0].data[row][1] = (record.data.y);
                 //webfit.plot.series[0].data[row][2].yerr =record.data.yerr;
-                webfit.plot.series[0].data[row][2].yupper = record.data.y+record.data.yerr;
-                webfit.plot.series[0].data[row][2].ylower = record.data.y-record.data.yerr;
-                
-                webfit.plot.data[0][0][0]= record.data.x;
-                webfit.plot.data[0][0][1]= (record.data.y);
+                webfit.plot.series[0].data[row][2].yupper = record.data.y + record.data.yerr;
+                webfit.plot.series[0].data[row][2].ylower = record.data.y - record.data.yerr;
+
+                webfit.plot.data[0][0][0] = record.data.x;
+                webfit.plot.data[0][0][1] = (record.data.y);
                 //webfit.plot.data[0][0][2].yerr=record.data.yerr;
-                webfit.plot.data[0][0][2].yupper= record.data.y+record.data.yerr;
-                webfit.plot.data[0][0][2].ylower= record.data.y-record.data.yerr;
-                
+                webfit.plot.data[0][0][2].yupper = record.data.y + record.data.yerr;
+                webfit.plot.data[0][0][2].ylower = record.data.y - record.data.yerr;
+
                 webfit.plot.draw();
-               //webfit.plot.redraw();
+                //webfit.plot.redraw();
                 break;
             case Ext.data.Model.COMMIT:
                 console.log('INFO', 'Record successfully sent to server!');
@@ -1703,8 +1709,8 @@ Ext.onReady(function() {
                     //var yVal=5.5*i +2.2;
                     sinPoints.push([i, yVal, {
                         //yerr: Math.sqrt(Math.abs(yVal)),
-						yupper: Math.sqrt(Math.abs(yVal))+yVal,
-						ylower: -Math.sqrt(Math.abs(yVal))+yVal,
+                        yupper: Math.sqrt(Math.abs(yVal)) + yVal,
+                        ylower: -Math.sqrt(Math.abs(yVal)) + yVal,
                         xerr: 0
                     }]);
                     dataP.store.add({
@@ -1712,8 +1718,8 @@ Ext.onReady(function() {
                         y: yVal,
                         xerr: 0,
                         //yerr: Math.sqrt(Math.abs(yVal)),
-												yupper: Math.sqrt(Math.abs(yVal))+yVal,
-						ylower: Math.sqrt(Math.abs(yVal))-yVal,
+                        yupper: Math.sqrt(Math.abs(yVal)) + yVal,
+                        ylower: Math.sqrt(Math.abs(yVal)) - yVal,
 
 
                     });
@@ -1955,8 +1961,8 @@ Ext.onReady(function() {
         width: 1200,
         //id: 13,
         height: 727,
-		
-		layout: 'fit',
+
+        layout: 'fit',
         renderTo: Ext.getBody(),
         items: [{
             title: 'Workspace',
@@ -1970,7 +1976,7 @@ Ext.onReady(function() {
             title: 'Data',
             items: [dataPanel],
         }, {
-		autoScroll:true,
+            autoScroll: true,
             title: 'Help Manual',
             id: 'helpmanualtab',
             //iconCls: '/static/img/silk/help.png',
