@@ -421,60 +421,32 @@ Ext.onReady(function() {
 
     functionSelector.params = function(functionName) {
 		var singleParams=[];
+		for(var a=0; a<params.length; a++) {
+			singleParams.push({name:params[a].header,
+								type: 'boolean'});
+		}
+		var functionParams=[];
+		functionParams.push({
+					'name': functionName+"a",   
+'fixed': false,
+                'val': '',
+                'bounded': false,
+                'up': '',
+                'low': '',
+                'tied': false,
+                'relationship': ''					
+                    });
+        functionParams.push({
+                    'name': functionName+"b",    
+                    });
+		if(webfit.plot.plugins._interactor.interactors[webfit.plot.plugins._interactor.interactors.length-1].type=="Gaussian") {
+			functionParams.push({
+                    'name': functionName+"c",    
+                    });
+		}
         var store = Ext.create('Ext.data.Store', {
-            fields: [{
-                name: 'name',
-                type: 'string'
-            }, {
-                name: 'fixed',
-                type: 'boolean'
-            }, {
-                name: 'val',
-                type: 'string'
-            }, {
-                name: 'bounded',
-                type: 'boolean'
-            }, {
-                name: 'up',
-                type: 'string'
-            }, {
-                name: 'low',
-                type: 'string'
-            }, {
-                name: 'tied',
-                type: 'boolean'
-            }, {
-                name: 'relationship',
-                type: 'string'
-            }, ],
-            data: [{
-                'name': functionName,
-                'fixed': false,
-                'val': '',
-                'bounded': false,
-                'up': '',
-                'low': '',
-                'tied': false,
-                'relationship': ''
-            }, {
-                'name': 'Center',
-                'fixed': false,
-                'val': '',
-                'bounded': false,
-                'up': '',
-                'low': '',
-                'tied': false,
-                'relationship': ''
-            }, {
-                'name': 'Width',
-                'fixed': false,
-                'val': '',
-                'bounded': false,
-                'up': '',
-                'low': '',
-                'tied': false,
-                'relationship': ''
-            }, ]
+            fields: singleParams,
+            data: functionParams,
         });
         return store;
     }
@@ -601,6 +573,7 @@ Ext.onReady(function() {
                             stopSelection: false,
                         });
                     }
+				functionSelector.specs.items.removeAll();
                 functionSelector.specs.items.add(Layout(theName));
             }
         },
